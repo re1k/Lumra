@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "524020136888",
+    "project_id": "lumra-6a819",
+    "storage_bucket": "lumra-6a819.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:524020136888:android:44ca28d626dd7a28242d4d",
+        "android_client_info": {
+          "package_name": "com.example.lumra_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJuY90_kgzB0CUywCJhQniJMc6tXVaexQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
