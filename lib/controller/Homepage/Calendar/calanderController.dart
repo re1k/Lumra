@@ -1,7 +1,7 @@
 import 'dart:async';                                        
 import 'package:get/get.dart';                               
 import 'package:cloud_firestore/cloud_firestore.dart';       
-import '../models/Homepage/Calendar/calendarModel.dart';                      
+import '../../model/Homepage/Calendar/calendarModel.dart';
 
 //Helper function that takes the DateTime and returns another date
 //because when displaying the calander we want to display the days from the first day to the last day (not including the first day of the next month)
