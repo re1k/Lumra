@@ -15,7 +15,7 @@ class BTextTheme {
       ),
 
       headlineMedium: const TextStyle().copyWith(
-      fontSize: 24,
+      fontSize: 28,
       fontWeight: FontWeight.bold,
       color: Colors.black,
       ),
@@ -28,7 +28,7 @@ class BTextTheme {
 
 
     titleLarge: const TextStyle().copyWith(
-      fontSize: 16,
+      fontSize: 30,
       fontWeight: FontWeight.bold,
       color: Colors.black,
     ),

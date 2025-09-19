@@ -9,6 +9,8 @@ class BColors {
   static const Color accent = Color(0xFFE9B8A9);
 
   ///more brightness and saturation
+  //icon color
+  static const Color iconColor = Color(0xFF5F8C85);
 
   ///Text Colors
   static const Color texBlack = Color(0xFF000000);
