@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
-import 'package:lumra_project/view/auth/loginpage.dart';
+import 'package:lumra_project/view/auth/loginPage.dart';
 
 class Welcomepage extends StatelessWidget {
   const Welcomepage({super.key});

@@ -32,12 +32,12 @@ class AuthController extends GetxController {
 
       Get.snackbar("Success", "You are now logged in");
       if (role == 'adhd') {
-        Get.offAll(() => const Welcomepage()); // just for test
+        Get.offAll(() => const Welcomepage()); // jana page
       } else if (role == 'caregiver') {
-        Get.offAll(() => const Welcomepage()); // just fro test
+        Get.offAll(() => const Welcomepage()); // jana page
       }
       // else {
-      //  Get.offAll(() => const Welcomepage()); ---- the admin
+      //  Get.offAll(() => const Welcomepage()); ---- the admin page
       //}
       return null;
     } on FirebaseAuthException catch (e) {
