@@ -10,15 +10,15 @@ class BAppBarTheme {
     centerTitle: false, ///makes the text from LTR
     scrolledUnderElevation: 0, ///no shadow when scrolling
     backgroundColor: BColors.primary,
-    surfaceTintColor: Colors.transparent,
-    iconTheme: IconThemeData(color: Colors.black, size: 24), ///styling icons on  the appbar
-    actionsIconTheme: IconThemeData(color: Colors.black, size: 24), ///the search,filter,notify,share icons
+    surfaceTintColor: Color.fromARGB(255, 240, 240, 240),
+    iconTheme: IconThemeData(color: Color.fromARGB(255, 255, 255, 255), size: 24), ///styling icons on  the appbar
+    actionsIconTheme: IconThemeData(color: Color.fromARGB(255, 255, 255, 255), size: 24), ///the search,filter,notify,share icons
     titleTextStyle: TextStyle(
       fontSize:
       //call the font folder
       18.0,
       fontWeight: FontWeight.w600 ,
-      color: Colors.black,
+      color: Color.fromARGB(255, 252, 250, 250),
     ),
 
   );
