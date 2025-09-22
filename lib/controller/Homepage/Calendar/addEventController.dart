@@ -121,7 +121,7 @@ class AddEventController extends GetxController {
 
       // Extract caregiverId if any
       final userData = userDoc.data();
-      final caregiverId = userData?["caregiverId"];
+      final caregiverId = userData?["linkedUserId"];
 
       //linking the event with the other user
       final participants = [userId];
