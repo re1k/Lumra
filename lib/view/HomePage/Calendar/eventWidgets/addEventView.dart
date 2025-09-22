@@ -135,7 +135,7 @@ class AddEventView extends StatelessWidget {
               
               child: Center(
                 child: Image.asset(
-                  'assets/images/goals.png', // <-- put your image here
+                  'assets/images/goals.png',
                   width: double.infinity,
                   height: 200,
                   fit: BoxFit.fitWidth,
