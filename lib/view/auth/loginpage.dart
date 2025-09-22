@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
+import 'package:lumra_project/theme/base_themes/sizes.dart';
 import 'package:get/get.dart';
 import 'package:lumra_project/view/welcomePage.dart';
 import 'package:lumra_project/controller/auth/auth_controller.dart';
@@ -13,7 +14,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final AuthController authController = Get.put(AuthController());
+  final AuthController authController = Get.find<AuthController>();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
@@ -30,12 +31,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
           SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
+              padding: const EdgeInsets.symmetric(
+                horizontal: BSizes.lg,
+                vertical: BSizes.xl + BSizes.md,
+              ),
               child: Column(
                 children: [
-                  const SizedBox(height: 60),
+                  const SizedBox(height: BSizes.xl + BSizes.md),
                   Image.asset('assets/images/logo.png', height: 140),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: BSizes.xl + BSizes.sm),
 
                   const Text(
                     "Welcome Back",
@@ -48,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 40),
+                  const SizedBox(height: BSizes.xl + BSizes.sm),
 
                   Form(
                     child: Column(
@@ -60,27 +64,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             prefixIcon: const Icon(Icons.email),
                             labelText: 'Email Address',
                             errorText: emailError,
-                            errorStyle: const TextStyle(
-                              color: Colors.red,
-                              fontSize: 13,
-                            ),
-                            focusedBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.grey),
-                            ),
-                            enabledBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.grey),
-                            ),
-                            errorBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.grey),
-                            ),
-                            focusedErrorBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.grey),
-                            ),
                           ),
                         ),
 
-                        const SizedBox(height: 16),
-
+                        const SizedBox(height: BSizes.md),
                         // ==== Password Field ====
                         TextFormField(
                           controller: passwordController,
@@ -88,6 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           decoration: InputDecoration(
                             prefixIcon: const Icon(Icons.lock),
                             labelText: 'Password',
+                            errorText: passwordError,
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePassword
@@ -100,27 +88,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 });
                               },
                             ),
-                            errorText: passwordError,
-                            errorStyle: const TextStyle(
-                              color: Colors.red,
-                              fontSize: 13,
-                            ),
-                            focusedBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.grey),
-                            ),
-                            enabledBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.grey),
-                            ),
-                            errorBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.grey),
-                            ),
-                            focusedErrorBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.grey),
-                            ),
                           ),
                         ),
 
-                        const SizedBox(height: 12),
+                        const SizedBox(height: BSizes.sm),
 
                         Align(
                           alignment: Alignment.centerRight,
@@ -139,8 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 50),
-
+                        const SizedBox(height: BSizes.xl + BSizes.md),
                         // ==== Sign In Button ====
                         Obx(
                           () => SizedBox(
@@ -149,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: BColors.primary,
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 15,
+                                  vertical: BSizes.md,
                                 ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(30),
@@ -208,8 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 20),
-
+                        const SizedBox(height: BSizes.md + BSizes.sm),
                         // ==== Register Text ====
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,

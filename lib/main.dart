@@ -18,15 +18,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Get.put(AuthController()); // to make it shared by us(to get the user data)
+    Get.put(AuthController()); // to make it shared (to get the user data)
 
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         inputDecorationTheme: BTextFormFieldTheme.lightInputDecorationTheme,
       ),
-     home: SplashGifScreen( nextScreen: Welcomepage(),),  //splash then we start! :)
+      home: SplashGifScreen(
+        nextScreen: Welcomepage(),
+      ), //splash then we start! :)
     );
   }
 }
-
