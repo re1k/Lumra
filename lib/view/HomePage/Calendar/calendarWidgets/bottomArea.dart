@@ -5,6 +5,7 @@ import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/view/Homepage/Calendar/calendarWidgets/eventTitle.dart';
 import 'package:lumra_project/view/Homepage/Calendar/calendarWidgets/format.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:lumra_project/view/Homepage/Calendar/eventWidgets/addEventView.dart';
 
 class BottomArea extends StatelessWidget {
   final DateTime selected;
@@ -37,29 +38,36 @@ class BottomArea extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            //  const Spacer(),
-            //  FilledButton.icon(
-            //  icon: const Icon(Icons.add),
-            // label: Text('Add', style: textTheme.labelLarge),
-            // onPressed: () {
-            //made it looks like popping up from the bottom
-            //  showModalBottomSheet(
-            //    context: context,
-            //    isScrollControlled: true,
-            //    backgroundColor: BColors.white,
-            //   shape: const RoundedRectangleBorder(
-            //      borderRadius: BorderRadius.vertical(
-            //        top: Radius.circular(32),
-            //     ),
-            //    ),
-            //    builder: (context) => FractionallySizedBox(
-            //      heightFactor:
-            //          0.85, // to make it Covers 85% of screen height
-            //      child: AddEventView(), //in here i added my view
-            //    ),
-            //   );
-            //  },
-            //),
+            const Spacer(),
+            FilledButton.icon(
+              style: FilledButton.styleFrom(
+                backgroundColor:
+                    BColors.buttonPrimary, // set background color here
+              ),
+              icon: const Icon(Icons.add),
+              label: Text(
+                'Add',
+                style: textTheme.labelLarge?.copyWith(color: BColors.white),
+              ),
+              onPressed: () {
+                //made it looks like popping up from the bottom
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: BColors.white,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(32),
+                    ),
+                  ),
+                  builder: (context) => FractionallySizedBox(
+                    heightFactor:
+                        0.85, // to make it Covers 85% of screen height
+                    child: AddEventView(), //in here i added my view
+                  ),
+                );
+              },
+            ),
           ],
         ),
       );
@@ -86,28 +94,28 @@ class BottomArea extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                //IconButton(
-                // tooltip: 'Add event',
-                // icon: const Icon(Icons.add),
-                // onPressed: () {
-                //made it looks like popping up from the bottom
-                //  showModalBottomSheet(
-                //   context: context,
-                //   isScrollControlled: true,
-                //   backgroundColor: BColors.white,
-                //  shape: const RoundedRectangleBorder(
-                //    borderRadius: BorderRadius.vertical(
-                //      top: Radius.circular(32),
-                //    ),
-                //  ),
-                // builder: (context) => FractionallySizedBox(
-                //   heightFactor:
-                //       0.85, // to make it Covers 85% of screen height
-                //   child: AddEventView(), //in here i added my view
-                //   ),
-                //  );
-                //  },
-                // ),
+                IconButton(
+                  tooltip: 'Add event',
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
+                    //made it looks like popping up from the bottom
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: BColors.white,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(32),
+                        ),
+                      ),
+                      builder: (context) => FractionallySizedBox(
+                        heightFactor:
+                            0.85, // to make it Covers 85% of screen height
+                        child: AddEventView(), //in here i added my view
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
             const SizedBox(height: 6),

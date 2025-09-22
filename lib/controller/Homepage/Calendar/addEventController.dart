@@ -132,9 +132,9 @@ class AddEventController extends GetxController {
       //Add event
       await FirebaseFirestore.instance.collection("events").add({
         "title": titleController.text.trim(),
-        "start_date": startDate.value,
-        "end_date": endDate.value,
-        "Participants": participants,
+        "start": startDate.value,
+        "end": endDate.value,
+        "participants": participants,
         "created_by": userId,
         "created_at": FieldValue.serverTimestamp(),
       });
