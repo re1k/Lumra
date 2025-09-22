@@ -28,7 +28,7 @@ class LumraAppTheme {
     appBarTheme: BAppBarTheme.lightAppBarTheme,
     bottomSheetTheme: BBottomSheetTheme.lightBottomSheetTheme,
     checkboxTheme: BCheckboxTheme.lightCheckBoxTheme,
-    chipTheme: BChipTheme.lightBottomSheetTheme,
+
     outlinedButtonTheme: BOutlinedButtonTheme.lightOutlinedButtonTheme,
     inputDecorationTheme: BTextFormFieldTheme.lightInputDecorationTheme,
       );
