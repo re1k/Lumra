@@ -64,6 +64,7 @@ class _CalendarPageState extends State<CalendarPage> {
     return Scaffold(
       //provide page structure
       appBar: AppBar(
+        backgroundColor: BColors.primary,
         //what appears at the top of the page
         iconTheme: const IconThemeData(
           color: BColors.white,
