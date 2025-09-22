@@ -31,6 +31,10 @@ class _NavbarWidgetState extends State<NavbarWidget>
       ///check the colors, pull reems theme
       backgroundColor: BColors.primary,
       indicatorColor: BColors.primary.withOpacity(.18),
+
+      labelTextStyle: MaterialStateProperty.all(
+        const TextStyle(color: BColors.textwhite),
+      ),
       destinations: const [
         NavigationDestination(
           icon: Icon(Icons.home, color: BColors.textwhite),
