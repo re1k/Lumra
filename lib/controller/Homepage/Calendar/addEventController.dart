@@ -25,9 +25,9 @@ class AddEventController extends GetxController {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: BColors.buttonPrimary, 
-              onPrimary: Colors.white, 
-              onSurface: Colors.black, 
+              primary: BColors.buttonPrimary,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
             ),
           ),
           child: child!,
@@ -59,7 +59,7 @@ class AddEventController extends GetxController {
         initialTime: TimeOfDay.fromDateTime(initialDate),
       );
 
-      //taking the inputs and assign 
+      //taking the inputs and assign
       if (time != null) {
         final finalDateTime = DateTime(
           picked.year,
@@ -99,8 +99,6 @@ class AddEventController extends GetxController {
     return true;
   }
 
-
-
   // Now adding the event
   Future<void> addEventToFirebase() async {
     if (!validateEvent()) return;
@@ -115,7 +113,7 @@ class AddEventController extends GetxController {
         return;
       }
 
-      // Fetch the current user document 
+      // Fetch the current user document
       final userDoc = await FirebaseFirestore.instance
           .collection("user")
           .doc(userId)
@@ -153,5 +151,4 @@ class AddEventController extends GetxController {
       ToastService.error("Couldn’t save your event. Give it another go!");
     }
   }
-
 }

@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lumra_project/service/auth.dart';
+import 'package:lumra_project/view/Homepage/ADHDhomePageScreen.dart';
 import 'package:lumra_project/view/welcomepage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -32,7 +33,7 @@ class AuthController extends GetxController {
 
       Get.snackbar("Success", "You are now logged in");
       if (role == 'adhd') {
-        Get.offAll(() => const Welcomepage()); // jana page
+        Get.offAll(() => const ADHDHomePage()); // jana page
       } else if (role == 'caregiver') {
         Get.offAll(() => const Welcomepage()); // jana page
       }
