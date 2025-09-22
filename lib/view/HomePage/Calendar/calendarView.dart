@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lumra_project/controller/Homepage/Calendar/calendarController.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
-import 'package:lumra_project/view/HomePage/Calendar/eventWidgets/addEventView.dart';
 import 'package:lumra_project/view/Homepage/Calendar/calendarWidgets/monthGrid.dart';
 import 'package:lumra_project/view/Homepage/Calendar/calendarWidgets/weekdayHeader.dart';
 import 'package:lumra_project/view/Homepage/Calendar/calendarWidgets/bottomArea.dart';
@@ -129,27 +128,6 @@ class _CalendarPageState extends State<CalendarPage> {
             );
           }),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: BColors.primary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-        onPressed: () {
-          //made it looks like popping up from the bottom
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: BColors.white,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-            ),
-            builder: (context) => FractionallySizedBox(
-              heightFactor: 0.85, // to make it Covers 85% of screen height
-              child: AddEventView(), //in here i added my view
-            ),
-          );
-        },
-        //the add icon
-        child: const Icon(Icons.add, size: 32, color: Colors.white),
       ),
     );
   }
