@@ -3,7 +3,7 @@ import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/theme/custom_themes/appbar_theme.dart';
 import 'package:lumra_project/theme/custom_themes/bottom_sheet_theme.dart';
 import 'package:lumra_project/theme/custom_themes/checkbox_theme.dart';
-import 'package:lumra_project/theme/custom_themes/chip_theme.dart';
+
 import 'package:lumra_project/theme/custom_themes/elevated_button_theme.dart';
 import 'package:lumra_project/theme/custom_themes/outlined_button_theme.dart';
 import 'package:lumra_project/theme/custom_themes/text_field_theme.dart';
@@ -28,7 +28,7 @@ class LumraAppTheme {
     appBarTheme: BAppBarTheme.lightAppBarTheme,
     bottomSheetTheme: BBottomSheetTheme.lightBottomSheetTheme,
     checkboxTheme: BCheckboxTheme.lightCheckBoxTheme,
-    chipTheme: BChipTheme.lightBottomSheetTheme,
+
     outlinedButtonTheme: BOutlinedButtonTheme.lightOutlinedButtonTheme,
     inputDecorationTheme: BTextFormFieldTheme.lightInputDecorationTheme,
       );

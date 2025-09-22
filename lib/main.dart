@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
 import 'package:lumra_project/controller/auth/auth_controller.dart';
+import 'package:lumra_project/view/SplashPage/splashScreen.dart';
 import 'package:lumra_project/view/welcomepage.dart';
 import 'package:lumra_project/theme/custom_themes/text_field_theme.dart';
 
@@ -24,8 +25,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         inputDecorationTheme: BTextFormFieldTheme.lightInputDecorationTheme,
       ),
-
-      home: Welcomepage(),
+     home: SplashGifScreen( nextScreen: Welcomepage(),),  //splash then we start! :)
     );
   }
 }
+

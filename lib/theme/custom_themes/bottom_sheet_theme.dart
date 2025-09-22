@@ -7,7 +7,7 @@ class BBottomSheetTheme {
 
   static BottomSheetThemeData lightBottomSheetTheme = BottomSheetThemeData(
     showDragHandle: true, ///Enables a small drag handle at the top of the bottom sheet, letting users know it can be swiped down or dragged
-    ///
+    dragHandleColor: Colors.grey,///Enables a small drag handle at the top of the bottom sheet, letting users know it can be swiped down or dragged
     ///specifying its background if used normal or modal
     backgroundColor: Colors.white,
     modalBackgroundColor: Colors.white,
