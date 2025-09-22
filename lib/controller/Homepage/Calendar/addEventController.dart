@@ -134,7 +134,7 @@ class AddEventController extends GetxController {
         "title": titleController.text.trim(),
         "start": startDate.value,
         "end": endDate.value,
-        "Participants": participants,
+        "participants": participants,
         "created_by": userId,
         "created_at": FieldValue.serverTimestamp(),
       });
