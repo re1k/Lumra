@@ -154,8 +154,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                               emailError = result;
                                               passwordError = null;
                                             } else {
+                                              emailError = "";
                                               passwordError = result;
-                                              emailError = null;
                                             }
                                           });
                                         }
