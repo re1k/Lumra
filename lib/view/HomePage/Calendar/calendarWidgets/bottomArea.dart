@@ -39,7 +39,7 @@ class BottomArea extends StatelessWidget {
           borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
         ),
         builder: (context) => FractionallySizedBox(
-          heightFactor: 0.85, // to make it Covers 85% of screen height
+          heightFactor: 0.65, // to make it Covers 85% of screen height
           child: AddEventView(), //in here i added my view
         ),
       );

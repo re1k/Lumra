@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lumra_project/controller/Homepage/Calendar/addEventController.dart';
@@ -7,10 +9,15 @@ import 'package:lumra_project/theme/custom_themes/text_theme.dart';
 import 'package:intl/intl.dart';
 
 class AddEventView extends StatelessWidget {
+  
   AddEventView({super.key});
 
-  final AddEventController controller = Get.put(AddEventController());
+  // Directly get the controller from GetX
+  final AddEventController controller = Get.put(
+    AddEventController(FirebaseFirestore.instance, FirebaseAuth.instance.currentUser!.uid),
+  );
 
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,14 +58,22 @@ class AddEventView extends StatelessWidget {
 
             const SizedBox(height: BSizes.SpaceBtwSections),
 
-            // Start Date & Time
+            // Start Time
+            //Obx is from GetX. It automatically rebuilds this widget whenever the reactive variable changes (eventStart).
             Obx(() {
-              final start = controller.startDate.value;
-              final startText = start != null
-                  ? DateFormat('yyyy-MM-dd HH:mm').format(start)
-                  : 'Select Start Date & Time';
+              final startTimestamp = controller.eventStart.value;
+
+              //this is just for UI, to make time humen readable not timeStamp
+              final startText = startTimestamp != null 
+                  ? TimeOfDay.fromDateTime(
+                      startTimestamp.toDate(),
+                    ).format(Get.context!)
+                  : 'Select Start Time';
+
               return GestureDetector(
-                onTap: () => controller.pickDate(isStart: true),
+                //To show the TimePicker when user Clicks
+                onTap: () => controller.pickTime(isStart: true),
+
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
@@ -70,10 +85,7 @@ class AddEventView extends StatelessWidget {
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(startText),
-                      const Icon(Icons.calendar_today),
-                    ],
+                    children: [Text(startText), const Icon(Icons.access_time)],
                   ),
                 ),
               );
@@ -81,26 +93,29 @@ class AddEventView extends StatelessWidget {
 
             const SizedBox(height: BSizes.SpaceBtwSections),
 
-            // End Date & Time
+            // End Time
             Obx(() {
-              final end = controller.endDate.value;
-              final endText = end != null
-                  ? DateFormat('yyyy-MM-dd HH:mm').format(end)
-                  : 'Select End Date & Time';
+              final endTimestamp = controller.eventEnd.value;
+              final endText = endTimestamp != null
+                  ? TimeOfDay.fromDateTime(
+                      endTimestamp.toDate(),
+                    ).format(Get.context!)
+                  : 'Select End Time';
+
               return GestureDetector(
-                onTap: () => controller.pickDate(isStart: false),
+                onTap: () => controller.pickTime(isStart: false),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
                     vertical: 16,
                   ),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey), // border color
-                    borderRadius: BorderRadius.circular(14), // rounded corners
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [Text(endText), const Icon(Icons.calendar_today)],
+                    children: [Text(endText), const Icon(Icons.access_time)],
                   ),
                 ),
               );
@@ -126,13 +141,13 @@ class AddEventView extends StatelessWidget {
             ),
 
             const SizedBox(height: BSizes.SpaceBtwSections),
-
+ /*
             // Bottom Image
             Positioned(
               bottom: 0,
               left: 0,
               right: 0,
-              
+
               child: Center(
                 child: Image.asset(
                   'assets/images/goals.png',
@@ -142,8 +157,7 @@ class AddEventView extends StatelessWidget {
                 ),
               ),
             ),
-
-
+            */
 
           ],
         ),

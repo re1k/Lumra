@@ -1,26 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lumra_project/controller/Homepage/Calendar/calendarController.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/utils/customWidgets/toastservice.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AddEventController extends GetxController {
+  
+ //for current User
+  final FirebaseFirestore db;
+  final String currentUid;
+  late final CalendarController calendarController;
+
+ //The Inputs
   final titleController = TextEditingController();
-  Rx<DateTime?> startDate = Rx<DateTime?>(null);
-  Rx<DateTime?> endDate = Rx<DateTime?>(null);
+  final eventStart = Rxn<Timestamp>();
+  final eventEnd = Rxn<Timestamp>();
 
-  //Function to pick date
-  Future<void> pickDate({required bool isStart}) async {
-    final initialDate = isStart
-        ? startDate.value ?? DateTime.now()
-        : endDate.value ?? DateTime.now();
+  AddEventController(this.db, this.currentUid);
 
-    final picked = await showDatePicker(
+
+  //to get the date from the calander controller
+  @override
+  void onInit() {
+    super.onInit();
+    // register CalendarController if needed
+    if (!Get.isRegistered<CalendarController>()) {
+      calendarController = Get.put(CalendarController(this.db, this.currentUid));
+    } else {
+      calendarController = Get.find<CalendarController>();
+    } }
+
+
+ // Pick time
+  Future<void> pickTime({required bool isStart}) async {
+    
+    // Get the day chosen from the calendar
+    final baseDate = Get.find<CalendarController>().selectedDay.value;
+
+    if (baseDate == null) {
+      ToastService.error("Please select a date first");
+      return;
+    }
+
+    // Open the time picker in input mode
+    final TimeOfDay? time = await showTimePicker(
       context: Get.context!,
-      initialDate: initialDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+      initialTime: TimeOfDay.now(),
+      initialEntryMode: TimePickerEntryMode.input, //number input mode
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -29,51 +57,31 @@ class AddEventController extends GetxController {
               onPrimary: Colors.white,
               onSurface: Colors.black,
             ),
+            timePickerTheme: TimePickerThemeData(
+              dayPeriodColor: BColors.accent,
+              dayPeriodTextColor: Colors.black,
+            ),
           ),
           child: child!,
         );
       },
     );
 
-    //PICK TIME
-    if (picked != null) {
-      // After picking date, pick time
-      final time = await showTimePicker(
-        context: Get.context!,
-        builder: (context, child) {
-          return Theme(
-            data: Theme.of(context).copyWith(
-              colorScheme: ColorScheme.light(
-                primary: BColors.buttonPrimary, // header color
-                onPrimary: Colors.white, // header text color
-                onSurface: Colors.black, // body text color
-              ),
-              timePickerTheme: TimePickerThemeData(
-                dayPeriodColor: BColors.accent, // AM/PM background
-                dayPeriodTextColor: Colors.black, // AM/PM text
-              ),
-            ),
-            child: child!,
-          );
-        },
-        initialTime: TimeOfDay.fromDateTime(initialDate),
+    if (time != null) {
+      // Merging the chosen date (from calendar) with the chosen time
+      final finalDateTime = DateTime(
+        baseDate.year,
+        baseDate.month,
+        baseDate.day,
+        time.hour,
+        time.minute,
       );
 
-      //taking the inputs and assign
-      if (time != null) {
-        final finalDateTime = DateTime(
-          picked.year,
-          picked.month,
-          picked.day,
-          time.hour,
-          time.minute,
-        );
-
-        if (isStart) {
-          startDate.value = finalDateTime;
-        } else {
-          endDate.value = finalDateTime;
-        }
+      // Save into The Rx values
+      if (isStart) {
+        eventStart.value = Timestamp.fromDate(finalDateTime);
+      } else {
+        eventEnd.value = Timestamp.fromDate(finalDateTime);
       }
     }
   }
@@ -84,16 +92,16 @@ class AddEventController extends GetxController {
       ToastService.error("Title is required");
       return false;
     }
-    if (startDate.value == null) {
-      ToastService.error("Start date is required");
+    if (eventStart.value == null) {
+      ToastService.error("Start time is required");
       return false;
     }
-    if (endDate.value == null) {
-      ToastService.error("End date is required");
+    if (eventEnd.value == null) {
+      ToastService.error("End time is required");
       return false;
     }
-    if (endDate.value!.isBefore(startDate.value!)) {
-      ToastService.error("End date cannot be before start date");
+    if (eventEnd.value!.toDate().isBefore(eventStart.value!.toDate())) {
+      ToastService.error("End time cannot be before start time");
       return false;
     }
     return true;
@@ -104,19 +112,10 @@ class AddEventController extends GetxController {
     if (!validateEvent()) return;
 
     try {
-      // Getting current Firebase user ID
-      final currentUser = FirebaseAuth.instance.currentUser;
-      final userId = currentUser?.uid;
-
-      if (userId == null) {
-        ToastService.error("You must be signed in to create an event.");
-        return;
-      }
-
       // Fetch the current user document
       final userDoc = await FirebaseFirestore.instance
           .collection("users")
-          .doc(userId)
+          .doc(currentUid)
           .get();
 
       // Extract caregiverId if any
@@ -124,7 +123,7 @@ class AddEventController extends GetxController {
       final caregiverId = userData?["linkedUserId"];
 
       //linking the event with the other user
-      final participants = [userId];
+      final participants = [currentUid];
       if (caregiverId != null && caregiverId.toString().isNotEmpty) {
         participants.add(caregiverId);
       }
@@ -132,10 +131,10 @@ class AddEventController extends GetxController {
       //Add event
       await FirebaseFirestore.instance.collection("events").add({
         "title": titleController.text.trim(),
-        "start": Timestamp.fromDate(startDate.value!),
-        "end": Timestamp.fromDate(endDate.value!),
+        "start": eventStart.value,
+        "end": eventEnd.value,
         "participants": participants,
-        "created_by": userId,
+        "created_by": currentUid,
         "created_at": FieldValue.serverTimestamp(),
       });
 
@@ -145,8 +144,8 @@ class AddEventController extends GetxController {
 
       //Clearing form when done
       titleController.clear();
-      startDate.value = null;
-      endDate.value = null;
+      eventStart.value = null;
+      eventEnd.value = null;
     } catch (e) {
       ToastService.error("Couldn’t save your event. Give it another go!");
     }
