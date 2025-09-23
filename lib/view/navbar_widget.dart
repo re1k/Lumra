@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
+import 'package:lumra_project/view/Account/AccountPage.dart';
+import 'package:lumra_project/view/Homepage/ADHDhomePageScreen.dart';
+
+
+
 
 class NavbarWidget extends StatefulWidget {
   const NavbarWidget({super.key});
@@ -25,13 +30,12 @@ class _NavbarWidgetState extends State<NavbarWidget>
   }
 
   int selectedIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     return NavigationBar(
-      ///check the colors, pull reems theme
       backgroundColor: BColors.primary,
       indicatorColor: BColors.primary.withOpacity(.18),
-
       labelTextStyle: MaterialStateProperty.all(
         const TextStyle(color: BColors.textwhite),
       ),
@@ -53,12 +57,32 @@ class _NavbarWidgetState extends State<NavbarWidget>
           label: 'Account',
         ),
       ],
+      selectedIndex: selectedIndex,
       onDestinationSelected: (int value) {
         setState(() {
           selectedIndex = value;
         });
+
+       
+        switch (value) {
+          case 0:
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => ADHDHomePage()));
+            break;
+          case 1:
+           // Navigator.push(context,
+              //  MaterialPageRoute(builder: (context) => ActivityPage()));
+            break;
+          case 2:
+            //Navigator.push(context,
+             //   MaterialPageRoute(builder: (context) => CommunityPage()));
+            break;
+          case 3:
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => AccountPage()));
+            break;
+        }
       },
-      selectedIndex: selectedIndex,
     );
   }
 }
