@@ -63,6 +63,11 @@ class ResetPasswordDialog {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    minimumSize: const Size(90, 40),
                   ),
                   onPressed: () async {
                     final email = emailController.text.trim();

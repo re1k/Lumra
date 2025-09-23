@@ -1,11 +1,11 @@
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lumra_project/service/auth.dart';
-import 'package:lumra_project/view/Account/AccountPage.dart';
+
 import 'package:lumra_project/view/Homepage/ADHDhomePageScreen.dart';
 import 'package:lumra_project/view/welcomepage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../controller/Account/UserController.dart';
+
 class AuthController extends GetxController {
   final AuthService _authService = AuthService();
 
@@ -13,16 +13,14 @@ class AuthController extends GetxController {
 
   User? get currentUser => FirebaseAuth.instance.currentUser;
 
-
   // Login
   Future<String?> login(String email, String password) async {
     try {
       isLoading.value = true;
       await _authService.signIn(email, password);
 
-      final uid = FirebaseAuth.instance.currentUser?.uid; // get the uid
+      final uid = currentUser?.uid; // get the uid
 
-    
       if (uid == null) {
         return "User not found.";
       }
@@ -33,12 +31,8 @@ class AuthController extends GetxController {
           .doc(uid)
           .get();
 
-      
-
-     // final role = snapshot.data()?['role']; // get the role /edit by latifa 
+      // final role = snapshot.data()?['role']; // get the role /edit by latifa
       final role = snapshot.data()?['role']?.toString().toLowerCase() ?? '';
-
-     
 
       Get.snackbar("Success", "You are now logged in");
       if (role == 'adhd') {
