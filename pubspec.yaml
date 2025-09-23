@@ -76,7 +76,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/Profile_image.jpeg 
-    - assets/images/logo.pnj
+    - assets/images/logo.png
     - assets/images/goals.png
     - assets/images/LumraSplash.GIF
  
