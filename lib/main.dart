@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
 import 'package:lumra_project/controller/auth/auth_controller.dart';
+import 'package:lumra_project/theme/theme.dart';
 import 'package:lumra_project/view/SplashPage/splashScreen.dart';
 import 'package:lumra_project/view/welcomepage.dart';
 import 'package:lumra_project/theme/custom_themes/text_field_theme.dart';
@@ -18,15 +19,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Get.put(AuthController()); // to make it shared by us(to get the user data)
+    Get.put(AuthController()); // to make it shared (to get the user data)
 
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        inputDecorationTheme: BTextFormFieldTheme.lightInputDecorationTheme,
-      ),
-     home: SplashGifScreen( nextScreen: Welcomepage(),),  //splash then we start! :)
+      theme: LumraAppTheme.lightTheme, //by that our theme is unified
+      home: SplashGifScreen(
+        nextScreen: Welcomepage(),
+      ), //splash then we start! :)
     );
   }
 }
-

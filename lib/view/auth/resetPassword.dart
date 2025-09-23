@@ -33,7 +33,7 @@ class ResetPasswordDialog {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    TextField(
+                    TextFormField(
                       controller: emailController,
                       decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.email),
@@ -67,7 +67,6 @@ class ResetPasswordDialog {
                   onPressed: () async {
                     final email = emailController.text.trim();
 
-                    // empty
                     if (email.isEmpty) {
                       setState(() {
                         errorMessage = "Please enter your email.";
@@ -75,7 +74,6 @@ class ResetPasswordDialog {
                       return;
                     }
 
-                    // emial format
                     final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
                     if (!emailRegex.hasMatch(email)) {
                       setState(() {
@@ -84,7 +82,6 @@ class ResetPasswordDialog {
                       return;
                     }
 
-                    // check
                     final check = await authController.checkIfEmailExists(
                       email,
                     );
@@ -95,7 +92,6 @@ class ResetPasswordDialog {
                       return;
                     }
 
-                    //
                     final result = await authController.resetPassword(email);
                     if (result == null) {
                       Navigator.pop(context);

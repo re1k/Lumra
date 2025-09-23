@@ -23,7 +23,7 @@ class _SplashGifScreenState extends State<SplashGifScreen> {
       await Firebase.initializeApp();
 
       //extra delay bc i want the GIF to be visible longer
-      await Future.delayed(const Duration(seconds: 8));
+      await Future.delayed(const Duration(seconds: 7));
 
       // Once done, navigate to main screen
       Navigator.of(context).pushReplacement(
@@ -44,7 +44,7 @@ class _SplashGifScreenState extends State<SplashGifScreen> {
           width: 200,
         ),
       ),
-      backgroundColor: Color.fromARGB(255, 255, 255, 255), //the backgorund in here NOT white, bc the gif is not white as well
+      backgroundColor: Color.fromARGB(252, 255, 255, 255), //the backgorund in here NOT white, bc the gif is not white as well
     );
   }
 }
