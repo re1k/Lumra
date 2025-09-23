@@ -1,5 +1,3 @@
-// lib/controller/Homepage/Calendar/calendarController.dart
-
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -72,16 +70,13 @@ class CalendarController extends GetxController {
 
   // 1) Listen to users/{currentUid} to get the partner (caregiver or ADHD)
   void _watchLinkedUser() {
-    _userSub = db.collection('users').doc(currentUid).snapshots().listen((
-      doc,
-    ) async {
+    _userSub = db.collection('users').doc(currentUid).snapshots().listen((doc) {
       final newLinked = (doc.data()?['linkedUserId'] as String?)?.trim();
-      if (linkedUid.value == newLinked) return;
-
-      linkedUid.value = newLinked;
-
-      // Re-run the month query so the UI reflects any permission-based visibility asap
-      _watchMonth(visibleMonth.value);
+      if (linkedUid.value != newLinked) {
+        linkedUid.value = newLinked;
+        // re-attach to events whenever linkage changes
+        _watchMonth(visibleMonth.value);
+      }
     });
   } //ASK THE GIRLS, DO WE ALLOW THE CAREGIVER TO CHANGE?
 
@@ -92,12 +87,9 @@ class CalendarController extends GetxController {
     //if there is stream from the previous month it will cancel it
     await _eventsSub?.cancel();
 
-    //to find the first day of the month and the first day of the next month (exclusive so not included)
+    //to find the first day of the month and the first day of the previous month (exclusive so not included)
     final start = monthStart(m);
     final endExcl = monthEndExclusive(m);
-
-    // also compute "today" for filtering
-    final today = justDate(DateTime.now());
 
     // Build the participants filter WITHOUT null/empty
     final ids = <String>{currentUid};
@@ -113,13 +105,13 @@ class CalendarController extends GetxController {
       q = q.where('participants', arrayContainsAny: idList);
     }
 
-    //ensure the event is in the current month AND not before today
+    //ensure the event is in the current month
     q = q
-        .where('start', isGreaterThanOrEqualTo: Timestamp.fromDate(today))
+        .where('start', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
         .where('start', isLessThan: Timestamp.fromDate(endExcl))
         .orderBy('start');
 
-    //real time subscription where firestore pushes a new snap if the matching docs are modified
+    //real tim subscription where firestore pushes a new snap if the matching docs are modified
     _eventsSub = q.snapshots().listen((snap) {
       final map = <DateTime, List<CalendarEvent>>{};
 
