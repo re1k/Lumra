@@ -7,6 +7,7 @@ import 'package:lumra_project/model/Homepage/Calendar/calendarModel.dart';
 //because when displaying the calander we want to display the days from the first day to the last day (not including the first day of the next month)
 DateTime monthStart(DateTime d) => DateTime(d.year, d.month, 1);
 DateTime monthEndExclusive(DateTime d) => DateTime(d.year, d.month + 1, 1);
+DateTime justDate(DateTime d) => DateTime(d.year, d.month, d.day);
 
 class CalendarController extends GetxController {
   final FirebaseFirestore db;
@@ -27,6 +28,13 @@ class CalendarController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+
+    // auto-select today
+    final today = justDate(DateTime.now());
+    if (monthStart(today) == visibleMonth.value) {
+      selectedDay.value = today;
+    }
+
     _watchLinkedUser(); // keep linkedUid up to date
     _watchMonth(visibleMonth.value);
   }
@@ -35,7 +43,13 @@ class CalendarController extends GetxController {
   //resubscribes to the firestore by calling the method _watchMonth
   Future<void> goToMonth(DateTime m) async {
     visibleMonth.value = monthStart(m);
-    selectedDay.value = null;
+
+    // auto-select today when navigating to the current month, otherwise null
+    final today = justDate(DateTime.now());
+    selectedDay.value = (monthStart(today) == visibleMonth.value)
+        ? today
+        : null;
+
     await _watchMonth(visibleMonth.value);
   }
 
@@ -43,7 +57,7 @@ class CalendarController extends GetxController {
   void onDayTapped(DateTime day) {
     if (day.month != visibleMonth.value.month)
       return; // ignore padding cells that are added for the overall style
-    selectedDay.value = day;
+    selectedDay.value = justDate(day);
   }
 
   //checks if the day has at least one event

@@ -21,6 +21,30 @@ class BottomArea extends StatelessWidget {
     final dateLabel =
         '${weekdayName(selected.weekday)}, ${monthName(selected.month)} ${selected.day}';
 
+    final today = DateTime.now();
+    final isPastDay = DateTime(
+      selected.year,
+      selected.month,
+      selected.day,
+    ).isBefore(DateTime(today.year, today.month, today.day));
+    final canAdd = !isPastDay;
+
+    void _openAddSheet() {
+      //made it looks like popping up from the bottom
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: BColors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        builder: (context) => FractionallySizedBox(
+          heightFactor: 0.85, // to make it Covers 85% of screen height
+          child: AddEventView(), //in here i added my view
+        ),
+      );
+    }
+
     //if there is no events it is going to contain "Tue, September 30" + the add button
     if (events.isEmpty) {
       return Container(
@@ -49,24 +73,7 @@ class BottomArea extends StatelessWidget {
                 'Add',
                 style: textTheme.labelLarge?.copyWith(color: BColors.white),
               ),
-              onPressed: () {
-                //made it looks like popping up from the bottom
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: BColors.white,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(32),
-                    ),
-                  ),
-                  builder: (context) => FractionallySizedBox(
-                    heightFactor:
-                        0.85, // to make it Covers 85% of screen height
-                    child: AddEventView(), //in here i added my view
-                  ),
-                );
-              },
+              onPressed: canAdd ? _openAddSheet : null, // disabled if past
             ),
           ],
         ),
@@ -97,24 +104,7 @@ class BottomArea extends StatelessWidget {
                 IconButton(
                   tooltip: 'Add event',
                   icon: const Icon(Icons.add),
-                  onPressed: () {
-                    //made it looks like popping up from the bottom
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: BColors.white,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(32),
-                        ),
-                      ),
-                      builder: (context) => FractionallySizedBox(
-                        heightFactor:
-                            0.85, // to make it Covers 85% of screen height
-                        child: AddEventView(), //in here i added my view
-                      ),
-                    );
-                  },
+                  onPressed: canAdd ? _openAddSheet : null, // disabled if past
                 ),
               ],
             ),
