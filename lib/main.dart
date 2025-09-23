@@ -6,7 +6,7 @@ import 'package:lumra_project/view/Account/AccountPage.dart';
 import 'package:lumra_project/view/SplashPage/splashScreen.dart';
 import 'package:lumra_project/view/welcomepage.dart';
 import 'package:lumra_project/theme/custom_themes/text_field_theme.dart';
-import 'package:lumra_project/view/homepage/adhdhomepage.dart';
+import 'package:lumra_project/view/homepage/adhdHomePage.dart';
 import 'package:lumra_project/theme/theme.dart';
 import 'package:lumra_project/routes.dart';
 

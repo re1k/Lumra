@@ -70,46 +70,118 @@ class CalendarController extends GetxController {
 
   // 1) Listen to users/{currentUid} to get the partner (caregiver or ADHD)
   void _watchLinkedUser() {
-    _userSub = db.collection('users').doc(currentUid).snapshots().listen((doc) {
-      final newLinked = (doc.data()?['linkedUserId'] as String?)?.trim();
+    _userSub = db.collection('users').doc(currentUid).snapshots().listen((
+      doc,
+    ) async {
+      final data = doc.data();
+      if (data == null) return;
+
+      final role = (data['role'] as String?)
+          ?.trim(); // check role from user doc
+      final newLinked = (data['linkedUserId'] as String?)?.trim();
+
+      if (newLinked == null || newLinked.isEmpty) {
+        //  has no link yet (only happens in ADHD side)
+        //  NOTE: there is no caregiver without adhd, but there is adhd without caregiver
+        linkedUid.value = null;
+        await _watchMonth(
+          visibleMonth.value,
+        ); // still watch the ADHDs own events
+        return;
+      }
+
       if (linkedUid.value != newLinked) {
         linkedUid.value = newLinked;
+
+        // CAREGIVER-SIDE ASSUMPTION: (the participant must contain the ADHD not the opposite)
+        // NOTE: there is no caregiver without adhd → if role == caregiver, a link must exist
+        if (role == 'caregiver') {
+          await _backfillAdhdUpcomingFromController(
+            adhdUid: newLinked,
+            caregiverUid: currentUid,
+          );
+        }
+
         // re-attach to events whenever linkage changes
-        _watchMonth(visibleMonth.value);
+        await _watchMonth(visibleMonth.value);
+      } else {
+        // linked id unchanged; still make sure we’re listening to the right month
+        await _watchMonth(visibleMonth.value);
       }
     });
-  } //ASK THE GIRLS, DO WE ALLOW THE CAREGIVER TO CHANGE?
+  }
+
+  // One-time helper from controller:
+  // Ensure ADHD's UPCOMING events include the caregiver in `participants`.
+  // If participants is exactly [adhdUid], replace with [adhdUid, caregiverUid].
+  // Else, if caregiver missing, add via arrayUnion (idempotent).
+  Future<void> _backfillAdhdUpcomingFromController({
+    required String adhdUid,
+    required String caregiverUid,
+  }) async {
+    if (adhdUid.isEmpty || caregiverUid.isEmpty || adhdUid == caregiverUid) {
+      return;
+    }
+
+    final today = DateTime.now();
+    final todayMidnight = DateTime(today.year, today.month, today.day);
+
+    final snap = await db
+        .collection('events')
+        .where('participants', arrayContains: adhdUid)
+        .get();
+
+    for (final doc in snap.docs) {
+      final data = doc.data();
+
+      final ts = data['start'];
+      if (ts is! Timestamp) continue;
+      final start = ts.toDate();
+
+      if (start.isBefore(todayMidnight)) continue; // only upcoming
+
+      final raw = (data['participants'] ?? const []) as List<dynamic>;
+      final list = raw
+          .map((e) => e?.toString() ?? '')
+          .where((s) => s.trim().isNotEmpty)
+          .toList();
+
+      if (list.contains(caregiverUid)) continue;
+
+      if (list.length == 1 && list.first == adhdUid) {
+        await doc.reference.update({
+          'participants': <String>[adhdUid, caregiverUid],
+        });
+      } else {
+        await doc.reference.update({
+          'participants': FieldValue.arrayUnion([caregiverUid]),
+        });
+      }
+    }
+  }
 
   //this method is used to set up or reset the firestor listener for the month containing m
   //which is why we call it in the int and in goToMonth when we move to another month
-  // 2) Always query for BOTH currentUid and linkedUid (when present)
+  // 2)
   Future<void> _watchMonth(DateTime m) async {
-    //if there is stream from the previous month it will cancel it
     await _eventsSub?.cancel();
+    monthEvents.clear(); // avoid showing stale docs while re-subscribing
 
-    //to find the first day of the month and the first day of the previous month (exclusive so not included)
     final start = monthStart(m);
     final endExcl = monthEndExclusive(m);
+    final lu = linkedUid.value?.trim();
 
-    // Build the participants filter WITHOUT null/empty
-    final ids = <String>{currentUid};
-    final lu = linkedUid.value;
-    if (lu != null && lu.isNotEmpty) ids.add(lu);
-    final idList = ids.toList();
-
-    Query<Map<String, dynamic>> q = db.collection('events');
-    // When only one id, arrayContains is simpler
-    if (idList.length == 1) {
-      q = q.where('participants', arrayContains: idList.first);
-    } else {
-      q = q.where('participants', arrayContainsAny: idList);
-    }
-
-    //ensure the event is in the current month
-    q = q
+    // Build month window
+    Query<Map<String, dynamic>> q = db
+        .collection('events')
         .where('start', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
         .where('start', isLessThan: Timestamp.fromDate(endExcl))
         .orderBy('start');
+
+    //Key rule to prevent ADHD-only past events from appearing to caregiver:
+    //Whether linked or not, fetch ONLY docs that include the logged-in user (currentUid).
+    //Backfill ensures upcoming ADHD events include the caregiver, so they appear naturally.
+    q = q.where('participants', arrayContains: currentUid);
 
     //real tim subscription where firestore pushes a new snap if the matching docs are modified
     _eventsSub = q.snapshots().listen((snap) {
@@ -118,6 +190,10 @@ class CalendarController extends GetxController {
       //iterate over every document in the snapshot
       for (final doc in snap.docs) {
         final ev = CalendarEvent.fromDoc(doc);
+
+        // (Optional sanity) enforce again at client level:
+        // if (!ev.participants.contains(currentUid)) continue;
+
         final key = DateTime(ev.start.year, ev.start.month, ev.start.day);
         (map[key] ??= <CalendarEvent>[]).add(ev);
       }
