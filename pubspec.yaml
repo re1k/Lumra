@@ -77,7 +77,7 @@ flutter:
   assets:
     - assets/images/Profile_image.jpeg 
     - assets/images/logo.png
-    - assets/images/goals.png
+    - assets/images/default.jpg
     - assets/images/LumraSplash.GIF
  
   # To add assets to your application, add an assets section, like this:

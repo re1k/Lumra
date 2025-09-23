@@ -141,24 +141,6 @@ class AddEventView extends StatelessWidget {
             ),
 
             const SizedBox(height: BSizes.SpaceBtwSections),
- /*
-            // Bottom Image
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-
-              child: Center(
-                child: Image.asset(
-                  'assets/images/goals.png',
-                  width: double.infinity,
-                  height: 200,
-                  fit: BoxFit.fitWidth,
-                ),
-              ),
-            ),
-            */
-
           ],
         ),
       ),
