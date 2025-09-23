@@ -55,7 +55,7 @@ class ViewProfile extends StatelessWidget {
                   label: "Email",
                   controller: userController.emailController,
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 10),
                 _buildGenderField(),
                 const SizedBox(height: 30),
                 _buildTextField(
@@ -75,13 +75,36 @@ class ViewProfile extends StatelessWidget {
                     if (picked != null) userController.dob.value = picked;
                   },
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
+                SizedBox( width: double.infinity, child:
+                 ElevatedButton.icon( onPressed: () async {
+
+                  }, 
+                  label: const Text("save"), 
+                  style: ElevatedButton.styleFrom( 
+                    backgroundColor: BColors.primary, 
+                    foregroundColor: BColors.textwhite, 
+                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 0), 
+                    textStyle: BTextTheme.lightTextTheme.headlineSmall, 
+                    shape: RoundedRectangleBorder(
+                       borderRadius: BorderRadius.circular(16),
+                        ), 
+                        ), 
+                        ), 
+                        ),
               ],
+            
+              
             ),
           ),
+         
         ),
       );
-    });
+    }
+    );
+
+
+                 
   }
 
   Widget _buildTextField({
@@ -119,7 +142,7 @@ Widget _buildGenderField() {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text("Gender", style: TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 5),
+        const SizedBox(height: 2),
         Row(
           children: [
             Expanded(
@@ -127,9 +150,12 @@ Widget _buildGenderField() {
                 onPressed: () {
                   userController.gender.value = 'male';
                 },
-                icon: const Icon(Icons.boy, size: 40),
+                icon: const Icon(Icons.boy, size: 25),
                 label: const Text("Male"),
+
                 style: ElevatedButton.styleFrom(
+                   minimumSize: const Size(0, 30), 
+                   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
                   backgroundColor: gender == 'male'
                       ? BColors.primary
                       : Colors.grey[300],
@@ -145,9 +171,11 @@ Widget _buildGenderField() {
                 onPressed: () {
                   userController.gender.value = 'female';
                 },
-                icon: const Icon(Icons.girl, size: 40),
+                icon: const Icon(Icons.girl, size: 25),
                 label: const Text("Female"),
                 style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(0, 30), 
+                   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
                   backgroundColor: gender == 'female'
                       ? BColors.primary
                       : Colors.grey[300],
