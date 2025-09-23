@@ -21,14 +21,43 @@ class Qrcode extends StatelessWidget {
         titleTextStyle: BAppBarTheme.lightAppBarTheme.titleTextStyle,
         centerTitle: true,
       ),
-      body: Center(
-        child: QrImageView(
-          data: userUid,
-          version: QrVersions.auto,
-          size: 200.0,
-          gapless: true,
-        ),
+     body: Center(
+  child: Transform.translate(
+    offset: const Offset(0, -40), 
+    child: Container(
+      padding: const EdgeInsets.all(60),
+      decoration: BoxDecoration(
+        color: BColors.buttonPrimary,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          QrImageView(
+            data: userUid,
+            version: QrVersions.auto,
+            size: 230.0,
+            gapless: true,
+            foregroundColor: Colors.white,
+                  embeddedImage: AssetImage('assets/images/logo.png'), 
+                          embeddedImageStyle: QrEmbeddedImageStyle(
+                             size: Size(60, 60), 
+                       ),
+          ),
+         
+         
+        ],
+      ),
+    ),
+  ),
+),
     );
   }
 }
