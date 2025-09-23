@@ -33,16 +33,19 @@ class _CalendarPageState extends State<CalendarPage> {
   @override
   void initState() {
     super.initState();
-    _pager = PageController(initialPage: _center);
+
+    c = Get.find<CalendarController>();
+
     final now = DateTime.now();
     _anchorMonth = DateTime(now.year, now.month, 1);
-    c = Get.find<CalendarController>(); // by class name
-  }
+    c.visibleMonth.value = _anchorMonth; // force reset to current month
+    c.selectedDay.value = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ); // auto-select today
 
-  @override
-  void dispose() {
-    _pager.dispose();
-    super.dispose();
+    _pager = PageController(initialPage: _center);
   }
 
   // Convert a page index to a month DateTime (first day)

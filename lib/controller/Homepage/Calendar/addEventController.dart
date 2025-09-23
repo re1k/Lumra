@@ -115,7 +115,7 @@ class AddEventController extends GetxController {
 
       // Fetch the current user document
       final userDoc = await FirebaseFirestore.instance
-          .collection("user")
+          .collection("users")
           .doc(userId)
           .get();
 
@@ -132,8 +132,8 @@ class AddEventController extends GetxController {
       //Add event
       await FirebaseFirestore.instance.collection("events").add({
         "title": titleController.text.trim(),
-        "start": startDate.value,
-        "end": endDate.value,
+        "start": Timestamp.fromDate(startDate.value!),
+        "end": Timestamp.fromDate(endDate.value!),
         "participants": participants,
         "created_by": userId,
         "created_at": FieldValue.serverTimestamp(),
