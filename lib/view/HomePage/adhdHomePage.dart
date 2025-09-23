@@ -7,11 +7,11 @@ import 'package:lumra_project/theme/base_themes/sizes.dart';
 import 'package:lumra_project/view/navbar_widget.dart';
 import 'package:lumra_project/view/Homepage/Calendar/calendarWidgets/openCalendar.dart';
 import 'package:lumra_project/controller/auth/auth_controller.dart';
-import 'package:get/get.dart';
 import 'package:lumra_project/controller/Account/UserController.dart';
 import 'package:lumra_project/view/HomePage/Mood/adhdMood.dart';
 import 'package:lumra_project/view/HomePage/EncouragemenMessage/adhdMessage.dart';
 import 'package:lumra_project/view/HomePage/Tasks/tasksView.dart';
+import 'package:get/get.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

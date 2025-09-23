@@ -77,37 +77,33 @@ class ViewProfile extends StatelessWidget {
                   },
                 ),
                 const SizedBox(height: 20),
-                SizedBox( width: double.infinity, child:
-                 ElevatedButton.icon( onPressed: () async {
-
-                  }, 
-                  label: const Text("save"), 
-                  style: ElevatedButton.styleFrom( 
-                    backgroundColor: BColors.primary, 
-                    foregroundColor: BColors.textwhite, 
-                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 0), 
-                    textStyle: BTextTheme.lightTextTheme.headlineSmall, 
-                    shape: RoundedRectangleBorder(
-                       borderRadius: BorderRadius.circular(16),
-                        ), 
-                        ), 
-                        ), 
-                        ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {},
+                    label: const Text("save"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: BColors.primary,
+                      foregroundColor: BColors.textwhite,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 15,
+                        horizontal: 0,
+                      ),
+                      textStyle: BTextTheme.lightTextTheme.headlineSmall,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
               ],
-            
-              
             ),
           ),
-         
         ),
 
-         bottomNavigationBar: const NavbarWidget(),
+        bottomNavigationBar: const NavbarAdhd(),
       );
-    }
-    );
-
-
-                 
+    });
   }
 
   Widget _buildTextField({
@@ -127,71 +123,78 @@ class ViewProfile extends StatelessWidget {
           labelText: label,
           filled: true,
           fillColor: Colors.grey[200],
-          contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 15),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 12,
+            horizontal: 15,
           ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           prefixIcon: icon != null ? Icon(icon) : null,
         ),
       ),
     );
   }
 
-Widget _buildGenderField() {
-  return Obx(() {
-    final gender = userController.gender.value.toLowerCase();
+  Widget _buildGenderField() {
+    return Obx(() {
+      final gender = userController.gender.value.toLowerCase();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text("Gender", style: TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 2),
-        Row(
-          children: [
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  userController.gender.value = 'male';
-                },
-                icon: const Icon(Icons.boy, size: 25),
-                label: const Text("Male"),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Gender", style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 2),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    userController.gender.value = 'male';
+                  },
+                  icon: const Icon(Icons.boy, size: 25),
+                  label: const Text("Male"),
 
-                style: ElevatedButton.styleFrom(
-                   minimumSize: const Size(0, 30), 
-                   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                  backgroundColor: gender == 'male'
-                      ? BColors.primary
-                      : Colors.grey[300],
-                  foregroundColor: gender == 'male'
-                      ? Colors.white
-                      : Colors.black,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(0, 30),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 8,
+                    ),
+                    backgroundColor: gender == 'male'
+                        ? BColors.primary
+                        : Colors.grey[300],
+                    foregroundColor: gender == 'male'
+                        ? Colors.white
+                        : Colors.black,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  userController.gender.value = 'female';
-                },
-                icon: const Icon(Icons.girl, size: 25),
-                label: const Text("Female"),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(0, 30), 
-                   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                  backgroundColor: gender == 'female'
-                      ? BColors.primary
-                      : Colors.grey[300],
-                  foregroundColor: gender == 'female'
-                      ? Colors.white
-                      : Colors.black,
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    userController.gender.value = 'female';
+                  },
+                  icon: const Icon(Icons.girl, size: 25),
+                  label: const Text("Female"),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(0, 30),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 8,
+                    ),
+                    backgroundColor: gender == 'female'
+                        ? BColors.primary
+                        : Colors.grey[300],
+                    foregroundColor: gender == 'female'
+                        ? Colors.white
+                        : Colors.black,
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ],
-    );
-  });
-}
+            ],
+          ),
+        ],
+      );
+    });
+  }
 }
