@@ -23,11 +23,12 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late final TaskController _taskController;
   late final UserController _userController;
+  final authContoller = Get.find<AuthController>();
 
   @override
   void initState() {
     super.initState();
-    _taskController = TaskController(userId: 'adhdDemo'); // users/adhdDemo
+    _taskController = TaskController(userId: authContoller.currentUser!.uid); // users/adhdDemo
     if (!Get.isRegistered<UserController>()) {
       _userController = Get.put(UserController(FirebaseFirestore.instance));
       _userController.init();
@@ -36,6 +37,11 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+<<<<<<< HEAD
+=======
+  
+
+>>>>>>> 344df3678992e0f695b5989444f6027baea91546
   //  MAIN UI
   @override
   Widget build(BuildContext context) {
@@ -62,7 +68,6 @@ class _HomePageState extends State<HomePage> {
             tooltip: 'Open calendar',
             icon: const Icon(Icons.calendar_today, color: BColors.textwhite),
             onPressed: () {
-              final authContoller = Get.find<AuthController>();
               openCalendar(currentUid: authContoller.currentUser!.uid);
             },
           ),

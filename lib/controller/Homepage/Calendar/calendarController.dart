@@ -24,6 +24,12 @@ class CalendarController extends GetxController {
   StreamSubscription? _userSub;
   StreamSubscription? _eventsSub;
 
+  //track current watch window to avoid redundant resubscribes
+  DateTime? _watchedStart;
+  DateTime? _watchedEndExcl;
+
+  final List<Worker> _workers = [];
+
   //runs once when the controller is created and calls the method _watchMonth
   @override
   void onInit() {
@@ -36,21 +42,32 @@ class CalendarController extends GetxController {
     }
 
     _watchLinkedUser(); // keep linkedUid up to date
-    _watchMonth(visibleMonth.value);
+
+    // react to month changes
+    _workers.add(
+      ever<DateTime>(visibleMonth, (m) async {
+        await _resubscribeFor(m);
+        // auto-select today when navigating to the current month, otherwise null
+        final t = justDate(DateTime.now());
+        selectedDay.value = (monthStart(t) == visibleMonth.value) ? t : null;
+      }),
+    );
+
+    // react to link changes (ADHD ↔ caregiver)
+    _workers.add(
+      ever<String?>(linkedUid, (_) async {
+        await _resubscribeFor(visibleMonth.value);
+      }),
+    );
+
+    // initial subscribe
+    _resubscribeFor(visibleMonth.value);
   }
 
   //it is used when moving between the months, and sets the previously selected day to null
   //resubscribes to the firestore by calling the method _watchMonth
   Future<void> goToMonth(DateTime m) async {
-    visibleMonth.value = monthStart(m);
-
-    // auto-select today when navigating to the current month, otherwise null
-    final today = justDate(DateTime.now());
-    selectedDay.value = (monthStart(today) == visibleMonth.value)
-        ? today
-        : null;
-
-    await _watchMonth(visibleMonth.value);
+    visibleMonth.value = monthStart(m); // workers will handle re-subscribe
   }
 
   //stores the selected day to present the available events
@@ -84,10 +101,7 @@ class CalendarController extends GetxController {
         //  has no link yet (only happens in ADHD side)
         //  NOTE: there is no caregiver without adhd, but there is adhd without caregiver
         linkedUid.value = null;
-        await _watchMonth(
-          visibleMonth.value,
-        ); // still watch the ADHDs own events
-        return;
+        return; // workers will re-subscribe due to linkedUid change
       }
 
       if (linkedUid.value != newLinked) {
@@ -101,12 +115,7 @@ class CalendarController extends GetxController {
             caregiverUid: currentUid,
           );
         }
-
-        // re-attach to events whenever linkage changes
-        await _watchMonth(visibleMonth.value);
-      } else {
-        // linked id unchanged; still make sure we’re listening to the right month
-        await _watchMonth(visibleMonth.value);
+        // re-attach handled by workers
       }
     });
   }
@@ -163,12 +172,19 @@ class CalendarController extends GetxController {
   //this method is used to set up or reset the firestor listener for the month containing m
   //which is why we call it in the int and in goToMonth when we move to another month
   // 2)
-  Future<void> _watchMonth(DateTime m) async {
+  Future<void> _resubscribeFor(DateTime m) async {
+    final start = monthStart(m);
+    final endExcl = monthEndExclusive(m);
+
+    // If already watching the same window, skip
+    if (_watchedStart == start && _watchedEndExcl == endExcl) return;
+
+    _watchedStart = start;
+    _watchedEndExcl = endExcl;
+
     await _eventsSub?.cancel();
     monthEvents.clear(); // avoid showing stale docs while re-subscribing
 
-    final start = monthStart(m);
-    final endExcl = monthEndExclusive(m);
     final lu = linkedUid.value?.trim();
 
     // Build month window
@@ -211,6 +227,9 @@ class CalendarController extends GetxController {
   void onClose() {
     _userSub?.cancel();
     _eventsSub?.cancel();
+    for (final w in _workers) {
+      w.dispose();
+    }
     super.onClose();
   }
 }

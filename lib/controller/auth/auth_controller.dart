@@ -35,7 +35,6 @@ class AuthController extends GetxController {
       // final role = snapshot.data()?['role']; // get the role /edit by latifa
       final role = snapshot.data()?['role']?.toString().toLowerCase() ?? '';
 
-      Get.snackbar("Success", "You are now logged in");
       if (role == 'adhd') {
         Get.offAll(() => const HomePage()); // jana page
       } else if (role == 'caregiver') {

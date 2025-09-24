@@ -16,12 +16,17 @@ class TasksList extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(BSizes.borderRadiusLg),
         ),
       ),
-      builder: (_) => AddTaskSheet(controller: controller),
+       builder: (context) => FractionallySizedBox(
+          heightFactor: 0.45, // to make it Covers 85% of screen height
+          child:  AddTaskSheet(controller: controller), //in here i added my view
+        ),
+     // builder: (_) => AddTaskSheet(controller: controller),
     );
   }
 

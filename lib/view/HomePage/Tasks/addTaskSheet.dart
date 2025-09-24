@@ -51,7 +51,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                 color: BColors.texBlack,
               ),
             ),
-            SizedBox(height: BSizes.sm),
+            SizedBox(height: BSizes.SpaceBtwItems),
             TextFormField(
               controller: _titleCtrl,
               decoration: const InputDecoration(
@@ -62,7 +62,9 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
               validator: (v) =>
                   (v == null || v.trim().isEmpty) ? 'Title is required' : null,
             ),
-            SizedBox(height: BSizes.md),
+
+            SizedBox(height: BSizes.spaceBtwinputFields),
+
             DropdownButtonFormField<String>(
               value: _priority,
               decoration: const InputDecoration(labelText: 'Priority'),
@@ -73,7 +75,9 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
               ],
               onChanged: (v) => _priority = v ?? 'low',
             ),
-            SizedBox(height: BSizes.md),
+
+            SizedBox(height: BSizes.SpaceBtwSections),
+
             FilledButton.icon(
               style: FilledButton.styleFrom(
                 backgroundColor: BColors.primary,
@@ -85,7 +89,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
-              ),
+              ),       
               icon: const Icon(Icons.check),
               label: const Text(
                 'Add',
