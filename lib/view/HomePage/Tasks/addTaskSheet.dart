@@ -89,7 +89,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
-              ),       
+              ),
               icon: const Icon(Icons.check),
               label: const Text(
                 'Add',
@@ -97,6 +97,17 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
               ),
               onPressed: () async {
                 if (!_formKey.currentState!.validate()) return;
+
+                //In case someone bypasses the FAB (if we reuse AddTaskSheet elsewhere)
+                final count = await widget.controller.getTaskCount();
+                if (count >= 10) {
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Task limit reached (10).')),
+                  );
+                  return;
+                }
+
                 final newTask = Task(
                   id: '',
                   tasksTitle: _titleCtrl.text.trim(),
@@ -105,6 +116,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                   isChecked: false,
                   updatedAt: Timestamp.now(),
                 );
+
                 try {
                   await widget.controller.addTask(newTask);
                   if (!mounted) return;

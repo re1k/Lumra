@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
 import 'package:lumra_project/controller/auth/auth_controller.dart';
+import 'package:lumra_project/navigation/role_aware_root.dart';
 import 'package:lumra_project/view/Account/AccountPage.dart';
 import 'package:lumra_project/view/SplashPage/splashScreen.dart';
 import 'package:lumra_project/view/welcomepage.dart';
@@ -31,15 +32,18 @@ class MyApp extends StatelessWidget {
       home: SplashGifScreen(
         nextScreen: Welcomepage(),
       ), //splash then we start! :)
-      //initialRoute: R.home,
+      getPages: [
+        GetPage(name: '/app', page: () => RoleAwareRoot()), // NEW
+      ],
+      // initialRoute: R.home,
       // routes: {
-      //   // R.home: (_) => isCaregiver
-      //   //   ? const CaregiverHomePage()    // shows caregiver navbar
-      //   //    : const AdhdHomePage(),        // shows ADHD navbar
-      //   //R.dashboard: (_) => const CaregiverDashboardPage(),
-      //   //R.activity: (_) => const ActivityPage(),
-      //   //R.community: (_) => const CommunityPage(),
-      //   R.account: (_) => const AccountPage(),
+      //   //   // R.home: (_) => isCaregiver
+      //   //   //   ? const CaregiverHomePage()    // shows caregiver navbar
+      //   //   //    : const AdhdHomePage(),        // shows ADHD navbar
+      //   //   //R.dashboard: (_) => const CaregiverDashboardPage(),
+      //   //   //R.activity: (_) => const ActivityPage(),
+      //   //   //R.community: (_) => const CommunityPage(),
+      //   //   R.account: (_) => const AccountPage(),
       // },
     );
   }

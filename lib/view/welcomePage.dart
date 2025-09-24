@@ -66,7 +66,7 @@ class Welcomepage extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       // Make the navbar the new root (removes Welcome )
-                      Get.offAll(() => const NavbarAdhd(selectedIndex: 0));
+                      //Get.offAll(() => const NavbarAdhd(selectedIndex: 0));
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: BColors.primary,
@@ -92,7 +92,7 @@ class Welcomepage extends StatelessWidget {
                   width: MediaQuery.of(context).size.width * 0.9,
                   child: ElevatedButton(
                     onPressed: () {
-                      Get.offAll(() => const NavbarCaregiver(selectedIndex: 0));
+                      //Get.offAll(() => const NavbarCaregiver(selectedIndex: 0));
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF5F8C84),

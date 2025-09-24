@@ -136,7 +136,7 @@ class AccountPage extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: const NavbarAdhd(),
+      // bottomNavigationBar: const NavbarAdhd(),
     );
   }
 

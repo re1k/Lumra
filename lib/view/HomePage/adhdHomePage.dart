@@ -28,7 +28,9 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _taskController = TaskController(userId: authContoller.currentUser!.uid); // users/adhdDemo
+    _taskController = TaskController(
+      userId: authContoller.currentUser!.uid,
+    ); // users/adhdDemo
     if (!Get.isRegistered<UserController>()) {
       _userController = Get.put(UserController(FirebaseFirestore.instance));
       _userController.init();
@@ -36,8 +38,6 @@ class _HomePageState extends State<HomePage> {
       _userController = Get.find<UserController>();
     }
   }
-
-  
 
   //  MAIN UI
   @override
@@ -117,12 +117,27 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: BColors.primary,
         foregroundColor: BColors.textwhite,
-        onPressed: () =>
-            TasksList(controller: _taskController).openAddTaskSheet(context),
+        onPressed: () async {
+          final count = await _taskController
+              .getTaskCount(); // or getOpenTaskCount
+          if (!mounted) return;
+          if (count >= 10) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'You have reached your 10 task limit. Try finishing a task before adding more.',
+                ),
+              ),
+            );
+            return;
+          }
+          // ok to add
+          TasksList(controller: _taskController).openAddTaskSheet(context);
+        },
         child: const Icon(Icons.add),
       ),
 
-      bottomNavigationBar: const NavbarAdhd(),
+      // bottomNavigationBar: const NavbarAdhd(),
     );
   }
 }

@@ -20,7 +20,7 @@ class TaskController {
   }
 
   /// When checked -> priority becomes 'done'.
-  /// When unchecked -> priority becomes the doc's basePriority ( previous priority).
+  /// When unchecked -> priority becomes the doc's basePriority (previous priority).
   Future<void> updateTaskStatus(String taskId, bool isChecked) async {
     final docRef = _firestore
         .collection('users')
@@ -28,7 +28,7 @@ class TaskController {
         .collection('tasks')
         .doc(taskId);
 
-    final snap = await docRef.get(); // read current values to restore correctly
+    final snap = await docRef.get();
     final data = snap.data() as Map<String, dynamic>? ?? {};
 
     final currentPriority = (data['priority'] as String?) ?? 'low';
@@ -39,17 +39,28 @@ class TaskController {
     await docRef.update({
       'isChecked': isChecked,
       'priority': newPriority,
-      // persist basePriority so future toggles work (migrates old docs too)
       'basePriority': basePriority,
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }
 
+  /// Counts *all* tasks (done + not done).
   Future<int> getTaskCount() async {
     final snap = await _firestore
         .collection('users')
         .doc(userId)
         .collection('tasks')
+        .get();
+    return snap.docs.length;
+  }
+
+  /// Counts only tasks that are not marked as done.( future sprint)
+  Future<int> getOpenTaskCount() async {
+    final snap = await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('tasks')
+        .where('isChecked', isEqualTo: false)
         .get();
     return snap.docs.length;
   }

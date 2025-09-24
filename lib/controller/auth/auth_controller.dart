@@ -2,7 +2,6 @@ import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lumra_project/service/auth.dart';
 import 'package:lumra_project/view/Account/AccountPage.dart';
-import 'package:lumra_project/view/Homepage/adhdhomepage.dart';
 import 'package:lumra_project/view/welcomepage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../controller/Account/UserController.dart';
@@ -35,11 +34,19 @@ class AuthController extends GetxController {
       // final role = snapshot.data()?['role']; // get the role /edit by latifa
       final role = snapshot.data()?['role']?.toString().toLowerCase() ?? '';
 
-      if (role == 'adhd') {
-        Get.offAll(() => const HomePage()); // jana page
-      } else if (role == 'caregiver') {
-        Get.offAll(() => const Welcomepage()); // jana page
+      // if (role == 'adhd') {
+      //   Get.offAll(() => const HomePage()); // jana page
+      // } else if (role == 'caregiver') {
+      //   Get.offAll(() => const Welcomepage()); // jana page
+      // }
+      // After you fetch user + role successfully:
+      if (role == 'adhd' || role == 'caregiver') {
+        Get.offAllNamed('/app'); // ONE place, navbar chooses tabs by role
+      } else {
+        // fallback ( admin or missing role)
+        Get.offAllNamed('/app');
       }
+
       // else {
       //  Get.offAll(() => const Welcomepage()); ---- the admin page
       //}
