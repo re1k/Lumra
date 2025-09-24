@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/view/auth/loginPage.dart';
+import 'package:lumra_project/view/navbar_widget.dart';
 
 class Welcomepage extends StatelessWidget {
   const Welcomepage({super.key});
@@ -63,7 +64,10 @@ class Welcomepage extends StatelessWidget {
                 SizedBox(
                   width: MediaQuery.of(context).size.width * 0.9,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      // Make the navbar the new root (removes Welcome )
+                      Get.offAll(() => const NavbarAdhd(selectedIndex: 0));
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: BColors.primary,
                       padding: const EdgeInsets.symmetric(vertical: 20),
@@ -83,11 +87,13 @@ class Welcomepage extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 20),
-
+                // Register Caregiver
                 SizedBox(
                   width: MediaQuery.of(context).size.width * 0.9,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Get.offAll(() => const NavbarCaregiver(selectedIndex: 0));
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF5F8C84),
 
@@ -123,9 +129,10 @@ class Welcomepage extends StatelessWidget {
                       ),
 
                       TextButton(
-                        onPressed: () {
-                          Get.to(LoginScreen());
-                        },
+                        // onPressed: () {
+                        //   Get.to(LoginScreen());
+                        // },
+                        onPressed: () => Get.to(() => LoginScreen()),
                         child: const Text(
                           "Login",
                           style: TextStyle(

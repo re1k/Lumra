@@ -32,15 +32,15 @@ class MyApp extends StatelessWidget {
         nextScreen: Welcomepage(),
       ), //splash then we start! :)
       //initialRoute: R.home,
-      routes: {
-        // R.home: (_) => isCaregiver
-        //   ? const CaregiverHomePage()    // shows caregiver navbar
-        //    : const AdhdHomePage(),        // shows ADHD navbar
-        //R.dashboard: (_) => const CaregiverDashboardPage(),
-        //R.activity: (_) => const ActivityPage(),
-        //R.community: (_) => const CommunityPage(),
-        R.account: (_) => const AccountPage(),
-      },
+      // routes: {
+      //   // R.home: (_) => isCaregiver
+      //   //   ? const CaregiverHomePage()    // shows caregiver navbar
+      //   //    : const AdhdHomePage(),        // shows ADHD navbar
+      //   //R.dashboard: (_) => const CaregiverDashboardPage(),
+      //   //R.activity: (_) => const ActivityPage(),
+      //   //R.community: (_) => const CommunityPage(),
+      //   R.account: (_) => const AccountPage(),
+      // },
     );
   }
 }
