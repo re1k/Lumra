@@ -136,7 +136,18 @@ class AccountPage extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: const NavbarAdhd(),
+
+      
+       bottomNavigationBar: Obx(() {
+       if (userController.role.value.toLowerCase() == 'adhd') {
+           return const NavbarAdhd();
+        } else {
+           return const NavbarCaregiver();
+         }
+        }
+        ),
+
+      
     );
   }
 
