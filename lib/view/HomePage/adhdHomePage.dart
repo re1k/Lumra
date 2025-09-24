@@ -23,11 +23,12 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late final TaskController _taskController;
   late final UserController _userController;
+  final authContoller = Get.find<AuthController>();
 
   @override
   void initState() {
     super.initState();
-    _taskController = TaskController(userId: 'adhdDemo'); // users/adhdDemo
+    _taskController = TaskController(userId: authContoller.currentUser!.uid); // users/adhdDemo
     if (!Get.isRegistered<UserController>()) {
       _userController = Get.put(UserController(FirebaseFirestore.instance));
       _userController.init();
@@ -36,102 +37,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Add Task Bottom Sheet
-  Future<void> _openAddTaskSheet() async {
-    final formKey = GlobalKey<FormState>();
-    final titleCtrl = TextEditingController();
-    String priority = 'low';
-
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(BSizes.borderRadiusLg),
-        ),
-      ),
-      builder: (context) {
-        final tt = Theme.of(context).textTheme;
-        return Padding(
-          padding: EdgeInsets.only(
-            left: BSizes.md,
-            right: BSizes.md,
-            top: BSizes.md,
-            bottom: MediaQuery.of(context).viewInsets.bottom + BSizes.md,
-          ),
-          child: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text('Add Task', style: tt.headlineSmall),
-                SizedBox(height: BSizes.sm),
-                TextFormField(
-                  controller: titleCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Title',
-                    hintText: 'e.g., Math assignment',
-                  ),
-                  textInputAction: TextInputAction.done,
-                  validator: (v) => (v == null || v.trim().isEmpty)
-                      ? 'Title is required'
-                      : null,
-                ),
-                SizedBox(height: BSizes.md),
-                DropdownButtonFormField<String>(
-                  value: priority,
-                  decoration: const InputDecoration(labelText: 'Priority'),
-                  items: const [
-                    DropdownMenuItem(value: 'high', child: Text('High')),
-                    DropdownMenuItem(value: 'medium', child: Text('Medium')),
-                    DropdownMenuItem(value: 'low', child: Text('Low')),
-                  ],
-                  onChanged: (v) => priority = v ?? 'low',
-                ),
-                SizedBox(height: BSizes.md),
-                FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                    // اذا بنسوي طريقة ليان اننا نحط بالمين لون ديفولت أفضل من هذي الطريقة
-                    backgroundColor: BColors.primary,
-                    foregroundColor: BColors.textwhite,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(BSizes.buttonRadius),
-                    ),
-                  ),
-                  icon: const Icon(Icons.check),
-                  label: const Text('Add'),
-                  onPressed: () async {
-                    if (!formKey.currentState!.validate()) return;
-                    final newTask = Task(
-                      id: '',
-                      tasksTitle: titleCtrl.text.trim(),
-                      priority: priority, //
-                      basePriority:
-                          priority, // keep the original هذي ممكن نكسنلها في هالفيز
-                      isChecked: false,
-                      updatedAt: Timestamp.now(),
-                    );
-                    try {
-                      await _taskController.addTask(newTask);
-                      if (!mounted) return;
-                      Navigator.pop(context);
-                    } on FirebaseException catch (e) {
-                      if (!mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Write error: ${e.code}')),
-                      );
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+  
 
   //  MAIN UI
   @override
@@ -159,7 +65,6 @@ class _HomePageState extends State<HomePage> {
             tooltip: 'Open calendar',
             icon: const Icon(Icons.calendar_today, color: BColors.textwhite),
             onPressed: () {
-              final authContoller = Get.find<AuthController>();
               openCalendar(currentUid: authContoller.currentUser!.uid);
             },
           ),
