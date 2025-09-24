@@ -34,6 +34,7 @@ class AuthController extends GetxController {
       // final role = snapshot.data()?['role']; // get the role /edit by latifa
       final role = snapshot.data()?['role']?.toString().toLowerCase() ?? '';
 
+<<<<<<< HEAD
       // if (role == 'adhd') {
       //   Get.offAll(() => const HomePage()); // jana page
       // } else if (role == 'caregiver') {
@@ -45,6 +46,13 @@ class AuthController extends GetxController {
       } else {
         // fallback ( admin or missing role)
         Get.offAllNamed('/app');
+=======
+      if (role == 'adhd') {
+       Get.offAll(() => const HomePage()); // jana page
+       
+      } else if (role == 'caregiver') {
+        Get.offAll(() => const Welcomepage()); // jana page
+>>>>>>> cfe332b8ad1394b615a11d95040e6268be2a27dc
       }
 
       // else {

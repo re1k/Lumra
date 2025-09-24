@@ -22,6 +22,14 @@ class _LoginScreenState extends State<LoginScreen> {
   String? emailError;
   String? passwordError;
 
+  final allowedDomains = [
+    "gmail.com",
+    "outlook.com",
+    "hotmail.com",
+    "icloud.com",
+    "yahoo.com",
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -141,6 +149,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
                                       if (emailError == null &&
                                           passwordError == null) {
+                                        final domain = emailController.text
+                                            .split('@')
+                                            .last
+                                            .toLowerCase();
+                                        if (!allowedDomains.contains(domain)) {
+                                          setState(() {
+                                            emailError =
+                                                "The email address is not valid.";
+                                            passwordError = null;
+                                          });
+                                          return;
+                                        }
+
                                         final result = await authController
                                             .login(
                                               emailController.text.trim(),
