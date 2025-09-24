@@ -185,8 +185,6 @@ class CalendarController extends GetxController {
     await _eventsSub?.cancel();
     monthEvents.clear(); // avoid showing stale docs while re-subscribing
 
-    final lu = linkedUid.value?.trim();
-
     // Build month window
     Query<Map<String, dynamic>> q = db
         .collection('events')
