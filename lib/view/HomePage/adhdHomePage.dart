@@ -37,11 +37,8 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-<<<<<<< HEAD
-=======
   
 
->>>>>>> 344df3678992e0f695b5989444f6027baea91546
   //  MAIN UI
   @override
   Widget build(BuildContext context) {
