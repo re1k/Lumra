@@ -79,7 +79,7 @@ class _HomePageState extends State<HomePage> {
                       ? 'Title is required'
                       : null,
                 ),
-                SizedBox(height: BSizes.sm),
+                SizedBox(height: BSizes.md),
                 DropdownButtonFormField<String>(
                   value: priority,
                   decoration: const InputDecoration(labelText: 'Priority'),
@@ -234,7 +234,7 @@ class _SectionLabel extends StatelessWidget {
       decoration: BoxDecoration(
         color: BColors.white,
         borderRadius: BorderRadius.circular(BSizes.borderRadiusSm),
-        border: Border.all(color: BColors.borderPrimary),
+        border: Border.all(color: Colors.transparent),
       ),
       child: Text(
         text,

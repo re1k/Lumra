@@ -11,7 +11,7 @@ class PriorityChip extends StatelessWidget {
     super.key,
     required this.label,
     required this.color,
-    this.width = 250,
+    this.width = 89,
     this.height = 34,
   });
 

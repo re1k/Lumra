@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lumra_project/model/task/task.dart';
 import 'package:lumra_project/controller/task/taskController.dart';
+import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/theme/base_themes/sizes.dart';
+import 'package:lumra_project/theme/base_themes/text_strings.dart';
 
 class AddTaskSheet extends StatefulWidget {
   final TaskController controller;
@@ -41,7 +43,14 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Add Task', style: tt.headlineSmall),
+            Text(
+              'Add Task',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: BColors.texBlack,
+              ),
+            ),
             SizedBox(height: BSizes.sm),
             TextFormField(
               controller: _titleCtrl,
@@ -53,7 +62,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
               validator: (v) =>
                   (v == null || v.trim().isEmpty) ? 'Title is required' : null,
             ),
-            SizedBox(height: BSizes.sm),
+            SizedBox(height: BSizes.md),
             DropdownButtonFormField<String>(
               value: _priority,
               decoration: const InputDecoration(labelText: 'Priority'),
@@ -66,8 +75,22 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
             ),
             SizedBox(height: BSizes.md),
             FilledButton.icon(
+              style: FilledButton.styleFrom(
+                backgroundColor: BColors.primary, // your primary color
+                foregroundColor: Colors.white, // text/icon color
+                padding: const EdgeInsets.symmetric(
+                  vertical: 16,
+                  horizontal: 24,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20), // same rounded style
+                ),
+              ),
               icon: const Icon(Icons.check),
-              label: const Text('Add'),
+              label: const Text(
+                'Add',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
               onPressed: () async {
                 if (!_formKey.currentState!.validate()) return;
                 final newTask = Task(
