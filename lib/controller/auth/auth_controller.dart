@@ -36,8 +36,8 @@ class AuthController extends GetxController {
       final role = snapshot.data()?['role']?.toString().toLowerCase() ?? '';
 
       if (role == 'adhd') {
-       Get.offAll(() => const HomePage()); // jana page
-       
+       //Get.offAll(() => const HomePage()); // jana page
+       Get.offAll(() => const AccountPage());
       } else if (role == 'caregiver') {
         Get.offAll(() => const Welcomepage()); // jana page
       }

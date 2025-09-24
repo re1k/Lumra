@@ -25,6 +25,11 @@ class ViewProfile extends StatelessWidget {
   late final UserController userController;
   late final AuthController authController;
 
+  
+  final enableName = false.obs;
+  final enableEmail = false.obs;
+  final enableDob = false.obs;
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -48,33 +53,33 @@ class ViewProfile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 40),
+
                 _buildTextField(
                   label: "Name",
                   controller: userController.nameController,
+                  enable: enableName,
                 ),
+
+
                 _buildTextField(
                   label: "Email",
                   controller: userController.emailController,
+                  enable: enableEmail,
                 ),
-                const SizedBox(height: 10),
+
+
                 _buildGenderField(),
-                const SizedBox(height: 30),
+
+                const SizedBox(height: 10),
+
+
                 _buildTextField(
                   label: "Date of Birth",
                   controller: TextEditingController(
                     text: "${userController.dob.value.toLocal()}".split(' ')[0],
                   ),
-                  readOnly: true,
+                  enable: enableDob,
                   icon: Icons.calendar_today,
-                  onTap: () async {
-                    DateTime? picked = await showDatePicker(
-                      context: context,
-                      initialDate: userController.dob.value,
-                      firstDate: DateTime(1900),
-                      lastDate: DateTime.now(),
-                    );
-                    if (picked != null) userController.dob.value = picked;
-                  },
                 ),
                 const SizedBox(height: 20),
                 SizedBox(
@@ -92,16 +97,25 @@ class ViewProfile extends StatelessWidget {
                       textStyle: BTextTheme.lightTextTheme.headlineSmall,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                  ),
-                ),
+                      ), ), ),
+                )
               ],
             ),
           ),
         ),
 
-        bottomNavigationBar: const NavbarAdhd(),
+            
+       bottomNavigationBar: Obx(() {
+       if (userController.role.value.toLowerCase() == 'adhd') {
+           return const NavbarAdhd();
+        } else {
+           return const NavbarCaregiver();
+         }
+        }
+        ),
+        
+
+
       );
     });
   }
@@ -110,28 +124,45 @@ class ViewProfile extends StatelessWidget {
     required String label,
     required TextEditingController controller,
     IconData? icon,
-    bool readOnly = false,
+    required RxBool enable, 
     VoidCallback? onTap,
   }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 15),
-      child: TextField(
-        controller: controller,
-        readOnly: readOnly,
-        onTap: onTap,
-        decoration: InputDecoration(
-          labelText: label,
-          filled: true,
-          fillColor: Colors.grey[200],
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 12,
-            horizontal: 15,
+    return Obx(() => Padding(
+          padding: const EdgeInsets.only(bottom: 15),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Color.fromARGB(255, 5, 5, 5),
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: controller,
+                readOnly: !enable.value,
+                onTap: onTap,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: BColors.softGrey,
+                  prefixIcon: icon != null ? Icon(icon) : null,
+                  suffixIcon: IconButton(
+                    icon: Icon(enable.value ? Icons.check : Icons.edit),
+                    onPressed: () {
+                      enable.value = !enable.value; // تبديل بين القراءة والتحرير
+                    },
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ],
           ),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          prefixIcon: icon != null ? Icon(icon) : null,
-        ),
-      ),
-    );
+        ));
   }
 
   Widget _buildGenderField() {
@@ -152,7 +183,6 @@ class ViewProfile extends StatelessWidget {
                   },
                   icon: const Icon(Icons.boy, size: 25),
                   label: const Text("Male"),
-
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(0, 30),
                     padding: const EdgeInsets.symmetric(
@@ -198,3 +228,4 @@ class ViewProfile extends StatelessWidget {
     });
   }
 }
+
