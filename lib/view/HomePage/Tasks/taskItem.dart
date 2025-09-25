@@ -22,7 +22,7 @@ class TaskItem extends StatelessWidget {
       case 'done':
         return BColors.success;
       default:
-        return BColors.buttonPrimary; // low
+        return BColors.info; // low
     }
   }
 
@@ -36,9 +36,9 @@ class TaskItem extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: BSizes.sm),
       decoration: BoxDecoration(
-        color: BColors.borderSecondary,
-        borderRadius: BorderRadius.circular(BSizes.borderRadiusMd),
-        border: Border.all(color: BColors.borderSecondary),
+        color: const Color.fromARGB(255, 253, 254, 253),
+        borderRadius: BorderRadius.circular(BSizes.inputFieldRadius),
+        border: Border.all(color: BColors.grey),
       ),
       child: Row(
         children: [

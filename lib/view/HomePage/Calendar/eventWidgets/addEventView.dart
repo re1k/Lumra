@@ -250,6 +250,8 @@ class AddEventView extends StatelessWidget {
                         : null, // disables button if form not valid // null disables the button
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
+                      foregroundColor: Colors.white, // keep icon/text white
+                      disabledForegroundColor: Colors.white.withOpacity(0.6),
                     ),
 
                     child: Row(
