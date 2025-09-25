@@ -46,7 +46,7 @@ class AccountPage extends StatelessWidget {
               child: CircleAvatar(
                 radius: 100,
                 backgroundImage: const AssetImage(
-                  'assets/images/profileImge.pnj.avif',
+                  'assets/images/default.jpgR',
                 ),
               ),
             ),
