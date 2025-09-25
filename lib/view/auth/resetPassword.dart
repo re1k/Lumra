@@ -8,6 +8,14 @@ class ResetPasswordDialog {
     final TextEditingController emailController = TextEditingController();
     String? errorMessage;
 
+    final allowedDomains = [
+      "gmail.com",
+      "outlook.com",
+      "hotmail.com",
+      "icloud.com",
+      "yahoo.com",
+    ];
+
     showDialog(
       context: context,
       builder: (context) {
@@ -80,7 +88,12 @@ class ResetPasswordDialog {
                     }
 
                     final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                    if (!emailRegex.hasMatch(email)) {
+                    final domain = emailController.text
+                        .split('@')
+                        .last
+                        .toLowerCase();
+                    if (!emailRegex.hasMatch(email) ||
+                        !allowedDomains.contains(domain)) {
                       setState(() {
                         errorMessage = "The email address is not valid.";
                       });
