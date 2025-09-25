@@ -80,6 +80,7 @@ flutter:
     - assets/images/logo.png
     - assets/images/default.jpg
     - assets/images/LumraSplash.GIF
+    - assets/images/final_image.png
     
  
   # To add assets to your application, add an assets section, like this:

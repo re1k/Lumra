@@ -169,9 +169,10 @@ class ViewProfile extends StatelessWidget {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () {
-                    userController.gender.value = 'male';
-                  },
+                  
+                   onPressed: () {
+                   // userController.gender.value = 'male';
+                   },
                   icon: const Icon(Icons.boy, size: 25),
                   label: const Text("Male"),
                   style: ElevatedButton.styleFrom(
@@ -192,9 +193,10 @@ class ViewProfile extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton.icon(
+                  
                   onPressed: () {
-                    userController.gender.value = 'female';
-                  },
+                     //userController.gender.value = 'female';
+                   },
                   icon: const Icon(Icons.girl, size: 25),
                   label: const Text("Female"),
                   style: ElevatedButton.styleFrom(
