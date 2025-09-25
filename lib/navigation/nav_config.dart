@@ -19,12 +19,16 @@ final Map<UserRole, List<NavItem>> navConfig = {
     NavItem(
       label: 'Activity',
       icon: Icons.local_activity_rounded,
-      page: HomePage(), //Later: replace with ActivityPage()
+      page: ComingSoonPage(
+        feature: 'Activity',
+      ), //Later: replace with ActivityPage()
     ),
     NavItem(
       label: 'Community',
       icon: Icons.people,
-      page: HomePage(), //  Later :replace with CommunityPage()
+      page: ComingSoonPage(
+        feature: 'Activity',
+      ), //  Later :replace with CommunityPage()
     ),
     NavItem(label: 'Account', icon: Icons.account_box, page: AccountPage()),
   ],
@@ -34,12 +38,16 @@ final Map<UserRole, List<NavItem>> navConfig = {
     NavItem(
       label: 'Dashboard',
       icon: Icons.leaderboard,
-      page: HomePage(), //  Later: replace with DashboardPage()
+      page: ComingSoonPage(
+        feature: 'Dashboard',
+      ), //  Later: replace with DashboardPage()
     ),
     NavItem(
       label: 'Community',
       icon: Icons.people,
-      page: HomePage(), //  Later: replace with CommunityPage()
+      page: ComingSoonPage(
+        feature: 'Community',
+      ), //  Later: replace with CommunityPage()
     ),
     NavItem(
       label: 'Account',
@@ -48,3 +56,21 @@ final Map<UserRole, List<NavItem>> navConfig = {
     ),
   ],
 };
+
+//this class will be deleted later
+class ComingSoonPage extends StatelessWidget {
+  final String feature;
+  const ComingSoonPage({required this.feature, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Text(
+          '$feature will be available soon!',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }
+}

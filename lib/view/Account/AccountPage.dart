@@ -46,7 +46,7 @@ class AccountPage extends StatelessWidget {
               child: CircleAvatar(
                 radius: 100,
                 backgroundImage: const AssetImage(
-                  'assets/images/profileImge.pnj.avif',
+                  'assets/images/Profile_image.jpeg',
                 ),
               ),
             ),
@@ -136,22 +136,7 @@ class AccountPage extends StatelessWidget {
           ],
         ),
       ),
-<<<<<<< HEAD
       // bottomNavigationBar: const NavbarAdhd(),
-=======
-
-      
-       bottomNavigationBar: Obx(() {
-       if (userController.role.value.toLowerCase() == 'adhd') {
-           return const NavbarAdhd();
-        } else {
-           return const NavbarCaregiver();
-         }
-        }
-        ),
-
-      
->>>>>>> cfe332b8ad1394b615a11d95040e6268be2a27dc
     );
   }
 

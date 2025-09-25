@@ -104,22 +104,7 @@ class ViewProfile extends StatelessWidget {
           ),
         ),
 
-<<<<<<< HEAD
         //bottomNavigationBar: const NavbarAdhd(),
-=======
-            
-       bottomNavigationBar: Obx(() {
-       if (userController.role.value.toLowerCase() == 'adhd') {
-           return const NavbarAdhd();
-        } else {
-           return const NavbarCaregiver();
-         }
-        }
-        ),
-        
-
-
->>>>>>> 37e237573282b8f07d93d35282f8f9cb7e25afb3
       );
     });
   }
