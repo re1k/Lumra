@@ -18,7 +18,7 @@ class AddEventController extends GetxController {
   final eventEnd = Rxn<Timestamp>();
 
   // Validation state for my view
-  var titleFieldTouched = false.obs;
+  var titleFieldTouched = true.obs;
   var titleError = RxnString();
   var startError = RxnString();
   var endError = RxnString();
@@ -46,12 +46,12 @@ class AddEventController extends GetxController {
   // ------------------ Title validate ------------------ //
   void updateTitle(String value) {
     titleFieldTouched.value = true;
-    validateTitle();
+    validateTitle(value);
     updateFormValidity();
   }
 
-  void validateTitle() {
-    final text = titleController.text.trim();
+  void validateTitle(String value) {
+    final text = value.trim();
     if (text.isEmpty) {
       titleError.value = "Title is required";
     } else if (text.length < 3) {
@@ -60,6 +60,7 @@ class AddEventController extends GetxController {
       titleError.value = null; //when error no there, dont make red
     }
   }
+
 
   // ------------------ Time validate ------------------ //
 
@@ -143,8 +144,15 @@ class AddEventController extends GetxController {
 
   // ------------------ Form ------------------ //
   bool validateForm() {
-    validateTitle();
+  // Mark title as touched so error shows
+  titleFieldTouched.value = true;
+
+    validateTitle(titleController.text);
     validateTimes();
+
+    // Update form validity (for the button)
+    updateFormValidity();
+
     return titleError.value == null &&
         startError.value == null &&
         endError.value == null;

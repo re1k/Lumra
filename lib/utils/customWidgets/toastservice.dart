@@ -9,7 +9,7 @@ static void show(String title, String message, {bool isError = false}) {
     title,
     message,
     snackPosition: SnackPosition.TOP,
-    backgroundColor: isError ? const Color.fromARGB(255, 190, 105, 105) : const Color.fromARGB(255, 115, 165, 119),
+    backgroundColor: isError ? const Color.fromARGB(150, 190, 105, 105) : const Color.fromARGB(150, 115, 165, 119),
     colorText: Colors.white,
     icon: Icon(isError ? Icons.error : Icons.check, color: Colors.white),
     borderRadius: 24,

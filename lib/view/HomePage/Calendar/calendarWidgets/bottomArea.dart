@@ -34,15 +34,16 @@ class BottomArea extends StatelessWidget {
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
+        useSafeArea: true,
         backgroundColor: BColors.white,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
         ),
-        builder: (context) => FractionallySizedBox(
-          heightFactor: 0.68, // to make it Covers 85% of screen height
-          child: AddEventView(), //in here i added my view
+          builder: (context) => FractionallySizedBox(
+          heightFactor: 0.75, // to make it Covers 85% of screen height
+          child: AddEventView(), 
         ),
-      ); 
+      );
     }
 
     //if there is no events it is going to contain "Tue, September 30" + the add button
