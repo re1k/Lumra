@@ -34,7 +34,7 @@ class _VerificationWaitingScreenState extends State<VerificationWaitingScreen> {
 
   void _startResendCooldown() {
     _isResendDisabled = true;
-    _resendCooldown = 180; // 3 minutes in seconds
+    _resendCooldown = 60; // 1 minute in seconds
 
     _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_resendCooldown > 0) {
@@ -184,7 +184,7 @@ class _VerificationWaitingScreenState extends State<VerificationWaitingScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Please confirm your e-mail address by clicking the link in the e-mail we\'ve just sent you.',
+                'To create your account please confirm your e-mail address by clicking the link in the e-mail we\'ve just sent you.',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -218,7 +218,7 @@ class _VerificationWaitingScreenState extends State<VerificationWaitingScreen> {
               if (_isResendDisabled) ...[
                 const SizedBox(height: 8),
                 Text(
-                  'To resend again, please wait 3 minutes.',
+                  'To resend, please wait 1 minute.',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.normal,
