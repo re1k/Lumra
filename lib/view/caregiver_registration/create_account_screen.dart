@@ -174,7 +174,11 @@ class _CaregiverCreateAccountScreenState
                                   FocusScope.of(context).unfocus(),
                               decoration: InputDecoration(
                                 filled: true,
-                                fillColor: BColors.softGrey,
+                                fillColor: Colors.white,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 24,
+                                  horizontal: 16,
+                                ),
                                 hintText: 'Enter your name',
                                 hintStyle: TextStyle(color: BColors.darkGrey),
                                 counterText: '', // Hide the default counter
@@ -185,12 +189,8 @@ class _CaregiverCreateAccountScreenState
                                   fontSize: 12,
                                   color: Colors.red,
                                 ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
-                                ),
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(14),
                                   borderSide: BorderSide(
                                     color:
                                         _nameController.nameFieldTouched &&
@@ -201,7 +201,7 @@ class _CaregiverCreateAccountScreenState
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(14),
                                   borderSide: BorderSide(
                                     color:
                                         _nameController.nameFieldTouched &&
@@ -212,25 +212,25 @@ class _CaregiverCreateAccountScreenState
                                   ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(14),
                                   borderSide: BorderSide(
                                     color:
                                         _nameController.nameFieldTouched &&
                                             _nameController.nameError != null
                                         ? BColors.error
                                         : Colors.grey,
-                                    width: 2,
+                                    width: 1,
                                   ),
                                 ),
                                 errorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(14),
                                   borderSide: const BorderSide(
                                     color: BColors.error,
                                     width: 1,
                                   ),
                                 ),
                                 focusedErrorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(14),
                                   borderSide: const BorderSide(
                                     color: BColors.error,
                                     width: 2,
@@ -329,7 +329,11 @@ class _CaregiverCreateAccountScreenState
                           onChanged: regController.updateEmail,
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: BColors.softGrey,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 24,
+                              horizontal: 16,
+                            ),
                             hintText: 'example@email.com',
                             hintStyle: TextStyle(color: BColors.darkGrey),
                             errorText: regController.emailFieldTouched
@@ -339,12 +343,8 @@ class _CaregiverCreateAccountScreenState
                               fontSize: 12,
                               color: Colors.red,
                             ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 16,
-                            ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     regController.emailFieldTouched &&
@@ -355,7 +355,7 @@ class _CaregiverCreateAccountScreenState
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     regController.emailFieldTouched &&
@@ -366,25 +366,25 @@ class _CaregiverCreateAccountScreenState
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     regController.emailFieldTouched &&
                                         regController.emailError != null
                                     ? BColors.error
                                     : Colors.grey,
-                                width: 2,
+                                width: 1,
                               ),
                             ),
                             errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(
                                 color: BColors.error,
                                 width: 1,
                               ),
                             ),
                             focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(
                                 color: BColors.error,
                                 width: 2,
@@ -461,7 +461,11 @@ class _CaregiverCreateAccountScreenState
                           },
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: BColors.softGrey,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 24,
+                              horizontal: 16,
+                            ),
                             hintText: 'Enter your password',
                             hintStyle: TextStyle(color: BColors.darkGrey),
                             errorText: regController.passwordFieldTouched
@@ -471,12 +475,8 @@ class _CaregiverCreateAccountScreenState
                               fontSize: 12,
                               color: Colors.red,
                             ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 16,
-                            ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     regController.passwordFieldTouched &&
@@ -487,7 +487,7 @@ class _CaregiverCreateAccountScreenState
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     regController.passwordFieldTouched &&
@@ -498,25 +498,25 @@ class _CaregiverCreateAccountScreenState
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     regController.passwordFieldTouched &&
                                         regController.passwordError != null
                                     ? BColors.error
                                     : Colors.grey,
-                                width: 2,
+                                width: 1,
                               ),
                             ),
                             errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(
                                 color: BColors.error,
                                 width: 1,
                               ),
                             ),
                             focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(
                                 color: BColors.error,
                                 width: 2,
@@ -629,7 +629,11 @@ class _CaregiverCreateAccountScreenState
                           onChanged: regController.onConfirmPasswordChanged,
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: BColors.softGrey,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 24,
+                              horizontal: 16,
+                            ),
                             hintText: 'Confirm your password',
                             hintStyle: TextStyle(color: BColors.darkGrey),
                             errorText: regController.confirmPasswordFieldTouched
@@ -640,7 +644,7 @@ class _CaregiverCreateAccountScreenState
                               color: Colors.red,
                             ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     regController.confirmPasswordFieldTouched &&
@@ -652,7 +656,7 @@ class _CaregiverCreateAccountScreenState
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     regController.confirmPasswordFieldTouched &&
@@ -664,7 +668,7 @@ class _CaregiverCreateAccountScreenState
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     regController.confirmPasswordFieldTouched &&
@@ -672,18 +676,18 @@ class _CaregiverCreateAccountScreenState
                                             null
                                     ? BColors.error
                                     : Colors.grey,
-                                width: 2,
+                                width: 1,
                               ),
                             ),
                             errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(
                                 color: BColors.error,
                                 width: 1,
                               ),
                             ),
                             focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(
                                 color: BColors.error,
                                 width: 2,
@@ -753,13 +757,13 @@ class _CaregiverCreateAccountScreenState
                               },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                  horizontal: 20,
+                                  vertical: 24,
+                                  horizontal: 16,
                                 ),
                                 decoration: BoxDecoration(
                                   color: regController.gender == 'Male'
                                       ? BColors.primary.withValues(alpha: 0.2)
-                                      : BColors.softGrey,
+                                      : Colors.white,
                                   border: Border.all(
                                     color:
                                         regController.genderFieldTouched &&
@@ -814,13 +818,13 @@ class _CaregiverCreateAccountScreenState
                               },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                  horizontal: 20,
+                                  vertical: 24,
+                                  horizontal: 16,
                                 ),
                                 decoration: BoxDecoration(
                                   color: regController.gender == 'Female'
                                       ? BColors.primary.withValues(alpha: 0.3)
-                                      : BColors.softGrey,
+                                      : Colors.white,
                                   border: Border.all(
                                     color:
                                         regController.genderFieldTouched &&
@@ -925,7 +929,7 @@ class _CaregiverCreateAccountScreenState
                       const SizedBox(height: 8),
                       Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(14),
                           boxShadow: [
                             BoxShadow(
                               color: BColors.darkGrey.withValues(alpha: 0.1),
@@ -934,50 +938,90 @@ class _CaregiverCreateAccountScreenState
                             ),
                           ],
                         ),
-                        child: InkWell(
+                        child: TextFormField(
+                          readOnly: true,
                           onTap: _selectDateOfBirth,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 24,
                               horizontal: 16,
-                              vertical: 12,
                             ),
-                            decoration: BoxDecoration(
-                              color: BColors.softGrey,
-                              border: Border.all(
-                                color: Colors.grey,
-                                width: 1.0,
-                              ),
+                            hintText: 'Select Date of Birth',
+                            hintStyle: TextStyle(color: BColors.darkGrey),
+                            errorText: regController.dobFieldTouched
+                                ? regController.dobError
+                                : null,
+                            errorStyle: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.red,
+                            ),
+                            border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(
+                                color:
+                                    regController.dobFieldTouched &&
+                                        regController.dobError != null
+                                    ? BColors.error
+                                    : Colors.grey,
+                                width: 1,
+                              ),
                             ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    regController.dob != null
-                                        ? DateFormat(
-                                            'yyyy-MM-dd',
-                                          ).format(regController.dob!)
-                                        : 'Select Date of Birth',
-                                    style:
-                                        const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.normal,
-                                          color: BColors.black,
-                                          fontFamily: 'K2D',
-                                        ).copyWith(
-                                          color: regController.dob != null
-                                              ? BColors.darkGrey
-                                              : BColors.darkGrey,
-                                        ),
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.calendar_today,
-                                  color: BColors.darkGrey,
-                                  size: 20,
-                                ),
-                              ],
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(
+                                color:
+                                    regController.dobFieldTouched &&
+                                        regController.dobError != null
+                                    ? BColors.error
+                                    : Colors.grey,
+                                width: 1,
+                              ),
                             ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(
+                                color:
+                                    regController.dobFieldTouched &&
+                                        regController.dobError != null
+                                    ? BColors.error
+                                    : Colors.grey,
+                                width: 1,
+                              ),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: BColors.error,
+                                width: 1,
+                              ),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: BColors.error,
+                                width: 2,
+                              ),
+                            ),
+                            suffixIcon: Icon(
+                              Icons.calendar_today,
+                              color: BColors.darkGrey,
+                              size: 20,
+                            ),
+                          ),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.normal,
+                            color: BColors.black,
+                            fontFamily: 'K2D',
+                          ),
+                          controller: TextEditingController(
+                            text: regController.dob != null
+                                ? DateFormat(
+                                    'yyyy-MM-dd',
+                                  ).format(regController.dob!)
+                                : '',
                           ),
                         ),
                       ),

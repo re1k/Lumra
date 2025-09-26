@@ -158,7 +158,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           onChanged: controller.updateEmail,
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: BColors.softGrey,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 24,
+                              horizontal: 16,
+                            ),
                             hintText: 'example@email.com',
                             hintStyle: TextStyle(color: BColors.darkGrey),
                             errorText: controller.emailFieldTouched
@@ -169,7 +173,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               color: Colors.red,
                             ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     controller.emailFieldTouched &&
@@ -180,7 +184,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     controller.emailFieldTouched &&
@@ -191,25 +195,25 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     controller.emailFieldTouched &&
                                         controller.emailError != null
                                     ? BColors.error
                                     : Colors.grey,
-                                width: 2,
+                                width: 1,
                               ),
                             ),
                             errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(
                                 color: BColors.error,
                                 width: 1,
                               ),
                             ),
                             focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(
                                 color: BColors.error,
                                 width: 2,
@@ -280,7 +284,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           },
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: BColors.softGrey,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 24,
+                              horizontal: 16,
+                            ),
                             hintText: 'Enter your password',
                             hintStyle: TextStyle(color: BColors.darkGrey),
                             errorText: controller.passwordFieldTouched
@@ -291,7 +299,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               color: Colors.red,
                             ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     controller.passwordFieldTouched &&
@@ -302,7 +310,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     controller.passwordFieldTouched &&
@@ -313,25 +321,25 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     controller.passwordFieldTouched &&
                                         controller.passwordError != null
                                     ? BColors.error
                                     : Colors.grey,
-                                width: 2,
+                                width: 1,
                               ),
                             ),
                             errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(
                                 color: BColors.error,
                                 width: 1,
                               ),
                             ),
                             focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(
                                 color: BColors.error,
                                 width: 2,
@@ -438,7 +446,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           onChanged: controller.onConfirmPasswordChanged,
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: BColors.softGrey,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 24,
+                              horizontal: 16,
+                            ),
                             hintText: 'Confirm your password',
                             hintStyle: TextStyle(color: BColors.darkGrey),
                             errorText: controller.confirmPasswordFieldTouched
@@ -449,7 +461,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               color: Colors.red,
                             ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     controller.confirmPasswordFieldTouched &&
@@ -460,7 +472,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     controller.confirmPasswordFieldTouched &&
@@ -471,25 +483,25 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     controller.confirmPasswordFieldTouched &&
                                         controller.confirmPasswordError != null
                                     ? BColors.error
                                     : Colors.grey,
-                                width: 2,
+                                width: 1,
                               ),
                             ),
                             errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(
                                 color: BColors.error,
                                 width: 1,
                               ),
                             ),
                             focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(
                                 color: BColors.error,
                                 width: 2,
@@ -563,13 +575,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                  horizontal: 20,
+                                  vertical: 24,
+                                  horizontal: 16,
                                 ),
                                 decoration: BoxDecoration(
                                   color: controller.gender == 'Male'
                                       ? BColors.primary.withValues(alpha: 0.2)
-                                      : BColors.softGrey,
+                                      : Colors.white,
                                   border: Border.all(
                                     color:
                                         controller.genderFieldTouched &&
@@ -624,13 +636,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                  horizontal: 20,
+                                  vertical: 24,
+                                  horizontal: 16,
                                 ),
                                 decoration: BoxDecoration(
                                   color: controller.gender == 'Female'
                                       ? BColors.primary.withValues(alpha: 0.3)
-                                      : BColors.softGrey,
+                                      : Colors.white,
                                   border: Border.all(
                                     color:
                                         controller.genderFieldTouched &&
@@ -751,7 +763,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           onTap: _selectDateOfBirth,
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: BColors.softGrey,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 24,
+                              horizontal: 16,
+                            ),
                             hintText: 'Select Date of Birth',
                             hintStyle: TextStyle(color: BColors.darkGrey),
                             errorText: controller.dobFieldTouched
@@ -762,7 +778,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               color: Colors.red,
                             ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     controller.dobFieldTouched &&
@@ -773,7 +789,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     controller.dobFieldTouched &&
@@ -784,25 +800,25 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: BorderSide(
                                 color:
                                     controller.dobFieldTouched &&
                                         controller.dobError != null
                                     ? BColors.error
                                     : Colors.grey,
-                                width: 2,
+                                width: 1,
                               ),
                             ),
                             errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(
                                 color: BColors.error,
                                 width: 1,
                               ),
                             ),
                             focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(14),
                               borderSide: const BorderSide(
                                 color: BColors.error,
                                 width: 2,
