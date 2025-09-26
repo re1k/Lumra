@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
 import 'package:lumra_project/controller/auth/auth_controller.dart';
+import 'package:lumra_project/controller/Registration/registration_flow_controller.dart';
 import 'package:lumra_project/navigation/role_aware_root.dart';
 import 'package:lumra_project/view/Account/AccountPage.dart';
 import 'package:lumra_project/view/SplashPage/splashScreen.dart';
@@ -14,7 +15,7 @@ import 'package:lumra_project/routes.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-
+  Get.put(RegistrationFlowController());
   runApp(const MyApp());
 }
 
