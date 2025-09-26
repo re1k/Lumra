@@ -76,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextFormField(
                           controller: emailController,
                           inputFormatters: [
-                            LengthLimitingTextInputFormatter(120),
+                            LengthLimitingTextInputFormatter(128),
                           ],
                           decoration: InputDecoration(
                             counterText: '',
@@ -95,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 8),
                         TextFormField(
                           inputFormatters: [
-                            LengthLimitingTextInputFormatter(120),
+                            LengthLimitingTextInputFormatter(128),
                           ],
 
                           controller: passwordController,

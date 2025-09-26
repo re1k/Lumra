@@ -57,7 +57,7 @@ class ResetPasswordDialog {
 
                     // ==== Email Field ====
                     TextFormField(
-                      inputFormatters: [LengthLimitingTextInputFormatter(120)],
+                      inputFormatters: [LengthLimitingTextInputFormatter(128)],
 
                       controller: emailController,
                       decoration: InputDecoration(
