@@ -162,6 +162,23 @@ class CaregiverController extends ChangeNotifier {
     }
   }
 
+  Future<Map<String, dynamic>> validateEmailForRegistration(
+    String email,
+  ) async {
+    try {
+      // Check if email is available
+      final bool emailAvailable = await checkEmailAvailability(email.trim());
+
+      if (emailAvailable) {
+        return {'success': true, 'error': null};
+      } else {
+        return {'success': false, 'error': 'This email is already in use'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Error checking email availability'};
+    }
+  }
+
   Future<bool> checkCameraPermissionAndInit() async {
     final isGranted = await PermissionService.checkCameraPermission();
     if (isGranted) {

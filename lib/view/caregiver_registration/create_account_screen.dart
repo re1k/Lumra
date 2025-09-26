@@ -757,7 +757,7 @@ class _CaregiverCreateAccountScreenState
                               },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 24,
+                                  vertical: 16,
                                   horizontal: 16,
                                 ),
                                 decoration: BoxDecoration(
@@ -818,7 +818,7 @@ class _CaregiverCreateAccountScreenState
                               },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 24,
+                                  vertical: 16,
                                   horizontal: 16,
                                 ),
                                 decoration: BoxDecoration(
@@ -1035,12 +1035,18 @@ class _CaregiverCreateAccountScreenState
                         onPressed: () async {
                           if (_nameController.isNextButtonEnabled &&
                               regController.validateForm()) {
-                            final success = await _caregiverController
-                                .handleCreateAccountFlow(
-                                  _registrationController,
-                                  _nameController,
+                            // Call controller to validate email
+                            final result = await _caregiverController
+                                .validateEmailForRegistration(
+                                  regController.emailController.text,
                                 );
-                            if (success) {
+
+                            if (result['success'] == true) {
+                              // Email is valid and available, proceed to next step
+                              // Save the data for later use
+                              _nameController.saveName();
+                              regController.saveRegistrationData();
+
                               // Navigate to camera scan screen
                               Navigator.push(
                                 context,
@@ -1050,7 +1056,8 @@ class _CaregiverCreateAccountScreenState
                                 ),
                               );
                             } else {
-                              // Error handling is done in the controller, trigger UI update
+                              // Email validation failed, show error message
+                              regController.emailError = result['error'];
                               setState(() {});
                             }
                           }

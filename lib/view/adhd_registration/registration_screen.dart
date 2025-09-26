@@ -575,7 +575,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 24,
+                                  vertical: 16,
                                   horizontal: 16,
                                 ),
                                 decoration: BoxDecoration(
@@ -636,7 +636,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 24,
+                                  vertical: 16,
                                   horizontal: 16,
                                 ),
                                 decoration: BoxDecoration(
