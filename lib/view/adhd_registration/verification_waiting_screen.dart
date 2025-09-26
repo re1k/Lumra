@@ -5,10 +5,50 @@ import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/controller/Registration/registration_flow_controller.dart';
 import 'package:lumra_project/view/adhd_registration/widgets/app_button.dart';
 import 'package:lumra_project/view/adhd_registration/verified_screen.dart';
-import 'package:lumra_project/view/welcomePage.dart';
+import 'dart:async';
 
-class VerificationWaitingScreen extends StatelessWidget {
+class VerificationWaitingScreen extends StatefulWidget {
   const VerificationWaitingScreen({super.key});
+
+  @override
+  State<VerificationWaitingScreen> createState() =>
+      _VerificationWaitingScreenState();
+}
+
+class _VerificationWaitingScreenState extends State<VerificationWaitingScreen> {
+  Timer? _resendTimer;
+  int _resendCooldown = 0;
+  bool _isResendDisabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _startResendCooldown();
+  }
+
+  @override
+  void dispose() {
+    _resendTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startResendCooldown() {
+    _isResendDisabled = true;
+    _resendCooldown = 60; // 1 minute in seconds
+
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_resendCooldown > 0) {
+        setState(() {
+          _resendCooldown--;
+        });
+      } else {
+        setState(() {
+          _isResendDisabled = false;
+        });
+        timer.cancel();
+      }
+    });
+  }
 
   /// Check email verification status
   Future<void> _checkEmailVerification(BuildContext context) async {
@@ -18,12 +58,31 @@ class VerificationWaitingScreen extends StatelessWidget {
       final isVerified = await controller.checkEmailVerification();
 
       if (isVerified) {
-        // Email is verified - navigate to next step
-        if (context.mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const VerifiedScreen()),
-          );
+        // Email is verified - save user data and navigate to next step
+        try {
+          final success = await controller.saveUserDataAfterVerification();
+          if (success && context.mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const VerifiedScreen()),
+            );
+          } else if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Failed to save user data. Please try again.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(e.toString().replaceFirst('Exception: ', '')),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         }
       } else {
         // Email is not verified - show popup dialog
@@ -51,20 +110,13 @@ class VerificationWaitingScreen extends StatelessWidget {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Email Not Verified'),
-          content: const Text('Your account has not been verified yet.'),
+          content: const Text('You have not verified your email yet.'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close dialog
               },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop(); // Close dialog
-                await _resendEmailVerification(context);
-              },
-              child: const Text('Resend Email'),
+              child: const Text('Close'),
             ),
           ],
         );
@@ -85,6 +137,8 @@ class VerificationWaitingScreen extends StatelessWidget {
             backgroundColor: Colors.green,
           ),
         );
+        // Start cooldown after successful send
+        _startResendCooldown();
       }
     } catch (e) {
       if (context.mounted) {
@@ -130,7 +184,7 @@ class VerificationWaitingScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Please confirm your e-mail address by clicking the link in the e-mail we\'ve just sent you.',
+                'To create your account please confirm your e-mail address by clicking the link in the e-mail we\'ve just sent you.',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -148,34 +202,32 @@ class VerificationWaitingScreen extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 16),
-              // Exit Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const Welcomepage(),
-                      ),
-                      (route) => false,
-                    );
-                  },
-                  style: Theme.of(context).outlinedButtonTheme.style?.copyWith(
-                    backgroundColor: WidgetStateProperty.all(BColors.softGrey),
-                    foregroundColor: WidgetStateProperty.all(BColors.darkGrey),
-                  ),
-                  child: Text(
-                    'Exit',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: BColors.white,
-                      fontFamily: 'K2D',
-                    ).copyWith(color: BColors.darkGrey),
-                  ),
-                ),
+              // Resend Verification Email Button
+              AppButton(
+                text: _isResendDisabled
+                    ? 'Resend verification email'
+                    : 'Resend verification email',
+                enabled: !_isResendDisabled,
+                onPressed: _isResendDisabled
+                    ? null
+                    : () async {
+                        await _resendEmailVerification(context);
+                      },
               ),
+              // Show cooldown message when disabled
+              if (_isResendDisabled) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'To resend, please wait 1 minute.',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.normal,
+                    color: BColors.darkGrey,
+                    fontFamily: 'K2D',
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ],
           ),
         ),

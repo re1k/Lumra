@@ -117,7 +117,11 @@ class _NameScreenState extends State<NameScreen> {
                             ],
                             decoration: InputDecoration(
                               filled: true,
-                              fillColor: BColors.softGrey,
+                              fillColor: Colors.white,
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 24,
+                                horizontal: 16,
+                              ),
                               hintText: 'Enter your name',
                               hintStyle: TextStyle(color: BColors.darkGrey),
                               counterText: '', // Hide the default counter
@@ -129,7 +133,7 @@ class _NameScreenState extends State<NameScreen> {
                                 color: Colors.red,
                               ),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(14),
                                 borderSide: BorderSide(
                                   color:
                                       _controller.nameFieldTouched &&
@@ -140,7 +144,7 @@ class _NameScreenState extends State<NameScreen> {
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(14),
                                 borderSide: BorderSide(
                                   color:
                                       _controller.nameFieldTouched &&
@@ -151,25 +155,25 @@ class _NameScreenState extends State<NameScreen> {
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(14),
                                 borderSide: BorderSide(
                                   color:
                                       _controller.nameFieldTouched &&
                                           _controller.nameError != null
                                       ? BColors.error
                                       : Colors.grey,
-                                  width: 2,
+                                  width: 1,
                                 ),
                               ),
                               errorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(14),
                                 borderSide: const BorderSide(
                                   color: BColors.error,
                                   width: 1,
                                 ),
                               ),
                               focusedErrorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(14),
                                 borderSide: const BorderSide(
                                   color: BColors.error,
                                   width: 2,
@@ -249,3 +253,4 @@ class _NameScreenState extends State<NameScreen> {
     super.dispose();
   }
 }
+// fix conflicts!!!

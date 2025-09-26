@@ -4,9 +4,49 @@ import 'package:provider/provider.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/controller/Registration/caregiver_controller.dart';
 import 'package:lumra_project/view/adhd_registration/widgets/app_button.dart';
+import 'dart:async';
 
-class CaregiverInboxScreen extends StatelessWidget {
+class CaregiverInboxScreen extends StatefulWidget {
   const CaregiverInboxScreen({super.key});
+
+  @override
+  State<CaregiverInboxScreen> createState() => _CaregiverInboxScreenState();
+}
+
+class _CaregiverInboxScreenState extends State<CaregiverInboxScreen> {
+  Timer? _resendTimer;
+  int _resendCooldown = 0;
+  bool _isResendDisabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _startResendCooldown();
+  }
+
+  @override
+  void dispose() {
+    _resendTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startResendCooldown() {
+    _isResendDisabled = true;
+    _resendCooldown = 60; // 1 minute in seconds
+
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_resendCooldown > 0) {
+        setState(() {
+          _resendCooldown--;
+        });
+      } else {
+        setState(() {
+          _isResendDisabled = false;
+        });
+        timer.cancel();
+      }
+    });
+  }
 
   /// Check email verification status
   Future<void> _checkEmailVerification(
@@ -14,6 +54,35 @@ class CaregiverInboxScreen extends StatelessWidget {
     CaregiverController controller,
   ) async {
     await controller.checkEmailVerificationWithNavigation(context);
+  }
+
+  /// Resend email verification
+  Future<void> _resendEmailVerification(
+    BuildContext context,
+    CaregiverController controller,
+  ) async {
+    try {
+      await controller.resendVerificationEmail();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Verification email sent successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // Start cooldown after successful send
+        _startResendCooldown();
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceFirst('Exception: ', '')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -55,7 +124,7 @@ class CaregiverInboxScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Please confirm your e-mail address by clicking the link in the e-mail we\'ve just sent you.',
+                      'To create your account please confirm your e-mail address by clicking the link in the e-mail we\'ve just sent you..',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -73,33 +142,33 @@ class CaregiverInboxScreen extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 16),
-                    // Exit Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          controller.navigateToWelcomePage(context);
-                        },
-                        style: Theme.of(context).outlinedButtonTheme.style
-                            ?.copyWith(
-                              backgroundColor: WidgetStateProperty.all(
-                                BColors.softGrey,
-                              ),
-                              foregroundColor: WidgetStateProperty.all(
-                                BColors.darkGrey,
-                              ),
-                            ),
-                        child: Text(
-                          'Exit',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: BColors.white,
-                            fontFamily: 'K2D',
-                          ).copyWith(color: BColors.darkGrey),
-                        ),
-                      ),
+                    // Resend Verification Email Button
+                    AppButton(
+                      text: 'Resend verification email',
+                      enabled: !_isResendDisabled,
+                      onPressed: _isResendDisabled
+                          ? null
+                          : () async {
+                              await _resendEmailVerification(
+                                context,
+                                controller,
+                              );
+                            },
                     ),
+                    // Show cooldown message when disabled
+                    if (_isResendDisabled) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'To resend, please wait 1 minute.',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                          color: BColors.darkGrey,
+                          fontFamily: 'K2D',
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ],
                 ),
               ),

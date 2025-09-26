@@ -68,16 +68,12 @@ class RegistrationFlowController extends GetxController {
     _isLoading.value = true;
 
     try {
-      // Use Firebase Auth service
-      final bool success = await FirebaseAuthService.createCompleteAccount(
-        email: _email.value,
-        password: _password.value,
-        role: _role.value,
-        name: _name.value,
-        gender: _gender.value,
-        dob: _dob.value,
-        totalPoints: _totalPoints.value,
-      );
+      // Use Firebase Auth service - create account with verification only
+      final bool success =
+          await FirebaseAuthService.createAccountWithVerification(
+            email: _email.value,
+            password: _password.value,
+          );
 
       _isLoading.value = false;
       return success;
@@ -92,6 +88,29 @@ class RegistrationFlowController extends GetxController {
       return false;
     } catch (e) {
       // Handle any other unexpected errors
+      _isLoading.value = false;
+      return false;
+    }
+  }
+
+  // Save user data after email verification
+  Future<bool> saveUserDataAfterVerification() async {
+    _isLoading.value = true;
+
+    try {
+      final bool success =
+          await FirebaseAuthService.saveUserDataAfterVerification(
+            role: _role.value,
+            name: _name.value,
+            gender: _gender.value,
+            dob: _dob.value,
+            totalPoints: _totalPoints.value,
+            linkedUserId: null,
+          );
+
+      _isLoading.value = false;
+      return success;
+    } catch (e) {
       _isLoading.value = false;
       return false;
     }

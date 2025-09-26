@@ -130,6 +130,34 @@ class CaregiverController extends ChangeNotifier {
     }
   }
 
+  /// Save user data after email verification
+  Future<bool> saveUserDataAfterVerification() async {
+    try {
+      // Get the stored registration data
+      final regController = Get.find<RegistrationController>();
+      final nameController = Get.find<NameController>();
+
+      final bool success =
+          await FirebaseAuthService.saveUserDataAfterVerification(
+            role: 'caregiver',
+            name: nameController.nameController.text,
+            gender: regController.gender ?? '',
+            dob: regController.dob,
+            totalPoints: 0,
+            linkedUserId: _scannedQRCode,
+          );
+
+      // After successful data save, perform reverse linking if needed
+      if (success && _scannedQRCode != null) {
+        await performReverseLinking(_scannedQRCode!);
+      }
+
+      return success;
+    } catch (e) {
+      throw Exception('Failed to save user data: $e');
+    }
+  }
+
   /// Check if email is available for registration
   Future<bool> checkEmailAvailability(String email) async {
     try {
@@ -368,21 +396,12 @@ class CaregiverController extends ChangeNotifier {
           );
 
           if (emailAvailable) {
-            // Email is available, create the caregiver account with the linkedUserId
+            // Email is available, create the caregiver account with verification only
             try {
-              await FirebaseAuthService.createCaregiverAccountWithLink(
+              await FirebaseAuthService.createCaregiverAccountWithVerification(
                 email: regController.emailController.text.trim().toLowerCase(),
                 password: regController.passwordController.text,
-                name: nameController.nameController.text,
-                gender: regController.gender ?? '',
-                dob: regController.dob,
-                linkedUserId: _scannedQRCode ?? '', // Use the scanned QR code
               );
-
-              // After successful caregiver account creation, perform reverse linking
-              if (_scannedQRCode != null) {
-                await performReverseLinking(_scannedQRCode!);
-              }
 
               // Register controllers with GetX for access in camera scan screen
               Get.put(nameController);
@@ -627,14 +646,33 @@ class CaregiverController extends ChangeNotifier {
     try {
       final isVerified = await checkEmailVerification();
       if (isVerified) {
-        // Email is verified - navigate to next step
-        if (context.mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const CaregiverVerifiedScreen(),
-            ),
-          );
+        // Email is verified - save user data and navigate to next step
+        try {
+          final success = await saveUserDataAfterVerification();
+          if (success && context.mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const CaregiverVerifiedScreen(),
+              ),
+            );
+          } else if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Failed to save user data. Please try again.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(e.toString().replaceFirst('Exception: ', '')),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         }
       } else {
         // Email is not verified - show popup dialog
@@ -661,20 +699,13 @@ class CaregiverController extends ChangeNotifier {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Email Not Verified'),
-          content: const Text('Your account has not been verified yet.'),
+          content: const Text('You have not verified your email yet.'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close dialog
               },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop(); // Close dialog
-                await resendEmailVerificationWithSnackbar(context);
-              },
-              child: const Text('Resend Email'),
+              child: const Text('Close'),
             ),
           ],
         );

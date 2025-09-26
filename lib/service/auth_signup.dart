@@ -113,6 +113,82 @@ class FirebaseAuthService {
     }
   }
 
+  /// Create account with email verification (Auth only, no Firestore until verified)
+  static Future<bool> createAccountWithVerification({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final String normalized = email.trim().toLowerCase();
+      // 1. Create account in Firebase Auth only
+      final UserCredential userCredential =
+          await createUserWithEmailAndPassword(
+            email: normalized,
+            password: password,
+          );
+
+      if (userCredential.user != null) {
+        // 2. Send email verification immediately
+        await userCredential.user?.sendEmailVerification();
+        return true;
+      }
+
+      return false;
+    } on FirebaseAuthException catch (e) {
+      // Handle specific Firebase Auth errors
+      if (e.code == 'email-already-in-use') {
+        // Throw code string so upstream can detect reliably
+        throw Exception('email-already-in-use');
+      } else if (e.code == 'weak-password') {
+        throw Exception('weak-password');
+      } else if (e.code == 'invalid-email') {
+        throw Exception('invalid-email');
+      } else {
+        throw Exception('auth-error: ${e.message}');
+      }
+    } catch (e) {
+      throw Exception('general-error: $e');
+    }
+  }
+
+  /// Save user data to Firestore after email verification
+  static Future<bool> saveUserDataAfterVerification({
+    required String role,
+    required String name,
+    required String gender,
+    required DateTime? dob,
+    required int totalPoints,
+    String? linkedUserId,
+  }) async {
+    try {
+      final user = currentUser;
+      if (user == null) {
+        throw Exception('No authenticated user.');
+      }
+
+      // Check if email is verified
+      if (!user.emailVerified) {
+        throw Exception('Email not verified yet.');
+      }
+
+      // Save data to Firestore
+      await saveUserToFirestore(
+        uid: user.uid,
+        role: role,
+        name: name,
+        email: user.email!,
+        gender: gender,
+        dob: dob,
+        totalPoints: totalPoints,
+        linkedUserId: linkedUserId,
+      );
+
+      return true;
+    } catch (e) {
+      throw Exception('Failed to save user data: $e');
+    }
+  }
+
   /// Update the current user's linkedUserId field in Firestore.
   static Future<void> updateLinkedUserIdForCurrentUser(
     String linkedUserId,
@@ -165,6 +241,44 @@ class FirebaseAuthService {
         // 3. Send email verification
         await userCredential.user?.sendEmailVerification();
 
+        return true;
+      }
+
+      return false;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        throw Exception(
+          'The email address is already in use by another account.',
+        );
+      } else if (e.code == 'weak-password') {
+        throw Exception('weak-password');
+      } else if (e.code == 'invalid-email') {
+        throw Exception('invalid-email');
+      } else {
+        throw Exception('auth-error: ${e.message}');
+      }
+    } catch (e) {
+      throw Exception('general-error: $e');
+    }
+  }
+
+  /// Create caregiver account with email verification (Auth only, no Firestore until verified)
+  static Future<bool> createCaregiverAccountWithVerification({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final String normalized = email.trim().toLowerCase();
+      // 1. Create account in Firebase Auth only
+      final UserCredential userCredential =
+          await createUserWithEmailAndPassword(
+            email: normalized,
+            password: password,
+          );
+
+      if (userCredential.user != null) {
+        // 2. Send email verification immediately
+        await userCredential.user?.sendEmailVerification();
         return true;
       }
 
