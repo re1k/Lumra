@@ -48,7 +48,10 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return AnimatedPadding(
+      ///for the sheet with the real device (KEYBOARD)
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
       padding: EdgeInsets.only(
         left: BSizes.md,
         right: BSizes.md,
