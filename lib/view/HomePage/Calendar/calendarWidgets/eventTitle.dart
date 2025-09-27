@@ -45,8 +45,6 @@ class EventTile extends StatelessWidget {
         title: Text(
           event.title,
           style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
         ),
         subtitle: Text(time, style: textTheme.bodySmall),
 

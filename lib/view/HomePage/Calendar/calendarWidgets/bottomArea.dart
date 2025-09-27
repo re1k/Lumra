@@ -39,9 +39,9 @@ class BottomArea extends StatelessWidget {
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
         ),
-          builder: (context) => FractionallySizedBox(
+        builder: (context) => FractionallySizedBox(
           heightFactor: 0.75, // to make it Covers 85% of screen height
-          child: AddEventView(), 
+          child: AddEventView(),
         ),
       );
     }
