@@ -6,6 +6,7 @@ import 'package:lumra_project/controller/task/taskController.dart';
 import 'package:lumra_project/model/task/task.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/theme/base_themes/sizes.dart';
+import 'package:lumra_project/utils/customWidgets/toastservice.dart';
 // import 'package:lumra_project/view/navbar_widget.dart'; // handled by AppShell
 import 'package:lumra_project/view/Homepage/Calendar/calendarWidgets/openCalendar.dart';
 import 'package:lumra_project/controller/auth/auth_controller.dart';
@@ -110,12 +111,22 @@ class _CareGiverHomePageState extends State<CareGiverHomePage> {
         ),
       ),
 
-      // FAB
+      // FAB+ 10 limitation
       floatingActionButton: FloatingActionButton(
         backgroundColor: BColors.primary,
         foregroundColor: BColors.textwhite,
-        onPressed: () =>
-            TasksList(controller: _taskController).openAddTaskSheet(context),
+        onPressed: () async {
+          final count = await _taskController
+              .getActiveTaskCount(); // or getOpenActiveTaskCount()
+          if (count >= 10) {
+            ToastService.error(
+              "You have reached your 10 task limit. Try finishing a task before adding more.",
+            );
+            return; // don't open the sheet
+          }
+          // allowed -> open the add sheet
+          TasksList(controller: _taskController).openAddTaskSheet(context);
+        },
         child: const Icon(Icons.add),
       ),
 

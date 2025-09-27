@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:lumra_project/navigation/app_shell.dart';
 import 'package:lumra_project/navigation/nav_controller.dart';
 import 'package:lumra_project/navigation/nav_config.dart';
-
 import 'package:lumra_project/controller/Account/UserController.dart';
 import 'package:lumra_project/controller/auth/auth_controller.dart';
 

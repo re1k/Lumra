@@ -64,10 +64,36 @@ class TaskController {
   }
 
   Future<int> getOpenTaskCount() async {
+    //need it for next sprint
     final snap = await _firestore
         .collection('users')
         .doc(userId)
         .collection('tasks')
+        .where('isChecked', isEqualTo: false)
+        .get();
+    return snap.docs.length;
+  }
+  //ALSO FOR NEXT SPRINT
+
+  Future<int> getActiveTaskCount() async {
+    final nowTs = Timestamp.now();
+    final snap = await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('tasks')
+        .where('expireAt', isGreaterThan: nowTs)
+        .get();
+    return snap.docs.length;
+  }
+
+  // if we want the cap to apply to open tasks only:
+  Future<int> getOpenActiveTaskCount() async {
+    final nowTs = Timestamp.now();
+    final snap = await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('tasks')
+        .where('expireAt', isGreaterThan: nowTs)
         .where('isChecked', isEqualTo: false)
         .get();
     return snap.docs.length;
