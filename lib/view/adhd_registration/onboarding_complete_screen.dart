@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/view/adhd_registration/widgets/app_button.dart';
-import 'package:lumra_project/view/welcomePage.dart';
-import 'package:lumra_project/view/HomePage/adhdHomePage.dart';
+import 'package:lumra_project/navigation/role_aware_root.dart';
 import 'package:get/get.dart';
 
 class OnboardingCompleteScreen extends StatelessWidget {
@@ -54,7 +53,7 @@ class OnboardingCompleteScreen extends StatelessWidget {
               AppButton(
                 text: 'Get Started',
                 onPressed: () {
-                  Get.offAll(() => const HomePage());
+                  Get.offAll(() => RoleAwareRoot());
                 },
               ),
               const SizedBox(height: 32),
