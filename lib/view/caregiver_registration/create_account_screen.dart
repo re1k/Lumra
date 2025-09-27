@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/controller/Registration/registration_controller.dart';
 import 'package:lumra_project/controller/Registration/caregiver_controller.dart';
@@ -28,9 +29,10 @@ class _CaregiverCreateAccountScreenState
   @override
   void initState() {
     super.initState();
-    _registrationController = RegistrationController();
-    _caregiverController = CaregiverController();
-    _nameController = NameController();
+    // Register controllers with GetX so they're available throughout the flow
+    _registrationController = Get.put(RegistrationController());
+    _caregiverController = Get.put(CaregiverController());
+    _nameController = Get.put(NameController());
   }
 
   Future<void> _selectDateOfBirth() async {

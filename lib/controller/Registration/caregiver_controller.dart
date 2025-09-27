@@ -59,58 +59,6 @@ class CaregiverController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> validateAndCreateAccount(String linkedUserId) async {
-    try {
-      // Check if this userId is already linked to another account
-      final QuerySnapshot existingLinks = await FirebaseFirestore.instance
-          .collection('users')
-          .where('linkedUserId', isEqualTo: linkedUserId)
-          .get();
-
-      if (existingLinks.docs.isNotEmpty) {
-        throw Exception('This account is already linked to another user.');
-      }
-
-      // If validation passes, create the caregiver account
-      return await createCaregiverAccount(linkedUserId);
-    } catch (e) {
-      // Provide more specific error messages
-      if (e.toString().contains('already linked')) {
-        throw Exception('This account is already linked to another user.');
-      } else if (e.toString().contains('network')) {
-        throw Exception(
-          'Network error. Please check your connection and try again.',
-        );
-      } else {
-        throw Exception(
-          'An error occurred: ${e.toString().replaceFirst('Exception: ', '')}',
-        );
-      }
-    }
-  }
-
-  Future<bool> createCaregiverAccount(String linkedUserId) async {
-    try {
-      // Get the collected data from controllers
-      final regController = Get.find<RegistrationController>();
-      final nameController = Get.find<NameController>();
-
-      // Create caregiver and set linkedUserId in one call
-      await FirebaseAuthService.createCaregiverAccountWithLink(
-        email: regController.emailController.text.trim().toLowerCase(),
-        password: regController.passwordController.text,
-        name: nameController.nameController.text,
-        gender: regController.gender ?? '',
-        dob: regController.dob,
-        linkedUserId: linkedUserId,
-      );
-
-      return true;
-    } catch (e) {
-      throw Exception('Error creating account: $e');
-    }
-  }
-
   /// Check email verification status
   Future<bool> checkEmailVerification() async {
     try {
@@ -146,11 +94,6 @@ class CaregiverController extends ChangeNotifier {
             totalPoints: 0,
             linkedUserId: _scannedQRCode,
           );
-
-      // After successful data save, perform reverse linking if needed
-      if (success && _scannedQRCode != null) {
-        await performReverseLinking(_scannedQRCode!);
-      }
 
       return success;
     } catch (e) {
@@ -220,66 +163,7 @@ class CaregiverController extends ChangeNotifier {
     }
   }
 
-  Future<void> onDetectQRCode(String? code) async {
-    if (isScanning && !isProcessing && code != null) {
-      // Ignore duplicate immediate scans of the same code
-      if (lastProcessedCode != null && lastProcessedCode == code) {
-        return;
-      }
-      lastProcessedCode = code;
-      isScanning = false;
-      isProcessing = true;
-      notifyListeners();
-
-      try {
-        // Extract LinkedUserId from the scanned barcode
-        final linkedUserId =
-            code; // The barcode contains the LinkedUserId directly
-
-        // Store the scanned QR code in the controller
-        setScannedQRCode(code);
-
-        // Validate and create caregiver account
-        await validateAndCreateAccountFromScan(linkedUserId);
-      } catch (e) {
-        // Reset scanning state on error to allow retry
-        isScanning = true;
-        isProcessing = false;
-        lastProcessedCode = null;
-        notifyListeners();
-        rethrow;
-      }
-    }
-  }
-
-  Future<bool> validateAndCreateAccountFromScan(String linkedUserId) async {
-    try {
-      // Add timeout to prevent hanging
-      final success = await validateAndCreateAccount(linkedUserId).timeout(
-        const Duration(seconds: 30),
-        onTimeout: () {
-          throw Exception('Request timed out. Please try again.');
-        },
-      );
-
-      if (success) {
-        isProcessing = false;
-        notifyListeners();
-        return true;
-      }
-      return false;
-    } catch (e) {
-      isProcessing = false;
-      // Allow a clean re-scan
-      isScanning = true;
-      lastProcessedCode = null;
-      notifyListeners();
-      rethrow;
-    }
-  }
-
   void resetScanningForError() {
-    print('Resetting scanning state - isScanning: true, isProcessing: false');
     isScanning = true;
     isProcessing = false;
     lastProcessedCode = null;
@@ -319,155 +203,6 @@ class CaregiverController extends ChangeNotifier {
     }
   }
 
-  Future<void> validateAndCreateAccountFromBarcode(String linkedUserId) async {
-    try {
-      // Check if the user document exists by the scanned linkedUserId
-      final DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(linkedUserId)
-          .get();
-
-      if (!userDoc.exists) {
-        // Document doesn't exist - this is not a valid user ID
-        isProcessing = false;
-        notifyListeners();
-        throw Exception('Invalid QR code. User not found.');
-      }
-
-      // Get the user data to check the linkedUserId field
-      final userData =
-          userDoc.data() as Map<String, dynamic>? ?? <String, dynamic>{};
-      final existingLinkedUserId = (userData['linkedUserId'] as String?)
-          ?.trim();
-
-      if (existingLinkedUserId != null && existingLinkedUserId.isNotEmpty) {
-        // The user is already linked to another account
-        isProcessing = false;
-        notifyListeners();
-        throw Exception('The user is already linked to another account.');
-      }
-
-      // If barcode validation passes, just store the linkedUserId and return success
-      // The account creation will happen later in the flow
-      setScannedQRCode(linkedUserId);
-      isProcessing = false;
-      notifyListeners();
-    } catch (e) {
-      isProcessing = false;
-      // Allow a clean re-scan
-      isScanning = true;
-      lastProcessedCode = null;
-      notifyListeners();
-      rethrow;
-    }
-  }
-
-  // Perform reverse linking after successful caregiver account creation
-  Future<void> performReverseLinking(String scannedUserId) async {
-    try {
-      print('Performing reverse linking for scanned user: $scannedUserId');
-
-      // Get the current caregiver's userId (the one we just created)
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) {
-        throw Exception('No authenticated user found for reverse linking');
-      }
-
-      final caregiverUserId = currentUser.uid;
-      print('Caregiver userId for reverse linking: $caregiverUserId');
-
-      // Update the scanned user's document with the caregiver's userId
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(scannedUserId)
-          .update({'linkedUserId': caregiverUserId});
-
-      print('Reverse linking completed successfully');
-    } catch (e) {
-      print('Error in reverse linking: $e');
-      // Don't rethrow here - the caregiver account was already created successfully
-      // The reverse linking is an additional step that shouldn't fail the main flow
-    }
-  }
-
-  Future<bool> handleCreateAccountFlow(
-    RegistrationController regController,
-    NameController nameController,
-  ) async {
-    try {
-      // Validate email format (local)
-      await regController.validateEmailWithFirebase(
-        regController.emailController.text,
-      );
-
-      // Check if email validation passed
-      if (regController.emailError == null) {
-        // Check email availability using the same logic as ADHD User
-        try {
-          final bool emailAvailable = await checkEmailAvailability(
-            regController.emailController.text,
-          );
-
-          if (emailAvailable) {
-            // Email is available, create the caregiver account with verification only
-            try {
-              await FirebaseAuthService.createCaregiverAccountWithVerification(
-                email: regController.emailController.text.trim().toLowerCase(),
-                password: regController.passwordController.text,
-              );
-
-              // Register controllers with GetX for access in camera scan screen
-              Get.put(nameController);
-              Get.put(regController);
-
-              // Save the data
-              nameController.saveName();
-              regController.saveRegistrationData();
-
-              return true;
-            } catch (e) {
-              // Handle account creation errors
-              if (e.toString().contains('email-already-in-use')) {
-                regController.emailError =
-                    'The email address is already in use';
-              } else {
-                regController.emailError = 'Error creating account: $e';
-              }
-              return false;
-            }
-          } else {
-            // Email is already in use - same error handling as ADHD User
-            regController.emailError = 'The email address is already in use';
-            return false;
-          }
-        } on FirebaseAuthException catch (e) {
-          if (e.code == 'email-already-in-use') {
-            // Set email error in the controller - inline error only
-            regController.emailError = 'The email address is already in use';
-          } else {
-            // Handle other Firebase auth errors
-            regController.emailError = e.message ?? 'Authentication error';
-          }
-          // No popup or snackbar - only inline error handling
-          return false;
-        } on Exception catch (e) {
-          // Handle other exceptions (string codes bubbled up)
-          if (e.toString().contains('email-already-in-use')) {
-            regController.emailError = 'The email address is already in use';
-          } else {
-            regController.emailError = 'An error occurred';
-          }
-          return false;
-        }
-      }
-      // If email validation failed, stay on the same screen
-      // The error will be shown in the UI
-      return false;
-    } catch (e) {
-      return false;
-    }
-  }
-
   Future<Map<String, dynamic>> initializeCamera() async {
     try {
       final hasPermission = await checkCameraPermission();
@@ -482,70 +217,97 @@ class CaregiverController extends ChangeNotifier {
   }
 
   Future<Map<String, dynamic>> onDetectBarcode(String? code) async {
-    print('onDetectBarcode called with code: $code');
-    print(
-      'Current state: isScanning=$isScanning, isProcessing=$isProcessing, isShowingErrorDialog=$_isShowingErrorDialog',
-    );
-
     if (code != null && !_isShowingErrorDialog) {
       // Ignore duplicate immediate scans of the same code
       if (lastProcessedCode != null && lastProcessedCode == code) {
-        print('Duplicate code detected, ignoring');
         return {'success': false, 'errorMessage': null};
       }
 
-      print('Processing new barcode: $code');
-
-      // Preflight: check if scanned value corresponds to a real user doc.
+      // Check if scanned value corresponds to a real user doc
       try {
-        final DocumentSnapshot preDoc = await FirebaseFirestore.instance
+        final DocumentSnapshot userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(code)
             .get();
-        if (!preDoc.exists) {
-          // Not a valid userId → ignore silently (no UI state changes)
+        if (!userDoc.exists) {
+          // Not a valid UID → ignore completely (no loading, no linking)
           return {'success': false, 'errorMessage': null};
         }
       } catch (_) {
-        // Any error in preflight → ignore silently
+        // Any error in preflight → ignore completely
         return {'success': false, 'errorMessage': null};
       }
 
+      // Valid UID found - show loading immediately and start linking process
       lastProcessedCode = code;
       isScanning = false;
       isProcessing = true;
       notifyListeners();
 
       try {
-        // Extract LinkedUserId from the scanned barcode
-        final linkedUserId =
-            code; // The barcode contains the LinkedUserId directly
-
-        // Validate barcode only (no account creation)
-        await validateAndCreateAccountFromBarcode(linkedUserId);
-        print('Barcode validation successful');
+        await _processValidUID(code);
         return {'success': true, 'errorMessage': null};
       } catch (e) {
-        print('Error in barcode validation: $e');
-        // Store error message but don't set error dialog flag yet
+        // Store error message for dialog display
         _lastErrorMessage = e.toString().replaceFirst('Exception: ', '');
         isProcessing = false;
-        // Don't reset isScanning here - keep it false to prevent multiple scans
-        // lastProcessedCode stays set to prevent duplicate processing
+        isScanning = true;
+        lastProcessedCode = null;
         notifyListeners();
         return {'success': false, 'errorMessage': _lastErrorMessage};
       }
     }
-    print(
-      'Barcode detection skipped - code: $code, isShowingErrorDialog: $_isShowingErrorDialog',
-    );
     return {'success': false, 'errorMessage': null};
   }
 
+  Future<void> _processValidUID(String scannedUID) async {
+    // Check Firestore for that UID
+    final DocumentSnapshot userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(scannedUID)
+        .get();
+
+    final userData =
+        userDoc.data() as Map<String, dynamic>? ?? <String, dynamic>{};
+    final existingLinkedUserId = (userData['linkedUserId'] as String?)?.trim();
+
+    if (existingLinkedUserId != null && existingLinkedUserId.isNotEmpty) {
+      // linkedUserId is not empty - do not link, show popup
+      // Add a small delay to ensure loading indicator is visible
+      await Future.delayed(const Duration(milliseconds: 1000));
+      throw Exception('This user is already linked to another account.');
+    }
+
+    // linkedUserId is empty - proceed with linking
+    // Confirm that registration data from previous screens is available
+    final regController = Get.find<RegistrationController>();
+    final nameController = Get.find<NameController>();
+
+    // Validate that all required data is available
+    if (regController.emailController.text.trim().isEmpty ||
+        regController.passwordController.text.isEmpty ||
+        nameController.nameController.text.trim().isEmpty) {
+      throw Exception(
+        'Registration data is missing. Please restart the registration process.',
+      );
+    }
+
+    // Create the caregiver account immediately with bidirectional linking
+    await FirebaseAuthService.createCaregiverAccountWithLink(
+      email: regController.emailController.text.trim().toLowerCase(),
+      password: regController.passwordController.text,
+      name: nameController.nameController.text.trim(),
+      gender: regController.gender ?? '',
+      dob: regController.dob,
+      linkedUserId: scannedUID,
+    );
+
+    isProcessing = false;
+    notifyListeners();
+  }
+
   void showErrorDialog(BuildContext context, String message) {
-    print('showErrorDialog called with message: $message');
     if (_isShowingErrorDialog) {
-      print('Dialog already showing, skipping');
       return;
     }
     _isShowingErrorDialog = true;
@@ -554,7 +316,6 @@ class CaregiverController extends ChangeNotifier {
       barrierDismissible: true,
       barrierColor: Colors.transparent,
       builder: (BuildContext context) {
-        print('Building error dialog...');
         return AlertDialog(
           content: Text(
             message,
@@ -567,7 +328,6 @@ class CaregiverController extends ChangeNotifier {
           actions: [
             TextButton(
               onPressed: () {
-                print('Error dialog OK button pressed');
                 _isShowingErrorDialog = false;
                 Navigator.of(context).pop();
                 // Reset scanning state to allow retry

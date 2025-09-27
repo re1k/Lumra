@@ -238,7 +238,12 @@ class FirebaseAuthService {
           linkedUserId: linkedUserId,
         );
 
-        // 3. Send email verification
+        // 3. Update the ADHD user's document with caregiver's UID (reverse linking)
+        await _firestore.collection('users').doc(linkedUserId).update({
+          'linkedUserId': userCredential.user!.uid,
+        });
+
+        // 4. Send email verification
         await userCredential.user?.sendEmailVerification();
 
         return true;
