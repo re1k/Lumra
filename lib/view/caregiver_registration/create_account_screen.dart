@@ -33,7 +33,10 @@ class _CaregiverCreateAccountScreenState
     _caregiverController = Get.put(CaregiverController());
     _nameController = Get.put(NameController());
 
+    // Clear all controllers to ensure clean state
     _caregiverController.resetForNewSession();
+    _registrationController.clearAllData();
+    _nameController.clearAllData();
 
     _registrationController.addListener(_onControllerChange);
     _nameController.addListener(_onControllerChange);
