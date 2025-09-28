@@ -28,6 +28,10 @@ class _CaregiverCameraScanScreenState extends State<CaregiverCameraScanScreen> {
     } else {
       _controller = Get.put(CaregiverController());
     }
+
+    // Reset only scanning state, keep registration data
+    _controller.resetScanningStateOnly();
+
     // Listen to controller changes
     _controller.addListener(_onControllerChange);
     _initializeCamera();
@@ -49,6 +53,9 @@ class _CaregiverCameraScanScreenState extends State<CaregiverCameraScanScreen> {
   }
 
   Future<void> _initializeCamera() async {
+    // Dispose previous scanner controller if exists
+    scannerController?.dispose();
+
     final result = await _controller.initializeCamera();
     if (result['success'] == true) {
       setState(() {
@@ -76,7 +83,7 @@ class _CaregiverCameraScanScreenState extends State<CaregiverCameraScanScreen> {
 
         if (mounted) {
           if (result['success'] == true) {
-            // Account creation was successful
+            // Account creation was successful - navigate to inbox screen
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
@@ -105,9 +112,12 @@ class _CaregiverCameraScanScreenState extends State<CaregiverCameraScanScreen> {
       backgroundColor: BColors.white,
       appBar: AppBar(
         backgroundColor: BColors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: BColors.darkGrey),
-          onPressed: () => Navigator.pop(context),
+        leading: Padding(
+          padding: const EdgeInsets.only(top: 17),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: BColors.darkGrey),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
       ),
       body: Stack(
@@ -119,7 +129,7 @@ class _CaregiverCameraScanScreenState extends State<CaregiverCameraScanScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Progress Bar
-                  SegmentedProgressBar(currentStep: 4, totalSteps: 4),
+                  SegmentedProgressBar(currentStep: 3, totalSteps: 3),
                   const SizedBox(height: 32),
                   Text(
                     'Scan QR Code',

@@ -16,10 +16,10 @@ class NextButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      bottom: 60,
+      bottom: 70,
       right: 24,
       child: SizedBox(
-        width: 200,
+        width: 130,
         child: ElevatedButton(
           onPressed: enabled
               ? onPressed

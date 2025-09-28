@@ -54,8 +54,14 @@ class ViewProfile extends StatelessWidget {
                 const SizedBox(height: 40),
 
                 _buildTextField(
-                  label: "Name",
-                  controller: userController.nameController,
+                  label: "First Name",
+                  controller: userController.firstNameController,
+                  enable: enableName,
+                ),
+
+                _buildTextField(
+                  label: "Last Name",
+                  controller: userController.lastNameController,
                   enable: enableName,
                 ),
 
@@ -120,10 +126,7 @@ class ViewProfile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              label,
-              style: BTextTheme.lightTextTheme.titleSmall,
-            ),
+            Text(label, style: BTextTheme.lightTextTheme.titleSmall),
             const SizedBox(height: 8),
             TextField(
               controller: controller,
@@ -136,17 +139,16 @@ class ViewProfile extends StatelessWidget {
                 suffixIcon: IconButton(
                   icon: Icon(enable.value ? Icons.check : Icons.edit),
                   onPressed: () {
-                    enable.value = !enable.value; 
+                    enable.value = !enable.value;
                   },
                 ),
                 border: OutlineInputBorder(),
-                 contentPadding: const EdgeInsets.symmetric(
-                   horizontal: 24,
-                   vertical: 16,
-                 )
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
                 ),
               ),
-            
+            ),
           ],
         ),
       ),
@@ -160,19 +162,16 @@ class ViewProfile extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-         // const Text("Gender", style: BTextTheme.lightTextTheme.titleSmall ),
-         Text("Gender" , 
-            style:  BTextTheme.lightTextTheme.titleSmall
-         ),
+          // const Text("Gender", style: BTextTheme.lightTextTheme.titleSmall ),
+          Text("Gender", style: BTextTheme.lightTextTheme.titleSmall),
           const SizedBox(height: 2),
           Row(
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  
-                   onPressed: () {
-                   // userController.gender.value = 'male';
-                   },
+                  onPressed: () {
+                    // userController.gender.value = 'male';
+                  },
                   icon: const Icon(Icons.boy, size: 25),
                   label: const Text("Male"),
                   style: ElevatedButton.styleFrom(
@@ -193,10 +192,9 @@ class ViewProfile extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton.icon(
-                  
                   onPressed: () {
-                     //userController.gender.value = 'female';
-                   },
+                    //userController.gender.value = 'female';
+                  },
                   icon: const Icon(Icons.girl, size: 25),
                   label: const Text("Female"),
                   style: ElevatedButton.styleFrom(

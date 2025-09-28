@@ -66,9 +66,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             backgroundColor: BColors.white,
             appBar: AppBar(
               backgroundColor: BColors.white,
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: BColors.darkGrey),
-                onPressed: () => Navigator.pop(context),
+              leading: Padding(
+                padding: const EdgeInsets.only(top: 17),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: BColors.darkGrey),
+                  onPressed: () => Navigator.pop(context),
+                ),
               ),
             ),
             body: SafeArea(
@@ -113,16 +116,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           children: [
                             TextSpan(
                               text: 'Email address',
-                              style:
-                                  const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.normal,
-                                    color: BColors.black,
-                                    fontFamily: 'K2D',
-                                  ).copyWith(
-                                    fontWeight: FontWeight.w500,
-                                    color: BColors.darkGrey,
-                                  ),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.normal,
+                                color: BColors.black,
+                                fontFamily: 'K2D',
+                              ).copyWith(fontWeight: FontWeight.w500),
                             ),
                             TextSpan(
                               text: ' *',
@@ -141,95 +140,21 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: BColors.darkGrey.withValues(alpha: 0.1),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: TextFormField(
-                          controller: controller.emailController,
-                          focusNode: controller.emailFocusNode,
-                          keyboardType: TextInputType.emailAddress,
-                          inputFormatters: [
-                            LengthLimitingTextInputFormatter(128),
-                          ],
-                          onChanged: controller.updateEmail,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 24,
-                              horizontal: 16,
-                            ),
-                            hintText: 'example@email.com',
-                            hintStyle: TextStyle(color: BColors.darkGrey),
-                            errorText: controller.emailFieldTouched
-                                ? controller.emailError
-                                : null,
-                            errorStyle: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.red,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(
-                                color:
-                                    controller.emailFieldTouched &&
-                                        controller.emailError != null
-                                    ? BColors.error
-                                    : Colors.grey,
-                                width: 1,
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(
-                                color:
-                                    controller.emailFieldTouched &&
-                                        controller.emailError != null
-                                    ? BColors.error
-                                    : Colors.grey,
-                                width: 1,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(
-                                color:
-                                    controller.emailFieldTouched &&
-                                        controller.emailError != null
-                                    ? BColors.error
-                                    : Colors.grey,
-                                width: 1,
-                              ),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
-                                color: BColors.error,
-                                width: 1,
-                              ),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
-                                color: BColors.error,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.normal,
-                            color: BColors.black,
-                            fontFamily: 'K2D',
-                          ),
+                      TextFormField(
+                        controller: controller.emailController,
+                        focusNode: controller.emailFocusNode,
+                        keyboardType: TextInputType.emailAddress,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(128),
+                        ],
+                        onChanged: controller.updateEmail,
+                        decoration: InputDecoration(
+                          counterText: '',
+                          hintText: 'example@gmail.com',
+                          hintStyle: TextStyle(color: BColors.darkGrey),
+                          errorText: controller.emailFieldTouched
+                              ? controller.emailError
+                              : null,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -239,16 +164,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           children: [
                             TextSpan(
                               text: 'Password',
-                              style:
-                                  const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.normal,
-                                    color: BColors.black,
-                                    fontFamily: 'K2D',
-                                  ).copyWith(
-                                    fontWeight: FontWeight.w500,
-                                    color: BColors.darkGrey,
-                                  ),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.normal,
+                                color: BColors.black,
+                                fontFamily: 'K2D',
+                              ).copyWith(fontWeight: FontWeight.w500),
                             ),
                             TextSpan(
                               text: ' *',
@@ -267,111 +188,32 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: BColors.darkGrey.withValues(alpha: 0.1),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
+                      TextFormField(
+                        controller: controller.passwordController,
+                        focusNode: controller.passwordFocusNode,
+                        obscureText: controller.obscurePassword,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(128),
+                        ],
+                        onChanged: (value) {
+                          controller.onPasswordChanged(value);
+                          controller.updatePassword(value);
+                        },
+                        decoration: InputDecoration(
+                          counterText: '',
+                          hintText: '••••••••',
+                          hintStyle: TextStyle(color: BColors.darkGrey),
+                          errorText: controller.passwordFieldTouched
+                              ? controller.passwordError
+                              : null,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              controller.obscurePassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
                             ),
-                          ],
-                        ),
-                        child: TextFormField(
-                          controller: controller.passwordController,
-                          focusNode: controller.passwordFocusNode,
-                          obscureText: controller.obscurePassword,
-                          inputFormatters: [
-                            LengthLimitingTextInputFormatter(128),
-                          ],
-                          onChanged: (value) {
-                            controller.onPasswordChanged(value);
-                            controller.updatePassword(value);
-                          },
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 24,
-                              horizontal: 16,
-                            ),
-                            hintText: 'Enter your password',
-                            hintStyle: TextStyle(color: BColors.darkGrey),
-                            errorText: controller.passwordFieldTouched
-                                ? controller.passwordError
-                                : null,
-                            errorStyle: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.red,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(
-                                color:
-                                    controller.passwordFieldTouched &&
-                                        controller.passwordError != null
-                                    ? BColors.error
-                                    : Colors.grey,
-                                width: 1,
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(
-                                color:
-                                    controller.passwordFieldTouched &&
-                                        controller.passwordError != null
-                                    ? BColors.error
-                                    : Colors.grey,
-                                width: 1,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(
-                                color:
-                                    controller.passwordFieldTouched &&
-                                        controller.passwordError != null
-                                    ? BColors.error
-                                    : Colors.grey,
-                                width: 1,
-                              ),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
-                                color: BColors.error,
-                                width: 1,
-                              ),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
-                                color: BColors.error,
-                                width: 2,
-                              ),
-                            ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                controller.obscurePassword
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                                color: BColors.darkGrey,
-                              ),
-                              onPressed: controller.togglePasswordVisibility,
-                            ),
+                            onPressed: controller.togglePasswordVisibility,
                           ),
-                          style:
-                              const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.normal,
-                                color: BColors.black,
-                                fontFamily: 'K2D',
-                              ).copyWith(
-                                fontSize:
-                                    MediaQuery.of(context).size.width * 0.04,
-                              ),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -407,16 +249,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           children: [
                             TextSpan(
                               text: 'Confirm Password',
-                              style:
-                                  const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.normal,
-                                    color: BColors.black,
-                                    fontFamily: 'K2D',
-                                  ).copyWith(
-                                    fontWeight: FontWeight.w500,
-                                    color: BColors.darkGrey,
-                                  ),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.normal,
+                                color: BColors.black,
+                                fontFamily: 'K2D',
+                              ).copyWith(fontWeight: FontWeight.w500),
                             ),
                             TextSpan(
                               text: ' *',
@@ -435,106 +273,27 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: BColors.darkGrey.withValues(alpha: 0.1),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
+                      TextFormField(
+                        controller: controller.confirmPasswordController,
+                        focusNode: controller.confirmPasswordFocusNode,
+                        obscureText: controller.obscureConfirmPassword,
+                        onChanged: controller.onConfirmPasswordChanged,
+                        decoration: InputDecoration(
+                          counterText: '',
+                          hintText: '••••••••',
+                          hintStyle: TextStyle(color: BColors.darkGrey),
+                          errorText: controller.confirmPasswordFieldTouched
+                              ? controller.confirmPasswordError
+                              : null,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              controller.obscureConfirmPassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
                             ),
-                          ],
-                        ),
-                        child: TextFormField(
-                          controller: controller.confirmPasswordController,
-                          focusNode: controller.confirmPasswordFocusNode,
-                          obscureText: controller.obscureConfirmPassword,
-                          onChanged: controller.onConfirmPasswordChanged,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 24,
-                              horizontal: 16,
-                            ),
-                            hintText: 'Confirm your password',
-                            hintStyle: TextStyle(color: BColors.darkGrey),
-                            errorText: controller.confirmPasswordFieldTouched
-                                ? controller.confirmPasswordError
-                                : null,
-                            errorStyle: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.red,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(
-                                color:
-                                    controller.confirmPasswordFieldTouched &&
-                                        controller.confirmPasswordError != null
-                                    ? BColors.error
-                                    : Colors.grey,
-                                width: 1,
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(
-                                color:
-                                    controller.confirmPasswordFieldTouched &&
-                                        controller.confirmPasswordError != null
-                                    ? BColors.error
-                                    : Colors.grey,
-                                width: 1,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(
-                                color:
-                                    controller.confirmPasswordFieldTouched &&
-                                        controller.confirmPasswordError != null
-                                    ? BColors.error
-                                    : Colors.grey,
-                                width: 1,
-                              ),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
-                                color: BColors.error,
-                                width: 1,
-                              ),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
-                                color: BColors.error,
-                                width: 2,
-                              ),
-                            ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                controller.obscureConfirmPassword
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                                color: BColors.darkGrey,
-                              ),
-                              onPressed:
-                                  controller.toggleConfirmPasswordVisibility,
-                            ),
+                            onPressed:
+                                controller.toggleConfirmPasswordVisibility,
                           ),
-                          style:
-                              const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.normal,
-                                color: BColors.black,
-                                fontFamily: 'K2D',
-                              ).copyWith(
-                                fontSize:
-                                    MediaQuery.of(context).size.width * 0.04,
-                              ),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -544,16 +303,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           children: [
                             TextSpan(
                               text: 'Gender',
-                              style:
-                                  const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.normal,
-                                    color: BColors.black,
-                                    fontFamily: 'K2D',
-                                  ).copyWith(
-                                    fontWeight: FontWeight.w500,
-                                    color: BColors.darkGrey,
-                                  ),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.normal,
+                                color: BColors.black,
+                                fontFamily: 'K2D',
+                              ).copyWith(fontWeight: FontWeight.w500),
                             ),
                             TextSpan(
                               text: ' *',
@@ -582,8 +337,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                  horizontal: 16,
+                                  vertical: 14,
+                                  horizontal: 14,
                                 ),
                                 decoration: BoxDecoration(
                                   color: controller.gender == 'Male'
@@ -621,7 +376,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                               color: BColors.black,
                                               fontFamily: 'K2D',
                                             ).copyWith(
-                                              color: BColors.darkGrey,
                                               fontWeight:
                                                   controller.gender == 'Male'
                                                   ? FontWeight.w500
@@ -643,8 +397,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                  horizontal: 16,
+                                  vertical: 14,
+                                  horizontal: 14,
                                 ),
                                 decoration: BoxDecoration(
                                   color: controller.gender == 'Female'
@@ -682,7 +436,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                               color: BColors.black,
                                               fontFamily: 'K2D',
                                             ).copyWith(
-                                              color: BColors.darkGrey,
                                               fontWeight:
                                                   controller.gender == 'Female'
                                                   ? FontWeight.w500
@@ -726,16 +479,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           children: [
                             TextSpan(
                               text: 'Date of Birth',
-                              style:
-                                  const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.normal,
-                                    color: BColors.black,
-                                    fontFamily: 'K2D',
-                                  ).copyWith(
-                                    fontWeight: FontWeight.w500,
-                                    color: BColors.darkGrey,
-                                  ),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.normal,
+                                color: BColors.black,
+                                fontFamily: 'K2D',
+                              ).copyWith(fontWeight: FontWeight.w500),
                             ),
                             TextSpan(
                               text: ' *',
@@ -754,102 +503,22 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: BColors.darkGrey.withValues(alpha: 0.1),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+                      TextFormField(
+                        readOnly: true,
+                        onTap: _selectDateOfBirth,
+                        decoration: InputDecoration(
+                          counterText: '',
+                          hintText: 'YYYY/MM/DD',
+                          hintStyle: TextStyle(color: BColors.darkGrey),
+                          errorText: controller.dobFieldTouched
+                              ? controller.dobError
+                              : null,
+                          suffixIcon: Icon(Icons.calendar_today),
                         ),
-                        child: TextFormField(
-                          readOnly: true,
-                          onTap: _selectDateOfBirth,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 24,
-                              horizontal: 16,
-                            ),
-                            hintText: 'Select Date of Birth',
-                            hintStyle: TextStyle(color: BColors.darkGrey),
-                            errorText: controller.dobFieldTouched
-                                ? controller.dobError
-                                : null,
-                            errorStyle: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.red,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(
-                                color:
-                                    controller.dobFieldTouched &&
-                                        controller.dobError != null
-                                    ? BColors.error
-                                    : Colors.grey,
-                                width: 1,
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(
-                                color:
-                                    controller.dobFieldTouched &&
-                                        controller.dobError != null
-                                    ? BColors.error
-                                    : Colors.grey,
-                                width: 1,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide(
-                                color:
-                                    controller.dobFieldTouched &&
-                                        controller.dobError != null
-                                    ? BColors.error
-                                    : Colors.grey,
-                                width: 1,
-                              ),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
-                                color: BColors.error,
-                                width: 1,
-                              ),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: const BorderSide(
-                                color: BColors.error,
-                                width: 2,
-                              ),
-                            ),
-                            suffixIcon: Icon(
-                              Icons.calendar_today,
-                              color: BColors.darkGrey,
-                              size: 20,
-                            ),
-                          ),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.normal,
-                            color: BColors.black,
-                            fontFamily: 'K2D',
-                          ),
-                          controller: TextEditingController(
-                            text: controller.dob != null
-                                ? DateFormat(
-                                    'yyyy-MM-dd',
-                                  ).format(controller.dob!)
-                                : '',
-                          ),
+                        controller: TextEditingController(
+                          text: controller.dob != null
+                              ? DateFormat('yyyy-MM-dd').format(controller.dob!)
+                              : '',
                         ),
                       ),
                       const SizedBox(height: 40),

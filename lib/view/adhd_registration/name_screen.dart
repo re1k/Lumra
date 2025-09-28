@@ -21,10 +21,15 @@ class _NameScreenState extends State<NameScreen> {
   final RegistrationFlowController _flowController =
       Get.find<RegistrationFlowController>();
 
+  void _onControllerChange() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
     _controller = NameController();
+    _controller.addListener(_onControllerChange);
   }
 
   @override
@@ -36,9 +41,12 @@ class _NameScreenState extends State<NameScreen> {
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           backgroundColor: BColors.white,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: BColors.darkGrey),
-            onPressed: () => Navigator.pop(context),
+          leading: Padding(
+            padding: const EdgeInsets.only(top: 17),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back, color: BColors.darkGrey),
+              onPressed: () => Navigator.pop(context),
+            ),
           ),
         ),
         body: Stack(
@@ -72,128 +80,131 @@ class _NameScreenState extends State<NameScreen> {
                       'We\’d love to know your name to get started!',
                       style: const TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.w600,
                         color: BColors.black,
                         fontFamily: 'K2D',
                       ),
                     ),
                     const SizedBox(height: 24),
-                    // Name Field
+                    // First Name Field
                     Text(
-                      'Name',
-                      style:
-                          const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.normal,
-                            color: BColors.black,
-                            fontFamily: 'K2D',
-                          ).copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: BColors.darkGrey,
-                          ),
+                      'First Name',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                        color: BColors.black,
+                        fontFamily: 'K2D',
+                      ).copyWith(fontWeight: FontWeight.w500),
                     ),
                     const SizedBox(height: 8),
-                    // Name Field Container with Character Counter
+                    // First Name Field Container with Character Counter
                     Stack(
                       children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: BColors.darkGrey.withValues(alpha: 0.1),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: TextFormField(
-                            controller: _controller.nameController,
-                            maxLength: 16,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[A-Za-z ]'),
-                              ),
-                            ],
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: Colors.white,
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 24,
-                                horizontal: 16,
-                              ),
-                              hintText: 'Enter your name',
-                              hintStyle: TextStyle(color: BColors.darkGrey),
-                              counterText: '', // Hide the default counter
-                              errorText: _controller.nameFieldTouched
-                                  ? _controller.nameError
-                                  : null,
-                              errorStyle: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.red,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14),
-                                borderSide: BorderSide(
-                                  color:
-                                      _controller.nameFieldTouched &&
-                                          _controller.nameError != null
-                                      ? BColors.error
-                                      : Colors.grey,
-                                  width: 1,
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14),
-                                borderSide: BorderSide(
-                                  color:
-                                      _controller.nameFieldTouched &&
-                                          _controller.nameError != null
-                                      ? BColors.error
-                                      : Colors.grey,
-                                  width: 1,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14),
-                                borderSide: BorderSide(
-                                  color:
-                                      _controller.nameFieldTouched &&
-                                          _controller.nameError != null
-                                      ? BColors.error
-                                      : Colors.grey,
-                                  width: 1,
-                                ),
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14),
-                                borderSide: const BorderSide(
-                                  color: BColors.error,
-                                  width: 1,
-                                ),
-                              ),
-                              focusedErrorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14),
-                                borderSide: const BorderSide(
-                                  color: BColors.error,
-                                  width: 2,
-                                ),
-                              ),
+                        TextFormField(
+                          controller: _controller.firstNameController,
+                          focusNode: _controller.firstNameFocusNode,
+                          textInputAction: TextInputAction.next,
+                          maxLength: 16,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[A-Za-z ]'),
                             ),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.normal,
-                              color: BColors.black,
-                              fontFamily: 'K2D',
-                            ),
+                          ],
+                          onTapOutside: (event) =>
+                              FocusScope.of(context).unfocus(),
+                          onFieldSubmitted: (_) => FocusScope.of(
+                            context,
+                          ).requestFocus(_controller.lastNameFocusNode),
+                          decoration: InputDecoration(
+                            counterText: '',
+                            hintText: 'Sarah',
+                            hintStyle: TextStyle(color: BColors.darkGrey),
+                            errorText: _controller.firstNameFieldTouched
+                                ? _controller.firstNameError
+                                : null,
                           ),
+                          onChanged: (value) {
+                            _controller.updateFirstName(value);
+                          },
+                          onTap: () {
+                            _controller.onFirstNameFieldTouched();
+                          },
                         ),
                         // Character Counter positioned at top-right
                         Positioned(
                           top: 8,
                           right: 12,
                           child: ValueListenableBuilder<int>(
-                            valueListenable: _controller.characterCount,
+                            valueListenable:
+                                _controller.firstNameCharacterCount,
+                            builder: (context, count, child) {
+                              return Text(
+                                '$count/16',
+                                style:
+                                    const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.normal,
+                                      color: BColors.darkGrey,
+                                      fontFamily: 'K2D',
+                                    ).copyWith(
+                                      fontSize: 12,
+                                      color: BColors.darkGrey,
+                                    ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    // Last Name Field
+                    Text(
+                      'Last Name',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                        color: BColors.black,
+                        fontFamily: 'K2D',
+                      ).copyWith(fontWeight: FontWeight.w500),
+                    ),
+                    const SizedBox(height: 8),
+                    // Last Name Field Container with Character Counter
+                    Stack(
+                      children: [
+                        TextFormField(
+                          controller: _controller.lastNameController,
+                          focusNode: _controller.lastNameFocusNode,
+                          textInputAction: TextInputAction.done,
+                          maxLength: 16,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[A-Za-z ]'),
+                            ),
+                          ],
+                          onTapOutside: (event) =>
+                              FocusScope.of(context).unfocus(),
+                          onFieldSubmitted: (_) =>
+                              _controller.lastNameFocusNode.unfocus(),
+                          decoration: InputDecoration(
+                            counterText: '',
+                            hintText: 'Aljohani',
+                            hintStyle: TextStyle(color: BColors.darkGrey),
+                            errorText: _controller.lastNameFieldTouched
+                                ? _controller.lastNameError
+                                : null,
+                          ),
+                          onChanged: (value) {
+                            _controller.updateLastName(value);
+                          },
+                          onTap: () {
+                            _controller.onLastNameFieldTouched();
+                          },
+                        ),
+                        // Character Counter positioned at top-right
+                        Positioned(
+                          top: 8,
+                          right: 12,
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: _controller.lastNameCharacterCount,
                             builder: (context, count, child) {
                               return Text(
                                 '$count/16',
@@ -224,11 +235,13 @@ class _NameScreenState extends State<NameScreen> {
                   enabled: controller.isNextButtonEnabled,
                   onPressed: () {
                     if (controller.isNextButtonEnabled) {
-                      // Save name to GetX Controller
+                      // Save first and last name to GetX Controller
                       _flowController.updateFromNameScreen(
-                        controller.nameController.text,
+                        controller.firstNameController.text,
+                        controller.lastNameController.text,
                       );
-                      controller.saveName();
+                      controller.saveFirstName();
+                      controller.saveLastName();
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -249,6 +262,7 @@ class _NameScreenState extends State<NameScreen> {
 
   @override
   void dispose() {
+    _controller.removeListener(_onControllerChange);
     _controller.dispose();
     super.dispose();
   }

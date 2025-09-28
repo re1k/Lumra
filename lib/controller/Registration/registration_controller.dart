@@ -127,7 +127,6 @@ class RegistrationController extends ChangeNotifier {
 
   void onConfirmPasswordFieldTouched() {
     _confirmPasswordFieldTouched = true;
-    _validateConfirmPassword();
     notifyListeners();
   }
 
@@ -154,15 +153,15 @@ class RegistrationController extends ChangeNotifier {
     _user = _user.copyWith(email: processedEmail);
 
     // Real-time validation only when field has been touched and has an error
+    // Only clear the error if the input becomes valid, don't show new errors
     if (_emailFieldTouched && _emailError != null) {
-      _validateEmail(email);
+      _clearEmailErrorIfValid(email);
     }
     notifyListeners();
   }
 
   void onEmailFieldTouched() {
     _emailFieldTouched = true;
-    _validateEmail(emailController.text);
     notifyListeners();
   }
 
@@ -180,6 +179,22 @@ class RegistrationController extends ChangeNotifier {
     }
     // Force immediate update
     notifyListeners();
+  }
+
+  void _clearEmailErrorIfValid(String email) {
+    final trimmedEmail = email.trim();
+
+    // Special case: "Email cannot be empty" should disappear immediately when user starts typing
+    if (_emailError == 'Email cannot be empty' && trimmedEmail.isNotEmpty) {
+      _emailError = null;
+    }
+    // For other errors (spaces, invalid format), only clear if input becomes completely valid
+    else if (trimmedEmail.isNotEmpty &&
+        !_hasMiddleSpaces(trimmedEmail) &&
+        _isValidEmail(trimmedEmail)) {
+      _emailError = null;
+    }
+    // If input is still invalid, keep the existing error
   }
 
   /// Validate email and check if it's already in use
@@ -241,7 +256,7 @@ class RegistrationController extends ChangeNotifier {
     ];
 
     final domain = email.split('@').last;
-    return allowedDomains.contains(domain);
+    return allowedDomains.contains(domain.toLowerCase());
   }
 
   void updatePassword(String password) {
@@ -251,7 +266,6 @@ class RegistrationController extends ChangeNotifier {
 
   void onPasswordFieldTouched() {
     _passwordFieldTouched = true;
-    _validatePassword(passwordController.text);
     notifyListeners();
   }
 
@@ -288,7 +302,6 @@ class RegistrationController extends ChangeNotifier {
 
   void onDobFieldTouched() {
     _dobFieldTouched = true;
-    _validateDob();
     notifyListeners();
   }
 
@@ -362,6 +375,39 @@ class RegistrationController extends ChangeNotifier {
       _validateDob();
       notifyListeners();
     }
+  }
+
+  /// Clear all registration data
+  void clearAllData() {
+    emailController.clear();
+    passwordController.clear();
+    confirmPasswordController.clear();
+    selectedGender = null;
+    dateOfBirth = null;
+    _obscurePassword = true;
+    _obscureConfirmPassword = true;
+    _showPasswordStrength = false;
+    _passwordMismatchError = null;
+    _emailError = null;
+    _emailFieldTouched = false;
+    _passwordError = null;
+    _passwordFieldTouched = false;
+    _genderError = null;
+    _genderFieldTouched = false;
+    _dobError = null;
+    _dobFieldTouched = false;
+    _confirmPasswordError = null;
+    _confirmPasswordFieldTouched = false;
+    _user = UserModel();
+
+    // Clear focus to prevent validation errors from showing
+    emailFocusNode.unfocus();
+    passwordFocusNode.unfocus();
+    confirmPasswordFocusNode.unfocus();
+    genderFocusNode.unfocus();
+    dobFocusNode.unfocus();
+
+    notifyListeners();
   }
 
   @override

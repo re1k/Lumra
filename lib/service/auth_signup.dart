@@ -28,7 +28,8 @@ class FirebaseAuthService {
   static Future<void> saveUserToFirestore({
     required String uid,
     required String role,
-    required String name,
+    required String firstName,
+    required String lastName,
     required String email,
     required String gender,
     required DateTime? dob,
@@ -38,12 +39,12 @@ class FirebaseAuthService {
     try {
       final Map<String, dynamic> data = {
         'role': role,
-        'name': name,
+        'firstName': firstName,
+        'lastName': lastName,
         'email': email,
         'gender': gender,
         'dob': dob != null ? Timestamp.fromDate(dob) : null,
         'linkedUserId': linkedUserId,
-        'qrCode': null,
       };
 
       // Caregiver does not have points: omit the field entirely.
@@ -62,7 +63,8 @@ class FirebaseAuthService {
     required String email,
     required String password,
     required String role,
-    required String name,
+    required String firstName,
+    required String lastName,
     required String gender,
     required DateTime? dob,
     required int totalPoints,
@@ -81,7 +83,8 @@ class FirebaseAuthService {
         await saveUserToFirestore(
           uid: userCredential.user!.uid,
           role: role,
-          name: name,
+          firstName: firstName,
+          lastName: lastName,
           email: normalized,
           gender: gender,
           dob: dob,
@@ -154,7 +157,8 @@ class FirebaseAuthService {
   /// Save user data to Firestore after email verification
   static Future<bool> saveUserDataAfterVerification({
     required String role,
-    required String name,
+    required String firstName,
+    required String lastName,
     required String gender,
     required DateTime? dob,
     required int totalPoints,
@@ -175,7 +179,8 @@ class FirebaseAuthService {
       await saveUserToFirestore(
         uid: user.uid,
         role: role,
-        name: name,
+        firstName: firstName,
+        lastName: lastName,
         email: user.email!,
         gender: gender,
         dob: dob,
@@ -211,7 +216,8 @@ class FirebaseAuthService {
   static Future<bool> createCaregiverAccountWithLink({
     required String email,
     required String password,
-    required String name,
+    required String firstName,
+    required String lastName,
     required String gender,
     required DateTime? dob,
     required String linkedUserId,
@@ -230,7 +236,8 @@ class FirebaseAuthService {
         await saveUserToFirestore(
           uid: userCredential.user!.uid,
           role: 'caregiver',
-          name: name,
+          firstName: firstName,
+          lastName: lastName,
           email: normalized,
           gender: gender,
           dob: dob,

@@ -52,13 +52,29 @@ class AccountPage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // User Name
-            Obx(
-              () => Text(
-                userController.user.value?.name ?? "Loading...",
-                style: BTextTheme.lightTextTheme.headlineMedium,
-              ),
-            ),
+            // First + Last Name beside each other
+            Obx(() {
+              final firstName =
+                  userController.user.value?.firstName ?? "Loading...";
+              final lastName = userController.user.value?.lastName ?? "";
+
+              return Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.center, // optional: center align
+                children: [
+                  Text(
+                    firstName,
+                    style: BTextTheme.lightTextTheme.headlineMedium,
+                  ),
+                  const SizedBox(width: 8), // space between first and last name
+                  Text(
+                    lastName,
+                    style: BTextTheme.lightTextTheme.headlineMedium,
+                  ),
+                ],
+              );
+            }),
+
             const SizedBox(height: 20),
 
             // Options
@@ -89,7 +105,7 @@ class AccountPage extends StatelessWidget {
                   children: [
                     _buildOption(
                       icon: Icons.qr_code,
-                      text: "Generate QR Code For Caregiver",
+                      text: "QR Code For Caregiver",
                       onTap: () {
                         Navigator.push(
                           context,

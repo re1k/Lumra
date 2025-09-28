@@ -46,9 +46,12 @@ class _QuestionScreenState extends State<QuestionScreen> {
             resizeToAvoidBottomInset: false,
             appBar: AppBar(
               backgroundColor: BColors.white,
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: BColors.darkGrey),
-                onPressed: () => Navigator.pop(context),
+              leading: Padding(
+                padding: const EdgeInsets.only(top: 17),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: BColors.darkGrey),
+                  onPressed: () => Navigator.pop(context),
+                ),
               ),
             ),
             body: Stack(

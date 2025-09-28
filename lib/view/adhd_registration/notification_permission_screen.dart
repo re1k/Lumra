@@ -20,19 +20,6 @@ class _NotificationPermissionScreenState
   @override
   void initState() {
     super.initState();
-    // Check permission status when screen loads
-    _checkPermissionStatus();
-  }
-
-  /// Check current permission status
-  Future<void> _checkPermissionStatus() async {
-    final isGranted = await PermissionService.checkNotificationPermission();
-    if (isGranted) {
-      // Permission already granted, navigate to next screen
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _navigateToNextScreen();
-      });
-    }
   }
 
   /// Requests notification permission from the user
@@ -46,15 +33,18 @@ class _NotificationPermissionScreenState
       final isGranted = await PermissionService.checkNotificationPermission();
 
       if (isGranted) {
-        // Permission already granted
+        // Permission already granted → navigate immediately without any popup
         if (mounted) {
           setState(() {
             _isRequestingPermission = false;
           });
-          _showPermissionResultDialog(
-            'Permission Already Granted!',
-            'You will receive helpful notifications to keep you on track.',
-            isSuccess: true,
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const OnboardingCompleteScreen(),
+              transitionDuration: Duration.zero,
+            ),
           );
         }
         return;
@@ -69,7 +59,7 @@ class _NotificationPermissionScreenState
         });
 
         if (status.isGranted) {
-          // Permission granted - navigate directly without showing dialog
+          // Permission granted → navigate immediately without any popup
           Navigator.push(
             context,
             PageRouteBuilder(
@@ -157,7 +147,7 @@ class _NotificationPermissionScreenState
                 _navigateToNextScreen();
               },
               child: Text(
-                isSuccess ? 'Continue' : 'Skip',
+                isSuccess ? 'Continue' : 'close',
                 style: const TextStyle(
                   color: BColors.primary,
                   fontFamily: 'K2D',
@@ -187,110 +177,120 @@ class _NotificationPermissionScreenState
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Notification Icon
-              Center(
-                child: SvgPicture.asset(
-                  'assets/images/Bell.svg',
-                  width: 270,
-                  height: 200,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Stay on track with reminders',
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: BColors.black,
-                  fontFamily: 'K2D',
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Helpful notifications to guide you and keep you on track',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: BColors.black,
-                  fontFamily: 'K2D',
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 40),
-              // Buttons at bottom
-              Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _isRequestingPermission
-                          ? null
-                          : _requestNotificationPermission,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _isRequestingPermission
-                            ? BColors.grey
-                            : BColors.primary,
-                        foregroundColor: BColors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+          child: Transform.translate(
+            offset: const Offset(0, -25),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Notification Icon
+                SizedBox(
+                  width: double.infinity,
+                  child: Align(
+                    alignment: const Alignment(0, 0.0),
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 1),
+                      child: SvgPicture.asset(
+                        'assets/images/Bell.svg',
+                        width: 270,
+                        height: 205,
                       ),
-                      child: _isRequestingPermission
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  BColors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Stay on track with reminders',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: BColors.black,
+                    fontFamily: 'K2D',
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Helpful notifications to guide you and keep you on track',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: BColors.black,
+                    fontFamily: 'K2D',
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 40),
+                // Buttons at bottom
+                Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _isRequestingPermission
+                            ? null
+                            : _requestNotificationPermission,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _isRequestingPermission
+                              ? BColors.grey
+                              : BColors.primary,
+                          foregroundColor: BColors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: _isRequestingPermission
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    BColors.white,
+                                  ),
+                                ),
+                              )
+                            : const Text(
+                                'Allow',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: BColors.white,
+                                  fontFamily: 'K2D',
                                 ),
                               ),
-                            )
-                          : const Text(
-                              'Allow',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: BColors.white,
-                                fontFamily: 'K2D',
-                              ),
-                            ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _navigateToNextScreen,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: BColors.softGrey,
-                        foregroundColor: BColors.darkGrey,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        side: BorderSide.none,
                       ),
-                      child: const Text(
-                        'Not Now',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: BColors.darkGrey,
-                          fontFamily: 'K2D',
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _navigateToNextScreen,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: BColors.softGrey,
+                          foregroundColor: BColors.darkGrey,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          side: BorderSide.none,
+                        ),
+                        child: const Text(
+                          'Not Now',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: BColors.darkGrey,
+                            fontFamily: 'K2D',
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 32),
-            ],
+                  ],
+                ),
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
         ),
       ),

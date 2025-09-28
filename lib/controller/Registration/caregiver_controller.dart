@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:lumra_project/model/user_model.dart';
-import 'package:lumra_project/controller/Registration/registration_controller.dart';
-import 'package:lumra_project/controller/Registration/name_controller.dart';
 import 'package:lumra_project/service/auth_signup.dart';
 import 'package:lumra_project/service/permission_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -22,7 +19,8 @@ class CaregiverController extends ChangeNotifier {
   // Store registration data directly in CaregiverController
   String _email = '';
   String _password = '';
-  String _name = '';
+  String _firstName = '';
+  String _lastName = '';
   String _gender = '';
   DateTime? _dob;
 
@@ -53,7 +51,8 @@ class CaregiverController extends ChangeNotifier {
   // Getters for registration data
   String get email => _email;
   String get password => _password;
-  String get name => _name;
+  String get firstName => _firstName;
+  String get lastName => _lastName;
   String get gender => _gender;
   DateTime? get dob => _dob;
 
@@ -66,13 +65,15 @@ class CaregiverController extends ChangeNotifier {
   void setRegistrationData({
     required String email,
     required String password,
-    required String name,
+    required String firstName,
+    required String lastName,
     required String gender,
     required DateTime? dob,
   }) {
     _email = email;
     _password = password;
-    _name = name;
+    _firstName = firstName;
+    _lastName = lastName;
     _gender = gender;
     _dob = dob;
     notifyListeners();
@@ -109,23 +110,18 @@ class CaregiverController extends ChangeNotifier {
   }
 
   /// Save user data after email verification
+  /// NOTE: This method is NOT used in the QR code scanning flow.
+  /// The QR code scanning flow uses createCaregiverAccountWithLink() directly.
   Future<bool> saveUserDataAfterVerification() async {
     try {
-      // Get the stored registration data
-      final regController = Get.find<RegistrationController>();
-      final nameController = Get.find<NameController>();
+      // Check if we have a scanned QR code (linkedUserId)
+      if (_scannedQRCode == null || _scannedQRCode!.isEmpty) {
+        throw Exception('No QR code scanned. Please scan the QR code first.');
+      }
 
-      final bool success =
-          await FirebaseAuthService.saveUserDataAfterVerification(
-            role: 'caregiver',
-            name: nameController.nameController.text,
-            gender: regController.gender ?? '',
-            dob: regController.dob,
-            totalPoints: 0,
-            linkedUserId: _scannedQRCode,
-          );
-
-      return success;
+      // For QR code scanning flow, the account was already created with linkedUserId
+      // Just return true since the data is already saved
+      return true;
     } catch (e) {
       throw Exception('Failed to save user data: $e');
     }
@@ -194,13 +190,72 @@ class CaregiverController extends ChangeNotifier {
   }
 
   void resetScanningForError() {
+    // Reset only scanning state, keep registration data and permissions
     isScanning = true;
     isProcessing = false;
     lastProcessedCode = null;
     _lastErrorMessage = null; // Clear error message
     _isShowingErrorDialog = false; // Clear error dialog flag
-    // Also reset the scanner state
-    hasPermission = true; // Keep permission as true
+    // Keep permission as true
+    hasPermission = true;
+    notifyListeners();
+  }
+
+  /// Reset controller state for new scanning session
+  void resetForNewSession() {
+    isScanning = true;
+    isProcessing = false;
+    lastProcessedCode = null;
+    _lastErrorMessage = null;
+    _isShowingErrorDialog = false;
+    _scannedQRCode = null;
+    hasPermission = false;
+    _cameraPermissionGranted = false;
+
+    // Clear registration data for new session
+    _email = '';
+    _password = '';
+    _firstName = '';
+    _lastName = '';
+    _gender = '';
+    _dob = null;
+
+    notifyListeners();
+  }
+
+  /// Reset only scanning state without clearing registration data
+  void resetScanningStateOnly() {
+    isScanning = true;
+    isProcessing = false;
+    lastProcessedCode = null;
+    _lastErrorMessage = null;
+    _isShowingErrorDialog = false;
+    _scannedQRCode = null;
+    notifyListeners();
+  }
+
+  /// Clear all caregiver registration data (for back navigation or after success)
+  void clearAllCaregiverData() {
+    // Clear registration data
+    _email = '';
+    _password = '';
+    _firstName = '';
+    _lastName = '';
+    _gender = '';
+    _dob = null;
+    _scannedQRCode = null;
+
+    // Reset scanning state
+    isScanning = true;
+    isProcessing = false;
+    lastProcessedCode = null;
+    _lastErrorMessage = null;
+    _isShowingErrorDialog = false;
+
+    // Reset permissions
+    hasPermission = false;
+    _cameraPermissionGranted = false;
+
     notifyListeners();
   }
 
@@ -253,6 +308,12 @@ class CaregiverController extends ChangeNotifier {
         return {'success': false, 'errorMessage': null};
       }
 
+      // Show loading indicator immediately for any detected code
+      lastProcessedCode = code;
+      isScanning = false;
+      isProcessing = true;
+      notifyListeners();
+
       // Check if scanned value corresponds to a real user doc
       try {
         final DocumentSnapshot userDoc = await FirebaseFirestore.instance
@@ -260,20 +321,23 @@ class CaregiverController extends ChangeNotifier {
             .doc(code)
             .get();
         if (!userDoc.exists) {
-          // Not a valid UID → ignore completely (no loading, no linking)
+          // Not a valid UID → reset and ignore
+          isProcessing = false;
+          isScanning = true;
+          lastProcessedCode = null;
+          notifyListeners();
           return {'success': false, 'errorMessage': null};
         }
       } catch (_) {
-        // Any error in preflight → ignore completely
+        // Any error in preflight → reset and ignore
+        isProcessing = false;
+        isScanning = true;
+        lastProcessedCode = null;
+        notifyListeners();
         return {'success': false, 'errorMessage': null};
       }
 
-      // Valid UID found - show loading immediately and start linking process
-      lastProcessedCode = code;
-      isScanning = false;
-      isProcessing = true;
-      notifyListeners();
-
+      // Valid UID found - continue with linking process
       try {
         await _processValidUID(code);
         return {'success': true, 'errorMessage': null};
@@ -310,7 +374,10 @@ class CaregiverController extends ChangeNotifier {
 
     // linkedUserId is empty - proceed with linking
     // Use stored registration data from CaregiverController
-    if (_email.trim().isEmpty || _password.isEmpty || _name.trim().isEmpty) {
+    if (_email.trim().isEmpty ||
+        _password.isEmpty ||
+        _firstName.trim().isEmpty ||
+        _lastName.trim().isEmpty) {
       throw Exception(
         'Registration data is missing. Please restart the registration process.',
       );
@@ -320,11 +387,15 @@ class CaregiverController extends ChangeNotifier {
     await FirebaseAuthService.createCaregiverAccountWithLink(
       email: _email.trim().toLowerCase(),
       password: _password,
-      name: _name.trim(),
+      firstName: _firstName.trim(),
+      lastName: _lastName.trim(),
       gender: _gender,
       dob: _dob,
       linkedUserId: scannedUID,
     );
+
+    // Set the scanned QR code for future reference
+    setScannedQRCode(scannedUID);
 
     isProcessing = false;
     notifyListeners();
@@ -420,7 +491,7 @@ class CaregiverController extends ChangeNotifier {
                 navigateToNextScreen(context);
               },
               child: Text(
-                isSuccess ? 'Continue' : 'Skip',
+                isSuccess ? 'Continue' : 'close',
                 style: const TextStyle(
                   color: BColors.primary,
                   fontFamily: 'K2D',
@@ -472,32 +543,46 @@ class CaregiverController extends ChangeNotifier {
     try {
       final isVerified = await checkEmailVerification();
       if (isVerified) {
-        // Email is verified - save user data and navigate to next step
-        try {
-          final success = await saveUserDataAfterVerification();
-          if (success && context.mounted) {
+        // Email is verified - check if we're in QR code scanning flow or email verification flow
+        if (_scannedQRCode != null && _scannedQRCode!.isNotEmpty) {
+          // QR code scanning flow - account was already created with linkedUserId
+          // Just navigate to verified screen
+          if (context.mounted) {
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => const CaregiverVerifiedScreen(),
               ),
             );
-          } else if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Failed to save user data. Please try again.'),
-                backgroundColor: Colors.red,
-              ),
-            );
           }
-        } catch (e) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(e.toString().replaceFirst('Exception: ', '')),
-                backgroundColor: Colors.red,
-              ),
-            );
+        } else {
+          // Email verification flow - need to save user data
+          try {
+            final success = await saveUserDataAfterVerification();
+            if (success && context.mounted) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CaregiverVerifiedScreen(),
+                ),
+              );
+            } else if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Failed to save user data. Please try again.'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          } catch (e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(e.toString().replaceFirst('Exception: ', '')),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
           }
         }
       } else {

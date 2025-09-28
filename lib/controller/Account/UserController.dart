@@ -7,27 +7,24 @@ import 'package:lumra_project/controller/auth/auth_controller.dart';
 class UserController {
   final FirebaseFirestore db;
 
- 
   final AuthController authController = Get.find<AuthController>();
 
   UserController(this.db);
 
-  
   final user = Rxn<UserModel>();
 
- 
-  late TextEditingController nameController;
+  late TextEditingController firstNameController;
+  late TextEditingController lastNameController;
   late TextEditingController usernameController;
   late TextEditingController emailController;
 
-  
   var role = ''.obs;
   var gender = ''.obs;
   var dob = DateTime.now().obs;
 
-  
   void init() {
-    nameController = TextEditingController();
+    firstNameController = TextEditingController();
+    lastNameController = TextEditingController();
     usernameController = TextEditingController();
     emailController = TextEditingController();
 
@@ -37,13 +34,12 @@ class UserController {
     }
   }
 
- 
   void _watchUser(String uid) {
     db.collection('users').doc(uid).snapshots().listen((doc) {
       if (doc.exists) {
         user.value = UserModel.fromDoc(doc);
-
-        nameController.text = user.value!.name;
+        firstNameController.text = user.value!.firstName;
+        lastNameController.text = user.value!.lastName;
         role.value = user.value!.role;
         emailController.text = user.value!.email;
         gender.value = user.value!.gender.trim().toLowerCase();
@@ -52,15 +48,14 @@ class UserController {
     });
   }
 
-  
   void updateUserFromControllers() {
     if (user.value == null) return;
 
     final updatedUser = user.value!.copyWith(
-      name: nameController.text,
+      firstName: firstNameController.text,
+      lastName: lastNameController.text,
       email: emailController.text,
       gender: gender.value.trim().toLowerCase(),
-      
       dob: dob.value,
       role: role.value,
     );
@@ -71,9 +66,9 @@ class UserController {
     }
   }
 
- 
   void dispose() {
-    nameController.dispose();
+    firstNameController.dispose();
+    lastNameController.dispose();
     usernameController.dispose();
     emailController.dispose();
   }

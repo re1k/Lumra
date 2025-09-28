@@ -38,11 +38,13 @@ class AppButton extends StatelessWidget {
                   BorderSide(color: Colors.grey.shade400, width: 1),
                 ),
         ),
-        child: isLoading
-            ? const CircularProgressIndicator(
-                color: Colors.white,
-              )
-            : Text(
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Keep the same layout size by always laying out the text
+            Opacity(
+              opacity: isLoading ? 0 : 1,
+              child: Text(
                 text,
                 style: const TextStyle(
                   fontSize: 16,
@@ -51,6 +53,18 @@ class AppButton extends StatelessWidget {
                   fontFamily: 'K2D',
                 ).copyWith(color: enabled ? BColors.white : BColors.white),
               ),
+            ),
+            if (isLoading)
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

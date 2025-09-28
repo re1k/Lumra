@@ -15,18 +15,27 @@ class OnboardingCompleteScreen extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+          child: Transform.translate(
+            offset: const Offset(0, -25),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
               // Success Icon
-              Center(
-                child: SvgPicture.asset(
-                  'assets/images/Successful.svg',
-                  width: 270,
-                  height: 200,
+              SizedBox(
+                width: double.infinity,
+                child: Align(
+                  alignment: const Alignment(0, 0.0),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 1),
+                    child: SvgPicture.asset(
+                      'assets/images/Successful.svg',
+                      width: 270,
+                      height: 205,
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 4),
               Text(
                 'We\'re all set!',
                 style: const TextStyle(
@@ -57,7 +66,8 @@ class OnboardingCompleteScreen extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 32),
-            ],
+              ],
+            ),
           ),
         ),
       ),

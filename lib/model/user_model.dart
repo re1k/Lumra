@@ -1,5 +1,7 @@
 class UserModel {
   final String name;
+  final String firstName;
+  final String lastName;
   final String email;
   final String password;
   final DateTime? dob;
@@ -8,6 +10,8 @@ class UserModel {
 
   UserModel({
     this.name = '',
+    this.firstName = '',
+    this.lastName = '',
     this.email = '',
     this.password = '',
     this.dob,
@@ -17,6 +21,8 @@ class UserModel {
 
   UserModel copyWith({
     String? name,
+    String? firstName,
+    String? lastName,
     String? email,
     String? password,
     DateTime? dob,
@@ -25,6 +31,8 @@ class UserModel {
   }) {
     return UserModel(
       name: name ?? this.name,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
       email: email ?? this.email,
       password: password ?? this.password,
       dob: dob ?? this.dob,

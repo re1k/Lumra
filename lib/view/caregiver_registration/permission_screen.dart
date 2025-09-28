@@ -50,9 +50,12 @@ class _CaregiverPermissionScreenState extends State<CaregiverPermissionScreen> {
       backgroundColor: BColors.white,
       appBar: AppBar(
         backgroundColor: BColors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: BColors.darkGrey),
-          onPressed: () => Navigator.pop(context),
+        leading: Padding(
+          padding: const EdgeInsets.only(top: 17),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: BColors.darkGrey),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
       ),
       body: Stack(
@@ -64,7 +67,7 @@ class _CaregiverPermissionScreenState extends State<CaregiverPermissionScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Progress Bar
-                  SegmentedProgressBar(currentStep: 3, totalSteps: 4),
+                  SegmentedProgressBar(currentStep: 2, totalSteps: 3),
                   const SizedBox(height: 32),
                   Text(
                     'Camera Permission',
