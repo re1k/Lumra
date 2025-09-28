@@ -19,8 +19,7 @@ class CaregiverCreateAccountScreen extends StatefulWidget {
       _CaregiverCreateAccountScreenState();
 }
 
-class _CaregiverCreateAccountScreenState
-    extends State<CaregiverCreateAccountScreen> {
+class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScreen> {
   late RegistrationController _registrationController;
   late CaregiverController _caregiverController;
   late NameController _nameController;
@@ -29,36 +28,48 @@ class _CaregiverCreateAccountScreenState
   @override
   void initState() {
     super.initState();
-    // Register controllers with GetX so they're available throughout the flow
     _registrationController = Get.put(RegistrationController());
     _caregiverController = Get.put(CaregiverController());
     _nameController = Get.put(NameController());
 
-    // Reset caregiver controller for new registration session
     _caregiverController.resetForNewSession();
 
-    // Add listeners to controllers for UI updates
     _registrationController.addListener(_onControllerChange);
     _nameController.addListener(_onControllerChange);
   }
 
   void _onControllerChange() {
-    setState(() {});
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _waitForKeyboardToClose() async {
+    if (MediaQuery.of(context).viewInsets.bottom > 0) {
+      FocusScope.of(context).unfocus();
+      while (MediaQuery.of(context).viewInsets.bottom > 0) {
+        await Future.delayed(const Duration(milliseconds: 16));
+      }
+    }
+  }
+
+  Future<void> _navigateSafely(Function action) async {
+    await _waitForKeyboardToClose();
+    await WidgetsBinding.instance.endOfFrame;
+    if (mounted) {
+      action();
+    }
   }
 
   Future<void> _selectDateOfBirth() async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate:
-          _registrationController.dob ??
-          DateTime(1980), // Default to middle of allowed range
-      firstDate: DateTime(1955, 1, 1), // January 1, 1955
-      lastDate: DateTime(2007, 12, 31), // December 31, 2007
+      initialDate: _registrationController.dob ?? DateTime(1980),
+      firstDate: DateTime(1955, 1, 1),
+      lastDate: DateTime(2007, 12, 31),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF5F8C85), // BColors.buttonPrimary
+              primary: Color(0xFF5F8C85),
               onPrimary: Colors.white,
               onSurface: Colors.black,
             ),
@@ -75,6 +86,7 @@ class _CaregiverCreateAccountScreenState
   @override
   Widget build(BuildContext context) {
     final regController = _registrationController;
+
     return Scaffold(
       backgroundColor: BColors.white,
       appBar: AppBar(
@@ -84,11 +96,12 @@ class _CaregiverCreateAccountScreenState
           child: IconButton(
             icon: const Icon(Icons.arrow_back, color: BColors.darkGrey),
             onPressed: () {
-              // Clear all caregiver data when going back to WelcomePage
-              _caregiverController.clearAllCaregiverData();
-              _registrationController.clearAllData();
-              _nameController.clearAllData();
-              Navigator.pop(context);
+              _navigateSafely(() {
+                _caregiverController.clearAllCaregiverData();
+                _registrationController.clearAllData();
+                _nameController.clearAllData();
+                Navigator.pop(context);
+              });
             },
           ),
         ),
@@ -100,12 +113,12 @@ class _CaregiverCreateAccountScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Progress Bar
                 SegmentedProgressBar(currentStep: 1, totalSteps: 3),
                 const SizedBox(height: 32),
-                Text(
+
+                const Text(
                   'Create your caregiver account',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: BColors.black,
@@ -113,82 +126,76 @@ class _CaregiverCreateAccountScreenState
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(
+
+                const Text(
                   'Note that a caregiver account requires linking with an unlinked ADHD account',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     color: BColors.black,
                     fontFamily: 'K2D',
                   ),
                 ),
                 const SizedBox(height: 20),
-                // First Name Field
+
+                // First Name
                 Text.rich(
                   TextSpan(
                     children: [
-                      TextSpan(
+                      const TextSpan(
                         text: 'First Name',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.normal,
+                          fontWeight: FontWeight.w500,
                           color: BColors.black,
                           fontFamily: 'K2D',
-                        ).copyWith(fontWeight: FontWeight.w500),
+                        ),
                       ),
                       TextSpan(
                         text: ' *',
-                        style:
-                            const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.normal,
-                              color: BColors.black,
-                              fontFamily: 'K2D',
-                            ).copyWith(
-                              fontWeight: FontWeight.w500,
-                              color: Colors.red,
-                            ),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'K2D',
+                        ).copyWith(color: Colors.red),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 8),
-                // First Name Field Container with Character Counter
+
                 Stack(
                   children: [
                     TextFormField(
                       controller: _nameController.firstNameController,
                       focusNode: _nameController.firstNameFocusNode,
-                      maxLength: 16,
+                      maxLength: 12,
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z ]')),
+                        FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z]')),
                       ],
                       onChanged: _nameController.updateFirstName,
-                      onTapOutside: (event) => FocusScope.of(context).unfocus(),
+                      onTapOutside: (_) => FocusScope.of(context).unfocus(),
                       decoration: InputDecoration(
                         counterText: '',
                         hintText: 'Sarah',
-                        hintStyle: TextStyle(color: BColors.darkGrey),
+                        hintStyle: const TextStyle(color: BColors.darkGrey),
                         errorText: _nameController.firstNameFieldTouched
                             ? _nameController.firstNameError
                             : null,
                       ),
                     ),
-                    // Character Counter positioned at top-right
                     Positioned(
                       top: 8,
                       right: 12,
                       child: ValueListenableBuilder<int>(
-                        valueListenable:
-                            _nameController.firstNameCharacterCount,
+                        valueListenable: _nameController.firstNameCharacterCount,
                         builder: (context, count, child) {
                           return Text(
-                            '$count/16',
+                            '$count/12',
                             style: const TextStyle(
                               fontSize: 12,
-                              fontWeight: FontWeight.normal,
                               color: BColors.darkGrey,
                               fontFamily: 'K2D',
-                            ).copyWith(fontSize: 12, color: BColors.darkGrey),
+                            ),
                           );
                         },
                       ),
@@ -196,58 +203,53 @@ class _CaregiverCreateAccountScreenState
                   ],
                 ),
                 const SizedBox(height: 24),
-                // Last Name Field
+
+                // Last Name
                 Text.rich(
                   TextSpan(
                     children: [
-                      TextSpan(
+                      const TextSpan(
                         text: 'Last Name',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.normal,
+                          fontWeight: FontWeight.w500,
                           color: BColors.black,
                           fontFamily: 'K2D',
-                        ).copyWith(fontWeight: FontWeight.w500),
+                        ),
                       ),
                       TextSpan(
                         text: ' *',
-                        style:
-                            const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.normal,
-                              color: BColors.black,
-                              fontFamily: 'K2D',
-                            ).copyWith(
-                              fontWeight: FontWeight.w500,
-                              color: Colors.red,
-                            ),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'K2D',
+                        ).copyWith(color: Colors.red),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 8),
-                // Last Name Field Container with Character Counter
+
                 Stack(
                   children: [
                     TextFormField(
                       controller: _nameController.lastNameController,
                       focusNode: _nameController.lastNameFocusNode,
-                      maxLength: 16,
+                      maxLength: 12,
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z ]')),
+                        FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z]')),
                       ],
                       onChanged: _nameController.updateLastName,
-                      onTapOutside: (event) => FocusScope.of(context).unfocus(),
+                      onTapOutside: (_) => FocusScope.of(context).unfocus(),
                       decoration: InputDecoration(
                         counterText: '',
                         hintText: 'Aljohani',
-                        hintStyle: TextStyle(color: BColors.darkGrey),
+                        hintStyle: const TextStyle(color: BColors.darkGrey),
                         errorText: _nameController.lastNameFieldTouched
                             ? _nameController.lastNameError
                             : null,
                       ),
                     ),
-                    // Character Counter positioned at top-right
                     Positioned(
                       top: 8,
                       right: 12,
@@ -255,13 +257,12 @@ class _CaregiverCreateAccountScreenState
                         valueListenable: _nameController.lastNameCharacterCount,
                         builder: (context, count, child) {
                           return Text(
-                            '$count/16',
+                            '$count/12',
                             style: const TextStyle(
                               fontSize: 12,
-                              fontWeight: FontWeight.normal,
                               color: BColors.darkGrey,
                               fontFamily: 'K2D',
-                            ).copyWith(fontSize: 12, color: BColors.darkGrey),
+                            ),
                           );
                         },
                       ),
@@ -269,45 +270,40 @@ class _CaregiverCreateAccountScreenState
                   ],
                 ),
                 const SizedBox(height: 24),
-                // Email Field
+
+                // Email
                 Text.rich(
                   TextSpan(
                     children: [
-                      TextSpan(
+                      const TextSpan(
                         text: 'Email address',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.normal,
+                          fontWeight: FontWeight.w500,
                           color: BColors.black,
                           fontFamily: 'K2D',
-                        ).copyWith(fontWeight: FontWeight.w500),
+                        ),
                       ),
                       TextSpan(
                         text: ' *',
-                        style:
-                            const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.normal,
-                              color: BColors.black,
-                              fontFamily: 'K2D',
-                            ).copyWith(
-                              fontWeight: FontWeight.w500,
-                              color: Colors.red,
-                            ),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'K2D',
+                        ).copyWith(color: Colors.red),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 8),
+
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
-                    boxShadow:
-                        regController.emailFieldTouched &&
-                            regController.emailError != null
+                    boxShadow: regController.emailFieldTouched && regController.emailError != null
                         ? [
                             BoxShadow(
-                              color: BColors.darkGrey.withValues(alpha: 0.1),
+                              color: BColors.darkGrey.withOpacity(0.1),
                               blurRadius: 4,
                               offset: const Offset(0, 2),
                             ),
@@ -323,7 +319,7 @@ class _CaregiverCreateAccountScreenState
                     decoration: InputDecoration(
                       counterText: '',
                       hintText: 'example@gmail.com',
-                      hintStyle: TextStyle(color: BColors.darkGrey),
+                      hintStyle: const TextStyle(color: BColors.darkGrey),
                       errorText: regController.emailFieldTouched
                           ? regController.emailError
                           : null,
@@ -333,45 +329,40 @@ class _CaregiverCreateAccountScreenState
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Password Field
+
+                // Password
                 Text.rich(
                   TextSpan(
                     children: [
-                      TextSpan(
+                      const TextSpan(
                         text: 'Password',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.normal,
+                          fontWeight: FontWeight.w500,
                           color: BColors.black,
                           fontFamily: 'K2D',
-                        ).copyWith(fontWeight: FontWeight.w500),
+                        ),
                       ),
                       TextSpan(
                         text: ' *',
-                        style:
-                            const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.normal,
-                              color: BColors.black,
-                              fontFamily: 'K2D',
-                            ).copyWith(
-                              fontWeight: FontWeight.w500,
-                              color: Colors.red,
-                            ),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'K2D',
+                        ).copyWith(color: Colors.red),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 8),
+
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
-                    boxShadow:
-                        regController.passwordFieldTouched &&
-                            regController.passwordError != null
+                    boxShadow: regController.passwordFieldTouched && regController.passwordError != null
                         ? [
                             BoxShadow(
-                              color: BColors.darkGrey.withValues(alpha: 0.1),
+                              color: BColors.darkGrey.withOpacity(0.1),
                               blurRadius: 4,
                               offset: const Offset(0, 2),
                             ),
@@ -390,7 +381,7 @@ class _CaregiverCreateAccountScreenState
                     decoration: InputDecoration(
                       counterText: '',
                       hintText: '••••••••',
-                      hintStyle: TextStyle(color: BColors.darkGrey),
+                      hintStyle: const TextStyle(color: BColors.darkGrey),
                       errorText: regController.passwordFieldTouched
                           ? regController.passwordError
                           : null,
@@ -408,70 +399,58 @@ class _CaregiverCreateAccountScreenState
                   ),
                 ),
                 const SizedBox(height: 8),
-                // Password Strength Indicator (only show after typing)
+
                 if (regController.showPasswordStrength) ...[
-                  PasswordStrengthIndicator(
-                    password: regController.passwordController.text,
-                  ),
+                  PasswordStrengthIndicator(password: regController.passwordController.text),
                   const SizedBox(height: 12),
                 ],
-                // Password Rules
+
                 Padding(
                   padding: const EdgeInsets.only(left: 12),
                   child: Text(
                     'Password must include:\n• At least 8 characters\n• Include a number\n• Include a capital letter\n• Include a symbol',
-                    style:
-                        const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                          color: BColors.darkGrey,
-                          fontFamily: 'K2D',
-                        ).copyWith(
-                          fontSize: MediaQuery.of(context).size.width * 0.03,
-                          color: BColors.darkGrey,
-                        ),
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width * 0.03,
+                      color: BColors.darkGrey,
+                      fontFamily: 'K2D',
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
-                // Confirm Password Field
+
+                // Confirm Password
                 Text.rich(
                   TextSpan(
                     children: [
-                      TextSpan(
+                      const TextSpan(
                         text: 'Confirm Password',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.normal,
+                          fontWeight: FontWeight.w500,
                           color: BColors.black,
                           fontFamily: 'K2D',
-                        ).copyWith(fontWeight: FontWeight.w500),
+                        ),
                       ),
                       TextSpan(
                         text: ' *',
-                        style:
-                            const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.normal,
-                              color: BColors.black,
-                              fontFamily: 'K2D',
-                            ).copyWith(
-                              fontWeight: FontWeight.w500,
-                              color: Colors.red,
-                            ),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'K2D',
+                        ).copyWith(color: Colors.red),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 8),
+
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
-                    boxShadow:
-                        regController.confirmPasswordFieldTouched &&
-                            regController.confirmPasswordError != null
+                    boxShadow: regController.confirmPasswordFieldTouched && regController.confirmPasswordError != null
                         ? [
                             BoxShadow(
-                              color: BColors.darkGrey.withValues(alpha: 0.1),
+                              color: BColors.darkGrey.withOpacity(0.1),
                               blurRadius: 4,
                               offset: const Offset(0, 2),
                             ),
@@ -486,7 +465,7 @@ class _CaregiverCreateAccountScreenState
                     decoration: InputDecoration(
                       counterText: '',
                       hintText: '••••••••',
-                      hintStyle: TextStyle(color: BColors.darkGrey),
+                      hintStyle: const TextStyle(color: BColors.darkGrey),
                       errorText: regController.confirmPasswordFieldTouched
                           ? regController.confirmPasswordError
                           : null,
@@ -498,43 +477,39 @@ class _CaregiverCreateAccountScreenState
                               ? Icons.visibility
                               : Icons.visibility_off,
                         ),
-                        onPressed:
-                            regController.toggleConfirmPasswordVisibility,
+                        onPressed: regController.toggleConfirmPasswordVisibility,
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Gender Selection
+
+                // Gender
                 Text.rich(
                   TextSpan(
                     children: [
-                      TextSpan(
+                      const TextSpan(
                         text: 'Gender',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.normal,
+                          fontWeight: FontWeight.w500,
                           color: BColors.black,
                           fontFamily: 'K2D',
-                        ).copyWith(fontWeight: FontWeight.w500),
+                        ),
                       ),
                       TextSpan(
                         text: ' *',
-                        style:
-                            const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.normal,
-                              color: BColors.black,
-                              fontFamily: 'K2D',
-                            ).copyWith(
-                              fontWeight: FontWeight.w500,
-                              color: Colors.red,
-                            ),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'K2D',
+                        ).copyWith(color: Colors.red),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 8),
+
                 Row(
                   children: [
                     Expanded(
@@ -544,19 +519,14 @@ class _CaregiverCreateAccountScreenState
                           _registrationController.onGenderFieldTouched();
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 14,
-                            horizontal: 14,
-                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
                           decoration: BoxDecoration(
                             color: _registrationController.gender == 'Male'
-                                ? BColors.primary.withValues(alpha: 0.2)
+                                ? BColors.primary.withOpacity(0.2)
                                 : Colors.white,
                             border: Border.all(
-                              color:
-                                  _registrationController.genderFieldTouched &&
-                                      _registrationController.genderError !=
-                                          null
+                              color: _registrationController.genderFieldTouched &&
+                                      _registrationController.genderError != null
                                   ? BColors.error
                                   : Colors.grey,
                               width: 1.0,
@@ -564,35 +534,13 @@ class _CaregiverCreateAccountScreenState
                             borderRadius: BorderRadius.circular(14),
                             boxShadow: [
                               BoxShadow(
-                                color: BColors.darkGrey.withValues(alpha: 0.1),
+                                color: BColors.darkGrey.withOpacity(0.1),
                                 blurRadius: 4,
                                 offset: const Offset(0, 2),
                               ),
                             ],
                           ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  'Male',
-                                  textAlign: TextAlign.center,
-                                  style:
-                                      const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.normal,
-                                        color: BColors.black,
-                                        fontFamily: 'K2D',
-                                      ).copyWith(
-                                        fontWeight:
-                                            _registrationController.gender ==
-                                                'Male'
-                                            ? FontWeight.w500
-                                            : FontWeight.w400,
-                                      ),
-                                ),
-                              ),
-                            ],
-                          ),
+                          child: const Center(child: Text('Male')),
                         ),
                       ),
                     ),
@@ -604,19 +552,14 @@ class _CaregiverCreateAccountScreenState
                           _registrationController.onGenderFieldTouched();
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 14,
-                            horizontal: 14,
-                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
                           decoration: BoxDecoration(
                             color: _registrationController.gender == 'Female'
-                                ? BColors.primary.withValues(alpha: 0.3)
+                                ? BColors.primary.withOpacity(0.3)
                                 : Colors.white,
                             border: Border.all(
-                              color:
-                                  _registrationController.genderFieldTouched &&
-                                      _registrationController.genderError !=
-                                          null
+                              color: _registrationController.genderFieldTouched &&
+                                      _registrationController.genderError != null
                                   ? BColors.error
                                   : Colors.grey,
                               width: 1.0,
@@ -624,165 +567,127 @@ class _CaregiverCreateAccountScreenState
                             borderRadius: BorderRadius.circular(14),
                             boxShadow: [
                               BoxShadow(
-                                color: BColors.darkGrey.withValues(alpha: 0.1),
+                                color: BColors.darkGrey.withOpacity(0.1),
                                 blurRadius: 4,
                                 offset: const Offset(0, 2),
                               ),
                             ],
                           ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  'Female',
-                                  textAlign: TextAlign.center,
-                                  style:
-                                      const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.normal,
-                                        color: BColors.black,
-                                        fontFamily: 'K2D',
-                                      ).copyWith(
-                                        fontWeight:
-                                            _registrationController.gender ==
-                                                'Female'
-                                            ? FontWeight.w500
-                                            : FontWeight.w400,
-                                      ),
-                                ),
-                              ),
-                            ],
-                          ),
+                          child: const Center(child: Text('Female')),
                         ),
                       ),
                     ),
                   ],
                 ),
-                // Gender error (if any)
+
                 if (_registrationController.genderFieldTouched &&
                     _registrationController.genderError != null) ...[
                   const SizedBox(height: 8),
                   Text(
                     _registrationController.genderError!,
-                    style:
-                        const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                          color: BColors.darkGrey,
-                          fontFamily: 'K2D',
-                        ).copyWith(
-                          color: Colors.red,
-                          fontSize: MediaQuery.of(context).size.width * 0.03,
-                        ),
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width * 0.03,
+                      color: Colors.red,
+                      fontFamily: 'K2D',
+                    ),
                   ),
                 ],
                 const SizedBox(height: 24),
-                // Date of Birth Field
+
+                // Date of Birth
                 Text.rich(
                   TextSpan(
                     children: [
-                      TextSpan(
+                      const TextSpan(
                         text: 'Date of Birth',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.normal,
+                          fontWeight: FontWeight.w500,
                           color: BColors.black,
                           fontFamily: 'K2D',
-                        ).copyWith(fontWeight: FontWeight.w500),
+                        ),
                       ),
                       TextSpan(
                         text: ' *',
-                        style:
-                            const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.normal,
-                              color: BColors.black,
-                              fontFamily: 'K2D',
-                            ).copyWith(
-                              fontWeight: FontWeight.w500,
-                              color: Colors.red,
-                            ),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'K2D',
+                        ).copyWith(color: Colors.red),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 8),
+
                 TextFormField(
                   readOnly: true,
                   onTap: _selectDateOfBirth,
-                  decoration: InputDecoration(
-                    counterText: '',
-                    hintText: 'YYYY/MM/DD',
-                    hintStyle: TextStyle(color: BColors.darkGrey),
-                    errorText: regController.dobFieldTouched
-                        ? regController.dobError
-                        : null,
-                    suffixIcon: Icon(Icons.calendar_today),
-                  ),
                   controller: TextEditingController(
                     text: regController.dob != null
                         ? DateFormat('yyyy-MM-dd').format(regController.dob!)
                         : '',
                   ),
+                  decoration: InputDecoration(
+                    counterText: '',
+                    hintText: 'YYYY/MM/DD',
+                    hintStyle: const TextStyle(color: BColors.darkGrey),
+                    errorText:
+                        regController.dobFieldTouched ? regController.dobError : null,
+                    suffixIcon: const Icon(Icons.calendar_today),
+                  ),
                 ),
                 const SizedBox(height: 40),
-                // Create Account Button
+
+                // Next Button
                 AppButton(
                   enabled:
-                      _nameController.isNextButtonEnabled &&
-                      regController.validateForm(),
+                      _nameController.isNextButtonEnabled && regController.validateForm(),
                   text: 'Next',
                   isLoading: _isNextLoading,
-                  onPressed: () async {
-                    if (_nameController.isNextButtonEnabled &&
-                        regController.validateForm()) {
-                      setState(() {
-                        _isNextLoading = true;
-                      });
-                      // Call controller to validate email
-                      final result = await _caregiverController
-                          .validateEmailForRegistration(
-                            regController.emailController.text,
+                  onPressed: () {
+                    _navigateSafely(() async {
+                      if (_nameController.isNextButtonEnabled &&
+                          regController.validateForm()) {
+                        setState(() {
+                          _isNextLoading = true;
+                        });
+
+                        final result = await _caregiverController.validateEmailForRegistration(
+                          regController.emailController.text,
+                        );
+
+                        if (result['success'] == true) {
+                          _nameController.saveName();
+                          regController.saveRegistrationData();
+
+                          _caregiverController.setRegistrationData(
+                            email: regController.emailController.text.trim(),
+                            password: regController.passwordController.text,
+                            firstName: _nameController.firstNameController.text.trim(),
+                            lastName: _nameController.lastNameController.text.trim(),
+                            gender: regController.gender ?? '',
+                            dob: regController.dob,
                           );
 
-                      if (result['success'] == true) {
-                        // Email is valid and available, proceed to next step
-                        // Save the data for later use
-                        _nameController.saveName();
-                        regController.saveRegistrationData();
+                          setState(() {
+                            _isNextLoading = false;
+                          });
 
-                        // Store registration data in CaregiverController for persistence
-                        _caregiverController.setRegistrationData(
-                          email: regController.emailController.text.trim(),
-                          password: regController.passwordController.text,
-                          firstName: _nameController.firstNameController.text
-                              .trim(),
-                          lastName: _nameController.lastNameController.text
-                              .trim(),
-                          gender: regController.gender ?? '',
-                          dob: regController.dob,
-                        );
-
-                        setState(() {
-                          _isNextLoading = false;
-                        });
-
-                        // Navigate to permission screen
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const CaregiverPermissionScreen(),
-                          ),
-                        );
-                      } else {
-                        // Email validation failed, show error message
-                        setState(() {
-                          _isNextLoading = false;
-                          regController.emailError = result['error'];
-                        });
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const CaregiverPermissionScreen(),
+                            ),
+                          );
+                        } else {
+                          setState(() {
+                            _isNextLoading = false;
+                            regController.emailError = result['error'];
+                          });
+                        }
                       }
-                    }
+                    });
                   },
                 ),
                 const SizedBox(height: 32),
@@ -796,12 +701,8 @@ class _CaregiverCreateAccountScreenState
 
   @override
   void dispose() {
-    // Remove listeners before disposing
     _registrationController.removeListener(_onControllerChange);
     _nameController.removeListener(_onControllerChange);
-    // Don't manually dispose GetX-managed controllers
-    // GetX will handle their lifecycle
     super.dispose();
   }
 }
-// fix conflict!!!!!

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:lumra_project/controller/Homepage/Calendar/addEventController.dart';
 import 'package:lumra_project/model/Homepage/Calendar/calendarModel.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
 //import 'package:lumra_project/view/HomePage/Calendar/eventWidgets/addEventView.dart';
@@ -44,6 +46,8 @@ class BottomArea extends StatelessWidget {
           child: AddEventView(),
         ),
       );
+    // when the sheet closes, dispose controller → triggers onClose
+     Get.delete<AddEventController>();
     }
 
     //if there is no events it is going to contain "Tue, September 30" + the add button

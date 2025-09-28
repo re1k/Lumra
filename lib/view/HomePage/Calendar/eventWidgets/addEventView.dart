@@ -139,12 +139,14 @@ class AddEventView extends StatelessWidget {
               //Obx is from GetX. It automatically rebuilds this widget whenever the reactive variable changes (eventStart).
               Obx(() {
                 final startTimestamp = controller.eventStart.value;
+  
                 //this is just for UI, to make time human readable not timeStamp
                 final startText = startTimestamp != null
                     ? TimeOfDay.fromDateTime(
                         startTimestamp.toDate(),
                       ).format(Get.context!)
                     : 'Select Start Time';
+                final hasError = controller.startError.value != null;
                 return Column(
                crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -158,7 +160,7 @@ class AddEventView extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: BColors.darkGrey,
+                            color: hasError ? BColors.error : BColors.darkGrey,
                           ), // border color
                           borderRadius: BorderRadius.circular(
                             BSizes.inputFieldRadius,
@@ -173,6 +175,19 @@ class AddEventView extends StatelessWidget {
                         ),
                       ),
                     ),
+
+                                     // Error message below the field
+                    if (hasError)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4, left: 8),
+                        child: Text(
+                          controller.startError.value!,
+                          style: const TextStyle(
+                            color: BColors.error,
+                            fontSize: 14,
+                          ),
+                        ),
+                      )
                   ],
                 );
               }),

@@ -151,9 +151,7 @@ class AddEventController extends GetxController {
     // Update form validity (for the button)
     updateFormValidity();
 
-    return titleError.value == null &&
-        startError.value == null &&
-        endError.value == null;
+    return  endError.value == null &&  startError.value == null && titleError.value == null ;
   }
 
   // Now adding the event
@@ -203,8 +201,14 @@ class AddEventController extends GetxController {
 
   @override
   void onClose() {
-    titleController.dispose();
-    isEventAdded.value = false; // reset
-    super.onClose();
+  titleController.dispose();
+  eventStart.value = null;
+  eventEnd.value = null;
+  titleError.value = null;
+  startError.value = null;
+  endError.value = null;
+  isFormValid.value = false;
+  isEventAdded.value = false;
+  super.onClose();
   }
 }
