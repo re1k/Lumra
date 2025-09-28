@@ -148,8 +148,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: BSizes.sm),
-
                       // ==== Forgot Password Button ====
                       Align(
                         alignment: Alignment.centerRight,
@@ -161,6 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             "Forgot Password?",
                             style: TextStyle(
                               fontFamily: 'K2D',
+                              fontSize: BSizes.fontSizeSm,
                               color: BColors.primary,
                               fontWeight: FontWeight.bold,
                             ),
@@ -168,11 +167,110 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
 
+                      // ==== Email not verified message ====
+                      if (emailError == "EMAIL_NOT_VERIFIED")
+                        Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Center(
+                            child: (_resendCooldown == 0)
+                                ? (_resendTimer == null
+                                      // First time
+                                      ? RichText(
+                                          textAlign: TextAlign.center,
+                                          text: TextSpan(
+                                            style: const TextStyle(
+                                              fontFamily: 'K2D',
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            children: [
+                                              TextSpan(
+                                                text:
+                                                    "Your email is not verified ",
+                                                style: TextStyle(
+                                                  fontSize: BSizes.md,
+                                                  color: BColors.error,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: "Tap here to verify",
+                                                style: const TextStyle(
+                                                  color: BColors.primary,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontFamily: 'K2D',
+                                                  fontSize: BSizes.md,
+                                                  decoration:
+                                                      TextDecoration.underline,
+                                                ),
+                                                recognizer: TapGestureRecognizer()
+                                                  ..onTap = () async {
+                                                    final user = authController
+                                                        .currentUser;
+                                                    if (user != null &&
+                                                        !user.emailVerified) {
+                                                      await user
+                                                          .sendEmailVerification();
+                                                      _startResendCooldown();
+                                                      setState(() {
+                                                        emailError =
+                                                            "EMAIL_NOT_VERIFIED";
+                                                      });
+                                                    }
+                                                  },
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      // After timer finishes
+                                      : TextButton(
+                                          onPressed: () async {
+                                            final user =
+                                                authController.currentUser;
+                                            if (user != null &&
+                                                !user.emailVerified) {
+                                              await user
+                                                  .sendEmailVerification();
+                                              _startResendCooldown();
+                                              setState(() {
+                                                emailError =
+                                                    "EMAIL_NOT_VERIFIED";
+                                              });
+                                            }
+                                          },
+                                          style: TextButton.styleFrom(
+                                            padding: EdgeInsets.zero,
+                                            minimumSize: const Size(0, 0),
+                                            tapTargetSize: MaterialTapTargetSize
+                                                .shrinkWrap,
+                                          ),
+                                          child: const Text(
+                                            "Resend verification email",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              color: BColors.primary,
+                                              fontFamily: 'K2D',
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ))
+                                // During cooldown
+                                : Text(
+                                    "Verification email sent. Resend in ${_resendCooldown}s",
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: BColors.primary,
+                                      fontFamily: 'K2D',
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                          ),
+                        ),
+
                       const SizedBox(height: 20),
                       // ==== Sign In Button ====
                       Obx(
                         () => SizedBox(
                           width: double.infinity,
+
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: BColors.primary,
@@ -180,7 +278,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 vertical: BSizes.md,
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
+                                borderRadius: BorderRadius.circular(16),
                               ),
                             ),
                             onPressed: authController.isLoading.value
@@ -265,102 +363,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-
-                      // ==== Email not verified message ====
-                      if (emailError == "EMAIL_NOT_VERIFIED")
-                        Padding(
-                          padding: const EdgeInsets.only(top: 12),
-                          child: Center(
-                            child: (_resendCooldown == 0)
-                                ? (_resendTimer == null
-                                      // First time
-                                      ? RichText(
-                                          textAlign: TextAlign.center,
-                                          text: TextSpan(
-                                            style: const TextStyle(
-                                              fontFamily: 'K2D',
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                            children: [
-                                              TextSpan(
-                                                text:
-                                                    "Your email is not verified ",
-                                                style: TextStyle(
-                                                  color: Theme.of(
-                                                    context,
-                                                  ).textTheme.titleSmall!.color,
-                                                ),
-                                              ),
-                                              TextSpan(
-                                                text: "Tap here to verify",
-                                                style: const TextStyle(
-                                                  color: BColors.primary,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontFamily: 'K2D',
-                                                ),
-                                                recognizer: TapGestureRecognizer()
-                                                  ..onTap = () async {
-                                                    final user = authController
-                                                        .currentUser;
-                                                    if (user != null &&
-                                                        !user.emailVerified) {
-                                                      await user
-                                                          .sendEmailVerification();
-                                                      _startResendCooldown();
-                                                      setState(() {
-                                                        emailError =
-                                                            "EMAIL_NOT_VERIFIED";
-                                                      });
-                                                    }
-                                                  },
-                                              ),
-                                            ],
-                                          ),
-                                        )
-                                      // After timer finishes
-                                      : TextButton(
-                                          onPressed: () async {
-                                            final user =
-                                                authController.currentUser;
-                                            if (user != null &&
-                                                !user.emailVerified) {
-                                              await user
-                                                  .sendEmailVerification();
-                                              _startResendCooldown();
-                                              setState(() {
-                                                emailError =
-                                                    "EMAIL_NOT_VERIFIED";
-                                              });
-                                            }
-                                          },
-                                          style: TextButton.styleFrom(
-                                            padding: EdgeInsets.zero,
-                                            minimumSize: const Size(0, 0),
-                                            tapTargetSize: MaterialTapTargetSize
-                                                .shrinkWrap,
-                                          ),
-                                          child: const Text(
-                                            "Resend verification email",
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                              color: BColors.primary,
-                                              fontFamily: 'K2D',
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ))
-                                // During cooldown
-                                : Text(
-                                    "Verification email sent. Resend in ${_resendCooldown}s",
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      color: BColors.primary,
-                                      fontFamily: 'K2D',
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                          ),
-                        ),
 
                       const SizedBox(height: BSizes.md + BSizes.sm),
                       // ==== Register Text ====

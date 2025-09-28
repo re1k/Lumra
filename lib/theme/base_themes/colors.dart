@@ -34,10 +34,10 @@ class BColors {
 
   ///Error and Validation Colors
   static const Color error = Color.fromARGB(255, 190, 72, 72);
-  static const Color warning = Color.fromARGB(255, 166, 108, 67);
+  static const Color warning = Color.fromARGB(255, 227, 155, 91);
   static const Color success = Color.fromARGB(255, 69, 135, 74);
   static const Color info = Color.fromARGB(255, 78, 134, 173);
-    static const Color extra = Color.fromARGB(255, 78, 134, 173);
+  static const Color extra = Color.fromARGB(255, 78, 134, 173);
 
   ///Neutral Shades
   static const Color black = Color(0xFF272727);

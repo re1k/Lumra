@@ -77,7 +77,7 @@ class Welcomepage extends StatelessWidget {
                       backgroundColor: BColors.primary,
                       padding: const EdgeInsets.symmetric(vertical: 20),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                     child: const Text(
@@ -110,7 +110,7 @@ class Welcomepage extends StatelessWidget {
 
                       padding: const EdgeInsets.symmetric(vertical: 20),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                     child: const Text(
