@@ -168,7 +168,7 @@ class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScr
                     TextFormField(
                       controller: _nameController.firstNameController,
                       focusNode: _nameController.firstNameFocusNode,
-                      maxLength: 16,
+                      maxLength: 12,
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z ]')),
                       ],
@@ -190,7 +190,7 @@ class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScr
                         valueListenable: _nameController.firstNameCharacterCount,
                         builder: (context, count, child) {
                           return Text(
-                            '$count/16',
+                            '$count/12',
                             style: const TextStyle(
                               fontSize: 12,
                               color: BColors.darkGrey,
@@ -235,7 +235,7 @@ class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScr
                     TextFormField(
                       controller: _nameController.lastNameController,
                       focusNode: _nameController.lastNameFocusNode,
-                      maxLength: 16,
+                      maxLength: 12,
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z ]')),
                       ],
@@ -257,7 +257,7 @@ class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScr
                         valueListenable: _nameController.lastNameCharacterCount,
                         builder: (context, count, child) {
                           return Text(
-                            '$count/16',
+                            '$count/12',
                             style: const TextStyle(
                               fontSize: 12,
                               color: BColors.darkGrey,

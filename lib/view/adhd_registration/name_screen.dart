@@ -118,7 +118,7 @@ class _NameScreenState extends State<NameScreen> {
                                       controller: _controller.firstNameController,
                                       focusNode: _controller.firstNameFocusNode,
                                       textInputAction: TextInputAction.next,
-                                      maxLength: 16,
+                                      maxLength: 12,
                                       inputFormatters: [
                                         FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z ]')),
                                       ],
@@ -143,7 +143,7 @@ class _NameScreenState extends State<NameScreen> {
                                         valueListenable: _controller.firstNameCharacterCount,
                                         builder: (context, count, child) {
                                           return Text(
-                                            '$count/16',
+                                            '$count/12',
                                             style: const TextStyle(
                                               fontSize: 12,
                                               color: BColors.darkGrey,
@@ -172,7 +172,7 @@ class _NameScreenState extends State<NameScreen> {
                                       controller: _controller.lastNameController,
                                       focusNode: _controller.lastNameFocusNode,
                                       textInputAction: TextInputAction.done,
-                                      maxLength: 16,
+                                      maxLength: 12,
                                       inputFormatters: [
                                         FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z ]')),
                                       ],
@@ -196,7 +196,7 @@ class _NameScreenState extends State<NameScreen> {
                                         valueListenable: _controller.lastNameCharacterCount,
                                         builder: (context, count, child) {
                                           return Text(
-                                            '$count/16',
+                                            '$count/12',
                                             style: const TextStyle(
                                               fontSize: 12,
                                               color: BColors.darkGrey,
