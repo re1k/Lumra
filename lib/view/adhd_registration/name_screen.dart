@@ -18,7 +18,8 @@ class NameScreen extends StatefulWidget {
 
 class _NameScreenState extends State<NameScreen> {
   late NameController _controller;
-  final RegistrationFlowController _flowController = Get.find<RegistrationFlowController>();
+  final RegistrationFlowController _flowController =
+      Get.find<RegistrationFlowController>();
 
   void _onControllerChange() {
     if (mounted) setState(() {});
@@ -33,14 +34,7 @@ class _NameScreenState extends State<NameScreen> {
 
   void _safeNavigate(Function action) {
     FocusScope.of(context).unfocus();
-
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (!mounted) return;
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) action();
-      });
-    });
+    action();
   }
 
   @override
@@ -66,185 +60,211 @@ class _NameScreenState extends State<NameScreen> {
               ),
             ),
           ),
-          body: Stack(
-            children: [
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      return SingleChildScrollView(
-                        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              return Stack(
+                children: [
+                  SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 32,
+                      ),
+                      child: SingleChildScrollView(
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
                         child: ConstrainedBox(
-                          constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                          child: IntrinsicHeight(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SegmentedProgressBar(currentStep: 1, totalSteps: 7),
-                                const SizedBox(height: 32),
-                                const Text(
-                                  'What\'s your name?',
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: BColors.black,
-                                    fontFamily: 'K2D',
-                                  ),
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight - 64,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SegmentedProgressBar(
+                                currentStep: 1,
+                                totalSteps: 7,
+                              ),
+                              const SizedBox(height: 32),
+                              const Text(
+                                'What\'s your name?',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: BColors.black,
+                                  fontFamily: 'K2D',
                                 ),
-                                const SizedBox(height: 8),
-                                const Text(
-                                  'We’d love to know your name to get started!',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: BColors.black,
-                                    fontFamily: 'K2D',
-                                  ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                "We'd love to know your name to get started!",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: BColors.black,
+                                  fontFamily: 'K2D',
                                 ),
-                                const SizedBox(height: 24),
-                                const Text(
-                                  'First Name',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: BColors.black,
-                                    fontFamily: 'K2D',
-                                  ),
+                              ),
+                              const SizedBox(height: 24),
+                              const Text(
+                                'First Name',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: BColors.black,
+                                  fontFamily: 'K2D',
                                 ),
-                                const SizedBox(height: 8),
-                                Stack(
-                                  children: [
-                                    TextFormField(
-                                      controller: _controller.firstNameController,
-                                      focusNode: _controller.firstNameFocusNode,
-                                      textInputAction: TextInputAction.next,
-                                      maxLength: 12,
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z]')),
-                                      ],
-                                      onTapOutside: (_) => FocusScope.of(context).unfocus(),
-                                      onFieldSubmitted: (_) => FocusScope.of(context)
-                                          .requestFocus(_controller.lastNameFocusNode),
-                                      decoration: InputDecoration(
-                                        counterText: '',
-                                        hintText: 'Sarah',
-                                        hintStyle: const TextStyle(color: BColors.darkGrey),
-                                        errorText: _controller.firstNameFieldTouched
-                                            ? _controller.firstNameError
-                                            : null,
+                              ),
+                              const SizedBox(height: 8),
+                              Stack(
+                                children: [
+                                  TextFormField(
+                                    controller: _controller.firstNameController,
+                                    focusNode: _controller.firstNameFocusNode,
+                                    textInputAction: TextInputAction.next,
+                                    maxLength: 12,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(
+                                        RegExp(r'[A-Za-z]'),
                                       ),
-                                      onChanged: _controller.updateFirstName,
-                                      onTap: _controller.onFirstNameFieldTouched,
-                                    ),
-                                    Positioned(
-                                      top: 8,
-                                      right: 12,
-                                      child: ValueListenableBuilder<int>(
-                                        valueListenable: _controller.firstNameCharacterCount,
-                                        builder: (context, count, child) {
-                                          return Text(
-                                            '$count/12',
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              color: BColors.darkGrey,
-                                              fontFamily: 'K2D',
-                                            ),
-                                          );
-                                        },
+                                    ],
+                                    onTapOutside: (_) =>
+                                        FocusScope.of(context).unfocus(),
+                                    onFieldSubmitted: (_) =>
+                                        FocusScope.of(context).requestFocus(
+                                          _controller.lastNameFocusNode,
+                                        ),
+                                    decoration: InputDecoration(
+                                      counterText: '',
+                                      hintText: 'Sarah',
+                                      hintStyle: const TextStyle(
+                                        color: BColors.darkGrey,
                                       ),
+                                      errorText:
+                                          _controller.firstNameFieldTouched
+                                          ? _controller.firstNameError
+                                          : null,
                                     ),
-                                  ],
-                                ),
-                                const SizedBox(height: 24),
-                                const Text(
-                                  'Last Name',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: BColors.black,
-                                    fontFamily: 'K2D',
+                                    onChanged: _controller.updateFirstName,
+                                    onTap: _controller.onFirstNameFieldTouched,
                                   ),
-                                ),
-                                const SizedBox(height: 8),
-                                Stack(
-                                  children: [
-                                    TextFormField(
-                                      controller: _controller.lastNameController,
-                                      focusNode: _controller.lastNameFocusNode,
-                                      textInputAction: TextInputAction.done,
-                                      maxLength: 12,
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z]')),
-                                      ],
-                                      onTapOutside: (_) => FocusScope.of(context).unfocus(),
-                                      onFieldSubmitted: (_) => _controller.lastNameFocusNode.unfocus(),
-                                      decoration: InputDecoration(
-                                        counterText: '',
-                                        hintText: 'Aljohani',
-                                        hintStyle: const TextStyle(color: BColors.darkGrey),
-                                        errorText: _controller.lastNameFieldTouched
-                                            ? _controller.lastNameError
-                                            : null,
-                                      ),
-                                      onChanged: _controller.updateLastName,
-                                      onTap: _controller.onLastNameFieldTouched,
+                                  Positioned(
+                                    top: 8,
+                                    right: 12,
+                                    child: ValueListenableBuilder<int>(
+                                      valueListenable:
+                                          _controller.firstNameCharacterCount,
+                                      builder: (context, count, child) {
+                                        return Text(
+                                          '$count/12',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: BColors.darkGrey,
+                                            fontFamily: 'K2D',
+                                          ),
+                                        );
+                                      },
                                     ),
-                                    Positioned(
-                                      top: 8,
-                                      right: 12,
-                                      child: ValueListenableBuilder<int>(
-                                        valueListenable: _controller.lastNameCharacterCount,
-                                        builder: (context, count, child) {
-                                          return Text(
-                                            '$count/12',
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              color: BColors.darkGrey,
-                                              fontFamily: 'K2D',
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              const Text(
+                                'Last Name',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: BColors.black,
+                                  fontFamily: 'K2D',
                                 ),
-                                const Spacer(),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(height: 8),
+                              Stack(
+                                children: [
+                                  TextFormField(
+                                    controller: _controller.lastNameController,
+                                    focusNode: _controller.lastNameFocusNode,
+                                    textInputAction: TextInputAction.done,
+                                    maxLength: 12,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(
+                                        RegExp(r'[A-Za-z]'),
+                                      ),
+                                    ],
+                                    onTapOutside: (_) =>
+                                        FocusScope.of(context).unfocus(),
+                                    onFieldSubmitted: (_) =>
+                                        _controller.lastNameFocusNode.unfocus(),
+                                    decoration: InputDecoration(
+                                      counterText: '',
+                                      hintText: 'Aljohani',
+                                      hintStyle: const TextStyle(
+                                        color: BColors.darkGrey,
+                                      ),
+                                      errorText:
+                                          _controller.lastNameFieldTouched
+                                          ? _controller.lastNameError
+                                          : null,
+                                    ),
+                                    onChanged: _controller.updateLastName,
+                                    onTap: _controller.onLastNameFieldTouched,
+                                  ),
+                                  Positioned(
+                                    top: 8,
+                                    right: 12,
+                                    child: ValueListenableBuilder<int>(
+                                      valueListenable:
+                                          _controller.lastNameCharacterCount,
+                                      builder: (context, count, child) {
+                                        return Text(
+                                          '$count/12',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: BColors.darkGrey,
+                                            fontFamily: 'K2D',
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(
+                                height: 100,
+                              ), // Add space for the button
+                            ],
                           ),
                         ),
+                      ),
+                    ),
+                  ),
+                  Consumer<NameController>(
+                    builder: (context, controller, child) {
+                      return NextButton(
+                        enabled: controller.isNextButtonEnabled,
+                        onPressed: () {
+                          if (controller.isNextButtonEnabled) {
+                            _safeNavigate(() {
+                              _flowController.updateFromNameScreen(
+                                controller.firstNameController.text,
+                                controller.lastNameController.text,
+                              );
+                              controller.saveFirstName();
+                              controller.saveLastName();
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const QuestionScreen(questionIndex: 0),
+                                ),
+                              );
+                            });
+                          }
+                        },
                       );
                     },
                   ),
-                ),
-              ),
-              Consumer<NameController>(
-                builder: (context, controller, child) {
-                  return NextButton(
-                    enabled: controller.isNextButtonEnabled,
-                    onPressed: () {
-                      if (controller.isNextButtonEnabled) {
-                        _safeNavigate(() {
-                          _flowController.updateFromNameScreen(
-                            controller.firstNameController.text,
-                            controller.lastNameController.text,
-                          );
-                          controller.saveFirstName();
-                          controller.saveLastName();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const QuestionScreen(questionIndex: 0),
-                            ),
-                          );
-                        });
-                      }
-                    },
-                  );
-                },
-              ),
-            ],
+                ],
+              );
+            },
           ),
         ),
       ),

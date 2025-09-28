@@ -142,7 +142,7 @@ class _CaregiverCameraScanScreenState extends State<CaregiverCameraScanScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Point your camera at the QR code from your child\'s ADHD account to link the accounts',
+                    'Point your camera at the QR code from your ADHD user\'s account to link the accounts',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,

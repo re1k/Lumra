@@ -6,7 +6,8 @@ import 'package:lumra_project/service/auth_signup.dart';
 import 'package:lumra_project/service/permission_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lumra_project/view/caregiver_registration/camera_scan_screen.dart';
-import 'package:lumra_project/view/caregiver_registration/verified_screen.dart';
+import 'package:lumra_project/view/adhd_registration/notification_permission_screen.dart';
+import 'package:lumra_project/view/adhd_registration/onboarding_complete_screen.dart';
 import 'package:lumra_project/view/welcomePage.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
 
@@ -546,26 +547,48 @@ class CaregiverController extends ChangeNotifier {
         // Email is verified - check if we're in QR code scanning flow or email verification flow
         if (_scannedQRCode != null && _scannedQRCode!.isNotEmpty) {
           // QR code scanning flow - account was already created with linkedUserId
-          // Just navigate to verified screen
+          // Navigate directly to notification/onboarding
           if (context.mounted) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const CaregiverVerifiedScreen(),
-              ),
-            );
+            final granted =
+                await PermissionService.checkNotificationPermission();
+            if (granted) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const OnboardingCompleteScreen(),
+                ),
+              );
+            } else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationPermissionScreen(),
+                ),
+              );
+            }
           }
         } else {
           // Email verification flow - need to save user data
           try {
             final success = await saveUserDataAfterVerification();
             if (success && context.mounted) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const CaregiverVerifiedScreen(),
-                ),
-              );
+              final granted =
+                  await PermissionService.checkNotificationPermission();
+              if (granted) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const OnboardingCompleteScreen(),
+                  ),
+                );
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationPermissionScreen(),
+                  ),
+                );
+              }
             } else if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(

@@ -58,59 +58,100 @@ class _CaregiverPermissionScreenState extends State<CaregiverPermissionScreen> {
           ),
         ),
       ),
-      body: Stack(
-        children: [
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Progress Bar
-                  SegmentedProgressBar(currentStep: 2, totalSteps: 3),
-                  const SizedBox(height: 32),
-                  Text(
-                    'Camera Permission',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: BColors.black,
-                      fontFamily: 'K2D',
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return Stack(
+            children: [
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 32,
+                  ),
+                  child: SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight - 64,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Progress Bar
+                          SegmentedProgressBar(currentStep: 2, totalSteps: 3),
+                          const SizedBox(height: 32),
+                          Text(
+                            'Camera Permission',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: BColors.black,
+                              fontFamily: 'K2D',
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'We need access to your camera to scan QR code and connect you with your ADHD user\'s account',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: BColors.black,
+                              fontFamily: 'K2D',
+                            ),
+                          ),
+                          const SizedBox(height: 40),
+                          // Permission Icon
+                          // QR Scan Icon
+                          Center(
+                            child: SvgPicture.asset(
+                              'assets/images/scanQR.svg',
+                              width: 300,
+                              height: 300,
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 100,
+                          ), // Add space for the button
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'We need access to your camera to scan QR codes and connect with your child\'s account',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: BColors.black,
-                      fontFamily: 'K2D',
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-                  // Permission Icon
-                  // QR Scan Icon
-                  Center(
-                    child: SvgPicture.asset(
-                      'assets/images/scanQR.svg',
-                      width: 300,
-                      height: 300,
-                    ),
-                  ),
-                  const Spacer(),
-                ],
+                ),
               ),
-            ),
-          ),
-          NextButton(
-            onPressed: () async {
-              await _controller.handleCameraPermissionRequestWithNavigation(
-                context,
-              );
-            },
-          ),
-        ],
+              Positioned(
+                bottom: 70,
+                right: 24,
+                child: SizedBox(
+                  width: 130,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      await _controller
+                          .handleCameraPermissionRequestWithNavigation(context);
+                    },
+                    style: Theme.of(context).elevatedButtonTheme.style
+                        ?.copyWith(
+                          backgroundColor: WidgetStateProperty.all(
+                            BColors.primary,
+                          ),
+                          foregroundColor: WidgetStateProperty.all(
+                            BColors.white,
+                          ),
+                          side: WidgetStateProperty.all(BorderSide.none),
+                        ),
+                    child: const Text(
+                      'Next',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: BColors.white,
+                        fontFamily: 'K2D',
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

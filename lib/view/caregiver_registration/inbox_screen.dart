@@ -146,7 +146,7 @@ class _CaregiverInboxScreenState extends State<CaregiverInboxScreen> {
                 const SizedBox(height: 35),
                 // Check Verification Button
                 AppButton(
-                  text: 'Check Verification',
+                  text: 'Next',
                   onPressed: () async {
                     await _checkEmailVerification(context);
                   },

@@ -19,7 +19,8 @@ class CaregiverCreateAccountScreen extends StatefulWidget {
       _CaregiverCreateAccountScreenState();
 }
 
-class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScreen> {
+class _CaregiverCreateAccountScreenState
+    extends State<CaregiverCreateAccountScreen> {
   late RegistrationController _registrationController;
   late CaregiverController _caregiverController;
   late NameController _nameController;
@@ -42,21 +43,14 @@ class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScr
     if (mounted) setState(() {});
   }
 
-  Future<void> _waitForKeyboardToClose() async {
-    if (MediaQuery.of(context).viewInsets.bottom > 0) {
-      FocusScope.of(context).unfocus();
-      while (MediaQuery.of(context).viewInsets.bottom > 0) {
-        await Future.delayed(const Duration(milliseconds: 16));
-      }
-    }
+  void _navigateSafely(Function action) {
+    FocusScope.of(context).unfocus();
+    action();
   }
 
-  Future<void> _navigateSafely(Function action) async {
-    await _waitForKeyboardToClose();
-    await WidgetsBinding.instance.endOfFrame;
-    if (mounted) {
-      action();
-    }
+  void _navigateSafelyAsync(Future<void> Function() action) {
+    FocusScope.of(context).unfocus();
+    action();
   }
 
   Future<void> _selectDateOfBirth() async {
@@ -89,6 +83,7 @@ class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScr
 
     return Scaffold(
       backgroundColor: BColors.white,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: BColors.white,
         leading: Padding(
@@ -108,6 +103,7 @@ class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScr
       ),
       body: SafeArea(
         child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             child: Column(
@@ -187,7 +183,8 @@ class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScr
                       top: 8,
                       right: 12,
                       child: ValueListenableBuilder<int>(
-                        valueListenable: _nameController.firstNameCharacterCount,
+                        valueListenable:
+                            _nameController.firstNameCharacterCount,
                         builder: (context, count, child) {
                           return Text(
                             '$count/12',
@@ -300,7 +297,9 @@ class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScr
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
-                    boxShadow: regController.emailFieldTouched && regController.emailError != null
+                    boxShadow:
+                        regController.emailFieldTouched &&
+                            regController.emailError != null
                         ? [
                             BoxShadow(
                               color: BColors.darkGrey.withOpacity(0.1),
@@ -359,7 +358,9 @@ class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScr
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
-                    boxShadow: regController.passwordFieldTouched && regController.passwordError != null
+                    boxShadow:
+                        regController.passwordFieldTouched &&
+                            regController.passwordError != null
                         ? [
                             BoxShadow(
                               color: BColors.darkGrey.withOpacity(0.1),
@@ -401,7 +402,9 @@ class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScr
                 const SizedBox(height: 8),
 
                 if (regController.showPasswordStrength) ...[
-                  PasswordStrengthIndicator(password: regController.passwordController.text),
+                  PasswordStrengthIndicator(
+                    password: regController.passwordController.text,
+                  ),
                   const SizedBox(height: 12),
                 ],
 
@@ -447,7 +450,9 @@ class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScr
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
-                    boxShadow: regController.confirmPasswordFieldTouched && regController.confirmPasswordError != null
+                    boxShadow:
+                        regController.confirmPasswordFieldTouched &&
+                            regController.confirmPasswordError != null
                         ? [
                             BoxShadow(
                               color: BColors.darkGrey.withOpacity(0.1),
@@ -477,7 +482,8 @@ class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScr
                               ? Icons.visibility
                               : Icons.visibility_off,
                         ),
-                        onPressed: regController.toggleConfirmPasswordVisibility,
+                        onPressed:
+                            regController.toggleConfirmPasswordVisibility,
                       ),
                     ),
                   ),
@@ -519,14 +525,19 @@ class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScr
                           _registrationController.onGenderFieldTouched();
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 14,
+                            horizontal: 14,
+                          ),
                           decoration: BoxDecoration(
                             color: _registrationController.gender == 'Male'
                                 ? BColors.primary.withOpacity(0.2)
                                 : Colors.white,
                             border: Border.all(
-                              color: _registrationController.genderFieldTouched &&
-                                      _registrationController.genderError != null
+                              color:
+                                  _registrationController.genderFieldTouched &&
+                                      _registrationController.genderError !=
+                                          null
                                   ? BColors.error
                                   : Colors.grey,
                               width: 1.0,
@@ -552,14 +563,19 @@ class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScr
                           _registrationController.onGenderFieldTouched();
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 14,
+                            horizontal: 14,
+                          ),
                           decoration: BoxDecoration(
                             color: _registrationController.gender == 'Female'
                                 ? BColors.primary.withOpacity(0.3)
                                 : Colors.white,
                             border: Border.all(
-                              color: _registrationController.genderFieldTouched &&
-                                      _registrationController.genderError != null
+                              color:
+                                  _registrationController.genderFieldTouched &&
+                                      _registrationController.genderError !=
+                                          null
                                   ? BColors.error
                                   : Colors.grey,
                               width: 1.0,
@@ -632,8 +648,9 @@ class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScr
                     counterText: '',
                     hintText: 'YYYY/MM/DD',
                     hintStyle: const TextStyle(color: BColors.darkGrey),
-                    errorText:
-                        regController.dobFieldTouched ? regController.dobError : null,
+                    errorText: regController.dobFieldTouched
+                        ? regController.dobError
+                        : null,
                     suffixIcon: const Icon(Icons.calendar_today),
                   ),
                 ),
@@ -642,20 +659,22 @@ class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScr
                 // Next Button
                 AppButton(
                   enabled:
-                      _nameController.isNextButtonEnabled && regController.validateForm(),
+                      _nameController.isNextButtonEnabled &&
+                      regController.validateForm(),
                   text: 'Next',
                   isLoading: _isNextLoading,
                   onPressed: () {
-                    _navigateSafely(() async {
+                    _navigateSafelyAsync(() async {
                       if (_nameController.isNextButtonEnabled &&
                           regController.validateForm()) {
                         setState(() {
                           _isNextLoading = true;
                         });
 
-                        final result = await _caregiverController.validateEmailForRegistration(
-                          regController.emailController.text,
-                        );
+                        final result = await _caregiverController
+                            .validateEmailForRegistration(
+                              regController.emailController.text,
+                            );
 
                         if (result['success'] == true) {
                           _nameController.saveName();
@@ -664,8 +683,10 @@ class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScr
                           _caregiverController.setRegistrationData(
                             email: regController.emailController.text.trim(),
                             password: regController.passwordController.text,
-                            firstName: _nameController.firstNameController.text.trim(),
-                            lastName: _nameController.lastNameController.text.trim(),
+                            firstName: _nameController.firstNameController.text
+                                .trim(),
+                            lastName: _nameController.lastNameController.text
+                                .trim(),
                             gender: regController.gender ?? '',
                             dob: regController.dob,
                           );
@@ -677,7 +698,8 @@ class _CaregiverCreateAccountScreenState extends State<CaregiverCreateAccountScr
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const CaregiverPermissionScreen(),
+                              builder: (context) =>
+                                  const CaregiverPermissionScreen(),
                             ),
                           );
                         } else {
