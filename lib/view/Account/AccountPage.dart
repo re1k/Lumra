@@ -9,7 +9,6 @@ import 'package:lumra_project/controller/auth/auth_controller.dart';
 import 'package:lumra_project/view/auth/loginPage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../Account/QRCode.dart';
-
 import 'package:lumra_project/view/Account/SignOutDialog.dart';
 
 class AccountPage extends StatelessWidget {
