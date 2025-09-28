@@ -52,7 +52,7 @@ class _CareGiverHomePageState extends State<CareGiverHomePage> {
         title: Obx(() {
           final name = _userController.user.value?.name;
           return Text(
-            'Good Morning, ${name?.trim().isNotEmpty == true ? name : '...'}',
+            'Hello, ${name?.trim().isNotEmpty == true ? name : '...'}',
             style: tt.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
               color: BColors.textwhite,

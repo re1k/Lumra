@@ -6,29 +6,77 @@ class TaskController {
   final String userId;
 
   TaskController({required this.userId});
+  CollectionReference<Map<String, dynamic>> get _col =>
+      _firestore.collection('users').doc(userId).collection('tasks');
 
   // Hide expired tasks right away (TTL will delete them later) هو كذا طريقته مايتعامل بالثواني
   //we will cancel the TTL because google cloud doesn’t allow direct billing
   Stream<List<Task>> getTasks() {
-    final col = _firestore.collection('users').doc(userId).collection('tasks');
-
-    return col
-        .where('expireAt', isGreaterThan: Timestamp.now()) // <— NEW
+    return _col
+        .where('expireAt', isGreaterThan: Timestamp.now())
+        .orderBy('expireAt', descending: true)
+        .orderBy('order', descending: true)
         .snapshots()
-        .map((snap) => snap.docs.map((d) => Task.fromFirestore(d)).toList());
+        .map((snap) => snap.docs.map(Task.fromFirestore).toList());
   }
 
   Future<void> addTask(Task task) async {
-    final col = _firestore.collection('users').doc(userId).collection('tasks');
-
-    // Ensure every new task has expireAt = now + 24hours
     final data = task.toFirestore(useServerTimestamp: true);
+    data['createdAt'] = FieldValue.serverTimestamp();
+    data['order'] = DateTime.now().millisecondsSinceEpoch;
     data['expireAt'] =
         (data['expireAt'] as Timestamp?) ??
         Timestamp.fromDate(DateTime.now().add(const Duration(hours: 24)));
 
-    await col.add(data);
+    await _col.add(data);
   }
+
+  Future<void> reorderTasks(
+    List<Task> tasks,
+    int oldIndex,
+    int newIndex,
+  ) async {
+    if (newIndex > oldIndex) newIndex -= 1;
+
+    final moved = tasks.removeAt(oldIndex);
+    tasks.insert(newIndex, moved);
+
+    final batch = _firestore.batch();
+
+    // highest order = top
+    int base = DateTime.now().millisecondsSinceEpoch;
+    for (int i = 0; i < tasks.length; i++) {
+      final t = tasks[i];
+      final doc = _col.doc(t.id);
+      batch.update(doc, {
+        'order': base - i,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    }
+
+    await batch.commit();
+  }
+  //DO NOT DELETEeeeeee!!!!
+  // Stream<List<Task>> getTasks() {
+  //   final col = _firestore.collection('users').doc(userId).collection('tasks');
+
+  //   return col
+  //       .where('expireAt', isGreaterThan: Timestamp.now())
+  //       .snapshots()
+  //       .map((snap) => snap.docs.map((d) => Task.fromFirestore(d)).toList());
+  // }
+
+  // Future<void> addTask(Task task) async {
+  //   final col = _firestore.collection('users').doc(userId).collection('tasks');
+
+  //   // Ensure every new task has expireAt = now + 24hours
+  //   final data = task.toFirestore(useServerTimestamp: true);
+  //   data['expireAt'] =
+  //       (data['expireAt'] as Timestamp?) ??
+  //       Timestamp.fromDate(DateTime.now().add(const Duration(hours: 24)));
+
+  //   await col.add(data);
+  // }
 
   /// When checked -> priority becomes 'done'.
   /// When unchecked -> priority becomes the doc's basePriority (previous priority).
@@ -97,5 +145,14 @@ class TaskController {
         .where('isChecked', isEqualTo: false)
         .get();
     return snap.docs.length;
+  }
+
+  Future<void> deleteTask(String taskId) async {
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('tasks')
+        .doc(taskId)
+        .delete();
   }
 }
