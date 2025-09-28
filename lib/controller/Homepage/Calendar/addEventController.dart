@@ -63,21 +63,31 @@ class AddEventController extends GetxController {
   // ------------------ Time validate ------------------ //
 
   //whenever start or end changes
-  void validateTimes() {
-    if (eventStart.value == null) {
-      startError.value = "Start time is required";
-    } else {
-      startError.value = null;
-    }
+ void validateTimes() {
+  // 🔹 validate start
+  if (eventStart.value == null) {
+    startError.value = "Start time is required";
+  } else {
+    startError.value = null;
+  }
+
+  // 🔹 validate / default end
+  if (eventStart.value != null) {
     if (eventEnd.value == null) {
-      endError.value = "End time is required";
-    } else if (eventStart.value != null &&
-        !eventEnd.value!.toDate().isAfter(eventStart.value!.toDate())) {
+      // default: start + 1h
+      final startDate = eventStart.value!.toDate();
+      eventEnd.value = Timestamp.fromDate(startDate.add(const Duration(hours: 1)));
+      endError.value = null;
+    } else if (!eventEnd.value!.toDate().isAfter(eventStart.value!.toDate())) {
       endError.value = "End time must be after start time";
     } else {
-      endError.value = null; // valid
+      endError.value = null;
     }
+  } else {
+    // if no start, don't force end
+    endError.value = null;
   }
+}
 
   void updateFormValidity() {
     isFormValid.value =

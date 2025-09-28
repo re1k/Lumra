@@ -176,7 +176,7 @@ class AddEventView extends StatelessWidget {
                       ),
                     ),
 
-                                     // Error message below the field
+                    // Error message below the field
                     if (hasError)
                       Padding(
                         padding: const EdgeInsets.only(top: 4, left: 8),
