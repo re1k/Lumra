@@ -49,11 +49,7 @@ final Map<UserRole, List<NavItem>> navConfig = {
         feature: 'Community',
       ), //  Later: replace with CommunityPage()
     ),
-    NavItem(
-      label: 'Account',
-      icon: Icons.account_box_outlined,
-      page: AccountPage(),
-    ),
+    NavItem(label: 'Account', icon: Icons.account_box, page: AccountPage()),
   ],
 };
 
