@@ -43,7 +43,12 @@ class _CaregiverCreateAccountScreenState
   }
 
   void _onControllerChange() {
-    if (mounted) setState(() {});
+    if (mounted) {
+      // Debounce setState to reduce keyboard delays
+      Future.delayed(const Duration(milliseconds: 50), () {
+        if (mounted) setState(() {});
+      });
+    }
   }
 
   void _navigateSafely(Function action) {
@@ -86,7 +91,7 @@ class _CaregiverCreateAccountScreenState
 
     return Scaffold(
       backgroundColor: BColors.white,
-      resizeToAvoidBottomInset: false,
+
       appBar: AppBar(
         backgroundColor: BColors.white,
         leading: Padding(
@@ -106,7 +111,6 @@ class _CaregiverCreateAccountScreenState
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             child: Column(
@@ -172,7 +176,6 @@ class _CaregiverCreateAccountScreenState
                         FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z]')),
                       ],
                       onChanged: _nameController.updateFirstName,
-                      onTapOutside: (_) => FocusScope.of(context).unfocus(),
                       decoration: InputDecoration(
                         counterText: '',
                         hintText: 'Sarah',
@@ -240,7 +243,6 @@ class _CaregiverCreateAccountScreenState
                         FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z]')),
                       ],
                       onChanged: _nameController.updateLastName,
-                      onTapOutside: (_) => FocusScope.of(context).unfocus(),
                       decoration: InputDecoration(
                         counterText: '',
                         hintText: 'Aljohani',
