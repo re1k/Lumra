@@ -81,7 +81,7 @@ class NameController extends ChangeNotifier {
   }
 
   /// Validates the first name according to the specified rules:
-  /// - Maximum of 16 characters
+  /// - Maximum of 12 characters
   /// - English letters and spaces only (A-Z, a-z, space)
   /// - No numbers, no special characters
   /// - Must not be empty
@@ -98,7 +98,7 @@ class NameController extends ChangeNotifier {
   }
 
   /// Validates the last name according to the specified rules:
-  /// - Maximum of 16 characters
+  /// - Maximum of 12 characters
   /// - English letters and spaces only (A-Z, a-z, space)
   /// - No numbers, no special characters
   /// - Must not be empty
