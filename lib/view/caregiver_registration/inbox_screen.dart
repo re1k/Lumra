@@ -9,6 +9,7 @@ import 'package:lumra_project/controller/Registration/registration_controller.da
 import 'package:lumra_project/controller/Registration/name_controller.dart';
 import 'package:lumra_project/view/adhd_registration/widgets/app_button.dart';
 import 'package:lumra_project/view/welcomePage.dart';
+import 'package:lumra_project/utils/customWidgets/custom_dialog.dart';
 import 'dart:async';
 
 class CaregiverInboxScreen extends StatefulWidget {
@@ -21,10 +22,12 @@ class CaregiverInboxScreen extends StatefulWidget {
 class _CaregiverInboxScreenState extends State<CaregiverInboxScreen> {
   int _resendCooldown = 0;
   Timer? _resendTimer;
+  TapGestureRecognizer? _tapGestureRecognizer;
 
   @override
   void dispose() {
     _resendTimer?.cancel();
+    _tapGestureRecognizer?.dispose();
     super.dispose();
   }
 
@@ -72,23 +75,36 @@ class _CaregiverInboxScreenState extends State<CaregiverInboxScreen> {
       await controller.resendVerificationEmail();
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Verification email sent successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        // No popup and no snackbar for successful send
         // Start cooldown after successful send
         _startResendCooldown();
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString().replaceFirst('Exception: ', '')),
-            backgroundColor: Colors.red,
-          ),
-        );
+        // Only show error popup for real failures, not warnings
+        final errorMessage = e.toString().replaceFirst('Exception: ', '');
+
+        // Check if it's a real error (not just a warning)
+        if (!errorMessage.toLowerCase().contains('ignoring header') &&
+            !errorMessage.toLowerCase().contains('firebase-locale') &&
+            !errorMessage.toLowerCase().contains('null')) {
+          // Check for specific Firebase error codes
+          if (errorMessage.toLowerCase().contains('too-many-requests') ||
+              errorMessage.toLowerCase().contains('too many requests')) {
+            CustomDialog.showError(
+              context,
+              message:
+                  'Too many attempts. Please wait a few minutes before trying again.',
+              title: 'Try again later',
+            );
+          } else {
+            CustomDialog.showError(
+              context,
+              message: 'Try again later',
+              title: '',
+            );
+          }
+        }
       }
     }
   }
@@ -214,62 +230,38 @@ class _CaregiverInboxScreenState extends State<CaregiverInboxScreen> {
                 // Resend email verification text link (exact same as loginpage.dart)
                 Center(
                   child: (_resendCooldown == 0)
-                      ? (_resendTimer == null
-                            // First time
-                            ? RichText(
-                                textAlign: TextAlign.center,
-                                text: TextSpan(
-                                  style: const TextStyle(
-                                    fontFamily: 'K2D',
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  children: [
-                                    TextSpan(
-                                      text: "To resend email, click ",
-                                      style: TextStyle(
-                                        color: Theme.of(
-                                          context,
-                                        ).textTheme.titleSmall!.color,
-                                      ),
-                                    ),
-                                    TextSpan(
-                                      text: "here",
-                                      style: const TextStyle(
-                                        color: BColors.primary,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: 'K2D',
-                                      ),
-                                      recognizer: TapGestureRecognizer()
-                                        ..onTap = () async {
-                                          await _resendEmailVerification(
-                                            context,
-                                          );
-                                        },
-                                    ),
-                                  ],
+                      ? RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            style: const TextStyle(
+                              fontFamily: 'K2D',
+                              fontWeight: FontWeight.bold,
+                            ),
+                            children: [
+                              TextSpan(
+                                text: "To resend email, click ",
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).textTheme.titleSmall!.color,
                                 ),
-                              )
-                            // After timer finishes
-                            : TextButton(
-                                onPressed: () async {
-                                  await _resendEmailVerification(context);
-                                },
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.zero,
-                                  minimumSize: const Size(0, 0),
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              TextSpan(
+                                text: "here",
+                                style: const TextStyle(
+                                  color: BColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'K2D',
                                 ),
-                                child: const Text(
-                                  "To resend email, click here",
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: BColors.primary,
-                                    fontFamily: 'K2D',
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ))
+                                recognizer: _tapGestureRecognizer ??=
+                                    TapGestureRecognizer()
+                                      ..onTap = () async {
+                                        await _resendEmailVerification(context);
+                                      },
+                              ),
+                            ],
+                          ),
+                        )
                       // During cooldown
                       : Text(
                           "Verification email sent. Resend in ${_resendCooldown}s",

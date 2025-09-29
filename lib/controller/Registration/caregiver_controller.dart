@@ -10,6 +10,7 @@ import 'package:lumra_project/view/adhd_registration/notification_permission_scr
 import 'package:lumra_project/view/adhd_registration/onboarding_complete_screen.dart';
 import 'package:lumra_project/view/welcomePage.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
+import 'package:lumra_project/utils/customWidgets/custom_dialog.dart';
 
 class CaregiverController extends ChangeNotifier {
   UserModel _user = UserModel();
@@ -138,7 +139,7 @@ class CaregiverController extends ChangeNotifier {
       final UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
             email: normalized,
-            password: 'temp_password_123!', // Temporary password
+            password: 'Temp_password_123!', // Temporary password
           );
 
       // If we get here, the email is available, so delete the temporary account
@@ -407,43 +408,24 @@ class CaregiverController extends ChangeNotifier {
       return;
     }
     _isShowingErrorDialog = true;
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierColor: Colors.transparent,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: Text(
-            message,
-            style: const TextStyle(
-              fontSize: 16,
-              color: BColors.black,
-              fontFamily: 'K2D',
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                _isShowingErrorDialog = false;
-                Navigator.of(context).pop();
-                // Reset scanning state to allow retry
-                resetScanningForError();
-              },
-              child: const Text(
-                'OK',
-                style: TextStyle(color: BColors.primary, fontFamily: 'K2D'),
-              ),
-            ),
-          ],
-        );
-      },
-    ).then((_) {
-      // Ensure flag cleared if dismissed by tapping outside
-      if (_isShowingErrorDialog) {
+
+    // Check if it's the "already linked" error to show the appropriate dialog
+    if (message.contains('already linked to another account')) {
+      CustomDialog.showCloseOnly(
+        context,
+        title: '',
+        message: 'This user is already linked to another account.',
+      ).then((_) {
         _isShowingErrorDialog = false;
         resetScanningForError();
-      }
-    });
+      });
+    } else {
+      // For other errors, use the custom error dialog
+      CustomDialog.showError(context, message: message).then((_) {
+        _isShowingErrorDialog = false;
+        resetScanningForError();
+      });
+    }
   }
 
   void showPermissionResultDialog(
@@ -628,22 +610,11 @@ class CaregiverController extends ChangeNotifier {
   }
 
   void showVerificationDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Email Not Verified'),
-          content: const Text('You have not verified your email yet.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
-              },
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
+    CustomDialog.showCloseOnly(
+      context,
+      title: 'Email Not Verified',
+      message:
+          'You have not verified your email yet. Please check your inbox and click the verification link we sent you.',
     );
   }
 
