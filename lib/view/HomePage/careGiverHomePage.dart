@@ -86,8 +86,10 @@ class _CareGiverHomePageState extends State<CareGiverHomePage> {
 
               Row(
                 children: [
-                  const Expanded(child: _SectionLabel(text: 'To Do list: ')),
-                  SizedBox(width: BSizes.sm),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.swap_vert, color: BColors.black),
+                  const SizedBox(width: 8), // spacing between icon and text
+                  Expanded(child: _SectionLabel(text: 'To Do list: ')),
                 ],
               ),
 
