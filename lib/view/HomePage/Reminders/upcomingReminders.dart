@@ -171,36 +171,86 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-class _RemindersList extends StatelessWidget {
+class _RemindersList extends StatefulWidget {
   final List<ReminderModel> reminders;
 
   const _RemindersList({required this.reminders});
 
   @override
-  Widget build(BuildContext context) {
-    // If more than 3 reminders, show in scrollable container
-    if (reminders.length > 3) {
-      return Container(
-        height: 230,
-        child: ListView.separated(
-          padding: const EdgeInsets.all(BSizes.sm),
-          itemCount: reminders.length,
-          separatorBuilder: (_, __) => const SizedBox(height: BSizes.sm),
-          itemBuilder: (context, index) =>
-              _ReminderCard(reminder: reminders[index]),
-        ),
-      );
-    }
+  State<_RemindersList> createState() => _RemindersListState();
+}
 
-    return Column(
-      children: reminders
-          .map(
-            (reminder) => Padding(
-              padding: EdgeInsets.only(bottom: BSizes.sm),
-              child: _ReminderCard(reminder: reminder),
-            ),
-          )
-          .toList(),
+class _RemindersListState extends State<_RemindersList> {
+  final ScrollController _scrollController = ScrollController();
+  bool _showScrollIndicator = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateScrollIndicator();
+    });
+  }
+
+  @override
+  void didUpdateWidget(_RemindersList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.reminders != oldWidget.reminders) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _updateScrollIndicator();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    _updateScrollIndicator();
+  }
+
+  void _updateScrollIndicator() {
+    if (_scrollController.hasClients) {
+      final maxExtent = _scrollController.position.maxScrollExtent;
+      final offset = _scrollController.offset;
+      final shouldShow = maxExtent > 0 && offset < maxExtent - 5;
+
+      if (shouldShow != _showScrollIndicator) {
+        setState(() {
+          _showScrollIndicator = shouldShow;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Always use scrollable container with indicator for better UX
+    return Stack(
+      children: [
+        Container(
+          height: 230,
+          child: ListView.separated(
+            controller: _scrollController,
+            padding: const EdgeInsets.all(BSizes.sm),
+            itemCount: widget.reminders.length,
+            separatorBuilder: (_, __) => const SizedBox(height: BSizes.sm),
+            itemBuilder: (context, index) =>
+                _ReminderCard(reminder: widget.reminders[index]),
+          ),
+        ),
+        if (_showScrollIndicator)
+          Positioned(
+            right: BSizes.sm,
+            bottom: BSizes.sm,
+            child: _ScrollIndicator(),
+          ),
+      ],
     );
   }
 }
@@ -240,8 +290,6 @@ class _ReminderCard extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                       color: BColors.black,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
 
                   const SizedBox(height: BSizes.xs),
@@ -258,6 +306,41 @@ class _ReminderCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ScrollIndicator extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedOpacity(
+      opacity: 0.8,
+      duration: const Duration(milliseconds: 300),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: BSizes.sm,
+          vertical: BSizes.xs,
+        ),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(BSizes.borderRadiusLg),
+          border: Border.all(
+            color: BColors.primary.withOpacity(0.2),
+            width: 0.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: BColors.black.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Icon(
+          Icons.keyboard_arrow_down,
+          size: 18,
+          color: BColors.primary,
+        ),
       ),
     );
   }
