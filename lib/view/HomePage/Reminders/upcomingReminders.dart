@@ -185,7 +185,7 @@ class _RemindersList extends StatelessWidget {
         child: ListView.separated(
           padding: const EdgeInsets.all(BSizes.sm),
           itemCount: reminders.length,
-          separatorBuilder: (_, __) => const SizedBox(height: BSizes.xs),
+          separatorBuilder: (_, __) => const SizedBox(height: BSizes.sm),
           itemBuilder: (context, index) =>
               _ReminderCard(reminder: reminders[index]),
         ),
@@ -196,7 +196,7 @@ class _RemindersList extends StatelessWidget {
       children: reminders
           .map(
             (reminder) => Padding(
-              padding: EdgeInsets.only(bottom: BSizes.xs),
+              padding: EdgeInsets.only(bottom: BSizes.sm),
               child: _ReminderCard(reminder: reminder),
             ),
           )
@@ -247,7 +247,7 @@ class _ReminderCard extends StatelessWidget {
                   const SizedBox(height: BSizes.xs),
 
                   Text(
-                    reminder.timeRange,
+                    reminder.dateTimeRange,
                     style: tt.bodySmall?.copyWith(
                       color: BColors.darkGrey,
                       fontWeight: FontWeight.w500,

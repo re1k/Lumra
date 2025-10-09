@@ -41,6 +41,13 @@ class ReminderModel {
     return '$startTime - $endTime';
   }
 
+  String get dateTimeRange {
+    final startDate = _formatDate(start);
+    final startTime = _formatTime(start);
+    final endTime = _formatTime(end);
+    return '$startDate $startTime - $endTime';
+  }
+
   String _formatTime(DateTime dateTime) {
     final hour = dateTime.hour;
     final minute = dateTime.minute;
@@ -48,6 +55,22 @@ class ReminderModel {
     final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
     final minuteStr = minute.toString().padLeft(2, '0');
     return '$displayHour:$minuteStr $period';
+  }
+
+  String _formatDate(DateTime dateTime) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
+    final reminderDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
+
+    if (reminderDate == today) {
+      return 'Today';
+    } else if (reminderDate == tomorrow) {
+      return 'Tomorrow';
+    } else {
+      const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      return weekdays[dateTime.weekday - 1];
+    }
   }
 
   Map<String, dynamic> toJson() {
