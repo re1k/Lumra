@@ -105,8 +105,6 @@ class _HomePageState extends State<HomePage> {
                 // Reminders section
                 const UpcomingReminders(),
 
-                const SizedBox(height: 12),
-
                 // Section headers
                 Transform.translate(
                   offset: const Offset(0, -8),
@@ -152,6 +150,8 @@ class _HomePageState extends State<HomePage> {
         },
         child: const Icon(Icons.add),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      bottomNavigationBar: const SizedBox(height: 23),
     );
   }
 }

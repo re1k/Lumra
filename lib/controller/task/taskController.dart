@@ -99,6 +99,22 @@ class TaskController {
     await docRef.update(updateData);
   }
 
+  /// Updates an existing task with new data.
+  Future<void> updateTask(Task task) async {
+    final docRef = _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('tasks')
+        .doc(task.id);
+
+    await docRef.update({
+      'tasksTitle': task.tasksTitle,
+      'priority': task.priority,
+      'basePriority': task.basePriority,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
   Future<int> getTaskCount() async {
     final snap = await _firestore
         .collection('users')

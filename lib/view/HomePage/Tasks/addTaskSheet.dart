@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lumra_project/model/task/task.dart';
 import 'package:lumra_project/controller/task/taskController.dart';
-import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/theme/base_themes/sizes.dart';
 import 'package:lumra_project/utils/customWidgets/toastservice.dart';
 import 'package:lumra_project/theme/custom_themes/text_theme.dart';
 
 class AddTaskSheet extends StatefulWidget {
   final TaskController controller;
-  const AddTaskSheet({super.key, required this.controller});
+  final Task? taskToEdit;
+
+  const AddTaskSheet({super.key, required this.controller, this.taskToEdit});
 
   @override
   State<AddTaskSheet> createState() => _AddTaskSheetState();
@@ -27,6 +28,13 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
   @override
   void initState() {
     super.initState();
+
+    // Pre-fill form if editing
+    if (widget.taskToEdit != null) {
+      _titleCtrl.text = widget.taskToEdit!.tasksTitle;
+      _priority = widget.taskToEdit!.priority;
+    }
+
     _titleCtrl.addListener(() => setState(() {}));
     _titleFocus.addListener(() {
       if (!_titleFocus.hasFocus) {
@@ -71,7 +79,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                 delegate: _PinnedHeaderDelegate(
                   child: Center(
                     child: Text(
-                      "Add Task",
+                      widget.taskToEdit != null ? "Edit Task" : "Add Task",
                       style: BTextTheme.lightTextTheme.headlineLarge,
                     ),
                   ),
@@ -103,6 +111,18 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                           validator: (v) => (v == null || v.trim().isEmpty)
                               ? "Title is required"
                               : null,
+                          style: Theme.of(context).textTheme.bodyLarge,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(
+                                BSizes.inputFieldRadius,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 20),
 
@@ -127,6 +147,17 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                           onChanged: (v) => setState(() => _priority = v),
                           validator: (v) =>
                               v == null ? "Priority is required" : null,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(
+                                BSizes.inputFieldRadius,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                          ),
                         ),
                         const SizedBox(height: BSizes.SpaceBtwItems),
 
@@ -152,26 +183,52 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                                       return;
                                     }
 
-                                    final newTask = Task(
-                                      id: '',
-                                      tasksTitle: _titleCtrl.text.trim(),
-                                      priority: _priority!,
-                                      basePriority:
-                                          _priority!, // keep basePriority in sync
-                                      isChecked: false,
-                                      updatedAt: Timestamp.now(),
-                                    );
-
-                                    try {
-                                      await widget.controller.addTask(newTask);
-                                      if (!mounted) return;
-                                      Navigator.pop(context);
-                                      //  ToastService.success("Task added successfully!");
-                                    } on FirebaseException catch (e) {
-                                      if (!mounted) return;
-                                      ToastService.error(
-                                        "Write error: ${e.code}",
+                                    if (widget.taskToEdit != null) {
+                                      // Update existing task
+                                      final updatedTask = Task(
+                                        id: widget.taskToEdit!.id,
+                                        tasksTitle: _titleCtrl.text.trim(),
+                                        priority: _priority!,
+                                        basePriority: _priority!,
+                                        isChecked: widget.taskToEdit!.isChecked,
+                                        updatedAt: Timestamp.now(),
                                       );
+
+                                      try {
+                                        await widget.controller.updateTask(
+                                          updatedTask,
+                                        );
+                                        if (!mounted) return;
+                                        Navigator.pop(context);
+                                      } on FirebaseException catch (e) {
+                                        if (!mounted) return;
+                                        ToastService.error(
+                                          "Update error: ${e.code}",
+                                        );
+                                      }
+                                    } else {
+                                      // Add new task
+                                      final newTask = Task(
+                                        id: '',
+                                        tasksTitle: _titleCtrl.text.trim(),
+                                        priority: _priority!,
+                                        basePriority: _priority!,
+                                        isChecked: false,
+                                        updatedAt: Timestamp.now(),
+                                      );
+
+                                      try {
+                                        await widget.controller.addTask(
+                                          newTask,
+                                        );
+                                        if (!mounted) return;
+                                        Navigator.pop(context);
+                                      } on FirebaseException catch (e) {
+                                        if (!mounted) return;
+                                        ToastService.error(
+                                          "Write error: ${e.code}",
+                                        );
+                                      }
                                     }
                                   }
                                 : null, // disabled 'Add' button
@@ -186,10 +243,12 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.check),
-                                const SizedBox(width: 8),
+                                if (widget.taskToEdit == null) ...[
+                                  const Icon(Icons.check),
+                                  const SizedBox(width: 8),
+                                ],
                                 Text(
-                                  "Add",
+                                  widget.taskToEdit != null ? "Update" : "Add",
                                   style: BTextTheme.darkTextTheme.headlineSmall,
                                 ),
                               ],

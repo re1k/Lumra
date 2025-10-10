@@ -141,6 +141,33 @@ class _TasksListState extends State<TasksList> {
         });
   }
 
+  void _openEditTaskModal(Task task) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.7, // 70% tall when first shown
+        minChildSize: 0.5, // can shrink down to 50%
+        maxChildSize: 0.7, // can grow up to 70% max
+        builder: (context, scrollController) {
+          return SingleChildScrollView(
+            controller: scrollController,
+            child: AddTaskSheet(
+              controller: widget.controller,
+              taskToEdit: task,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<Task>>(
@@ -186,6 +213,7 @@ class _TasksListState extends State<TasksList> {
                 tasks: completedTasks,
                 controller: widget.controller,
                 onDelete: _deleteTaskWithUndo,
+                onEdit: _openEditTaskModal,
               ),
             ],
           );
@@ -199,6 +227,7 @@ class _TasksListState extends State<TasksList> {
                 tasks: activeTasks,
                 controller: widget.controller,
                 onDelete: _deleteTaskWithUndo,
+                onEdit: _openEditTaskModal,
               ),
             if (completedTasks.isNotEmpty) ...[
               const SizedBox(height: BSizes.xs),
@@ -206,6 +235,7 @@ class _TasksListState extends State<TasksList> {
                 tasks: completedTasks,
                 controller: widget.controller,
                 onDelete: _deleteTaskWithUndo,
+                onEdit: _openEditTaskModal,
               ),
             ],
           ],
@@ -219,11 +249,13 @@ class _TasksReorderableList extends StatefulWidget {
   final List<Task> tasks;
   final TaskController controller;
   final Function(Task) onDelete;
+  final Function(Task) onEdit;
 
   const _TasksReorderableList({
     required this.tasks,
     required this.controller,
     required this.onDelete,
+    required this.onEdit,
   });
 
   @override
@@ -303,6 +335,7 @@ class _TasksReorderableListState extends State<_TasksReorderableList> {
                     key: ValueKey('${t.id}_${t.priority}_${t.isChecked}'),
                     task: t,
                     controller: widget.controller,
+                    onEdit: () => widget.onEdit(t),
                   ),
                 ),
               ],
@@ -318,11 +351,13 @@ class _CompletedTasksSection extends StatelessWidget {
   final List<Task> tasks;
   final TaskController controller;
   final Function(Task) onDelete;
+  final Function(Task) onEdit;
 
   const _CompletedTasksSection({
     required this.tasks,
     required this.controller,
     required this.onDelete,
+    required this.onEdit,
   });
 
   @override
@@ -364,6 +399,7 @@ class _CompletedTasksSection extends StatelessWidget {
           tasks: tasks,
           controller: controller,
           onDelete: onDelete,
+          onEdit: onEdit,
         ),
       ],
     );
@@ -374,11 +410,13 @@ class _CompletedTasksList extends StatefulWidget {
   final List<Task> tasks;
   final TaskController controller;
   final Function(Task) onDelete;
+  final Function(Task) onEdit;
 
   const _CompletedTasksList({
     required this.tasks,
     required this.controller,
     required this.onDelete,
+    required this.onEdit,
   });
 
   @override
@@ -458,6 +496,7 @@ class _CompletedTasksListState extends State<_CompletedTasksList> {
                     key: ValueKey('${t.id}_${t.priority}_${t.isChecked}'),
                     task: t,
                     controller: widget.controller,
+                    onEdit: () => widget.onEdit(t),
                   ),
                 ),
               ],

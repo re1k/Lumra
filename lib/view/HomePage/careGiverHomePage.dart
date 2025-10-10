@@ -96,8 +96,6 @@ class _CareGiverHomePageState extends State<CareGiverHomePage> {
                 // Reminders section
                 const UpcomingReminders(),
 
-                const SizedBox(height: 12),
-
                 Transform.translate(
                   offset: const Offset(0, -8),
                   child: Row(
@@ -142,6 +140,8 @@ class _CareGiverHomePageState extends State<CareGiverHomePage> {
         },
         child: const Icon(Icons.add),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      bottomNavigationBar: const SizedBox(height: 23),
     );
   }
 }
