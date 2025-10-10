@@ -30,12 +30,10 @@ class TaskItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
 
-    final label = task.isChecked
-        ? 'Done'
-        : task.priority[0].toUpperCase() + task.priority.substring(1);
+    final label = task.priority[0].toUpperCase() + task.priority.substring(1);
 
     ///To start with capital letter
-    final chipColor = _priorityColor(label);
+    final chipColor = _priorityColor(task.priority);
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: BSizes.sm),

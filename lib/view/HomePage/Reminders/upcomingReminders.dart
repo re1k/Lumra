@@ -45,8 +45,6 @@ class UpcomingReminders extends StatelessWidget {
           ],
         ),
 
-        const SizedBox(height: BSizes.xs),
-
         // Reminders content
         _RemindersContent(),
       ],
@@ -160,7 +158,7 @@ class _EmptyState extends StatelessWidget {
       padding: const EdgeInsets.all(BSizes.md),
       child: Center(
         child: Text(
-          'Nothing for now — breathe and relax',
+          'Nothing for now, breathe and relax',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: BColors.darkGrey,
             fontStyle: FontStyle.italic,
@@ -230,14 +228,21 @@ class _RemindersListState extends State<_RemindersList> {
 
   @override
   Widget build(BuildContext context) {
-    // Always use scrollable container with indicator for better UX
+    // Inside _RemindersListState.build()
+    final itemHeight = 80.0;
+    final totalHeight = widget.reminders.length * itemHeight;
+    final constrainedHeight = totalHeight.clamp(0.0, 230.0);
+
     return Stack(
       children: [
         Container(
-          height: 230,
+          height: constrainedHeight,
           child: ListView.separated(
             controller: _scrollController,
-            padding: const EdgeInsets.all(BSizes.sm),
+            padding: const EdgeInsets.symmetric(
+              horizontal: BSizes.sm,
+              vertical: BSizes.sm,
+            ),
             itemCount: widget.reminders.length,
             separatorBuilder: (_, __) => const SizedBox(height: BSizes.sm),
             itemBuilder: (context, index) =>

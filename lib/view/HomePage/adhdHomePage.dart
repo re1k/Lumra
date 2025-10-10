@@ -79,50 +79,53 @@ class _HomePageState extends State<HomePage> {
       ),
 
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(BSizes.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "How’s your mood today?",
-                style: tt.titleLarge?.copyWith(
-                  fontSize: BSizes.lg,
-                  color: BColors.black,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.all(BSizes.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "How's your mood today?",
+                  style: tt.titleLarge?.copyWith(
+                    fontSize: BSizes.lg,
+                    color: BColors.black,
+                  ),
                 ),
-              ),
 
-              const MoodRow(),
+                const MoodRow(),
 
-              SizedBox(height: BSizes.xs),
+                SizedBox(height: BSizes.xs),
 
-              // Encouragement banner
-              const EncouragementMessage(),
+                // Encouragement banner
+                const EncouragementMessage(),
 
-              SizedBox(height: BSizes.sm),
+                SizedBox(height: BSizes.sm),
 
-              // Reminders section
-              const UpcomingReminders(),
+                // Reminders section
+                const UpcomingReminders(),
 
-              SizedBox(height: BSizes.sm),
+                const SizedBox(height: 12),
 
-              // Section headers
-              Row(
-                children: [
-                  const SizedBox(width: 8),
-                  const Icon(Icons.swap_vert, color: BColors.black),
-                  const SizedBox(width: 8), // spacing between icon and text
-                  Expanded(child: _SectionLabel(text: 'To Do list: ')),
-                ],
-              ),
+                // Section headers
+                Transform.translate(
+                  offset: const Offset(0, -8),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 8),
+                      const Icon(Icons.swap_vert, color: BColors.black),
+                      const SizedBox(width: 8), // spacing between icon and text
+                      Expanded(child: _SectionLabel(text: 'To Do list ')),
+                    ],
+                  ),
+                ),
 
-              SizedBox(height: BSizes.xs),
+                // Tasks list - no longer wrapped in Expanded
+                TasksList(controller: _taskController),
 
-              // Tasks list
-              Expanded(child: TasksList(controller: _taskController)),
-
-              SizedBox(height: BSizes.sm),
-            ],
+                SizedBox(height: BSizes.sm),
+              ],
+            ),
           ),
         ),
       ),
@@ -131,6 +134,9 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: BColors.primary,
         foregroundColor: BColors.textwhite,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(BSizes.lg),
+        ),
         onPressed: () async {
           final count = await _taskController
               .getActiveTaskCount(); // or getOpenActiveTaskCount() in next sprint
@@ -142,7 +148,7 @@ class _HomePageState extends State<HomePage> {
             return; // don't open the sheet
           }
           //open the add sheet
-          TasksList(controller: _taskController).openAddTaskSheet(context);
+          TasksList.openAddTaskSheet(context, _taskController);
         },
         child: const Icon(Icons.add),
       ),
