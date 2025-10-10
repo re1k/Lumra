@@ -93,18 +93,6 @@ class TaskItem extends StatelessWidget {
             offset: const Offset(-2, 0),
             child: PriorityChip(label: label, color: chipColor),
           ),
-
-          // Edit icon
-          if (onEdit != null) ...[
-            const SizedBox(width: BSizes.sm),
-            Transform.translate(
-              offset: const Offset(-4, 0),
-              child: GestureDetector(
-                onTap: onEdit,
-                child: Icon(Icons.edit, size: 20, color: BColors.darkGrey),
-              ),
-            ),
-          ],
         ],
       ),
     );

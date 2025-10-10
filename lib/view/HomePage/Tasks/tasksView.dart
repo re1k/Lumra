@@ -1,4 +1,5 @@
-// lib/view/HomePage/Tasks/tasks_list.dart
+// lib/view/HomePage/Tasks/tasksView.dart
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:lumra_project/controller/task/taskController.dart';
 import 'package:lumra_project/model/task/task.dart';
@@ -47,6 +48,7 @@ class TasksList extends StatefulWidget {
 
 class _TasksListState extends State<TasksList> {
   final Set<String> _deletedTaskIds = <String>{};
+  final Map<String, Timer> _deletionTimers = <String, Timer>{};
 
   void _deleteTaskWithUndo(Task task) {
     setState(() {
@@ -61,6 +63,8 @@ class _TasksListState extends State<TasksList> {
         margin: const EdgeInsets.all(12),
         duration: const Duration(seconds: 4),
         snackStyle: SnackStyle.FLOATING,
+        isDismissible: true,
+        dismissDirection: DismissDirection.vertical,
         boxShadows: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.25),
@@ -69,7 +73,6 @@ class _TasksListState extends State<TasksList> {
             offset: const Offset(0, 2),
           ),
         ],
-        titleText: const SizedBox.shrink(),
         messageText: Padding(
           padding: const EdgeInsets.only(left: 8),
           child: Row(
@@ -99,17 +102,20 @@ class _TasksListState extends State<TasksList> {
       ),
     );
 
-    // Schedule permanent deletion after timeout
-    final String deletedId = task.id;
-    Future.delayed(const Duration(seconds: 10)).then((_) {
-      if (mounted && _deletedTaskIds.contains(deletedId)) {
-        _performPermanentDeletion(deletedId);
+    // Schedule permanent deletion after timeout with proper timer management
+    _deletionTimers[task.id] = Timer(const Duration(seconds: 10), () {
+      if (mounted && _deletedTaskIds.contains(task.id)) {
+        _performPermanentDeletion(task.id);
       }
     });
   }
 
   void _undoTaskDeletion(String taskId) {
     if (mounted) {
+      // Cancel the deletion timer if it exists
+      _deletionTimers[taskId]?.cancel();
+      _deletionTimers.remove(taskId);
+
       setState(() {
         _deletedTaskIds.remove(taskId);
       });
@@ -121,6 +127,9 @@ class _TasksListState extends State<TasksList> {
     if (!mounted || !_deletedTaskIds.contains(taskId)) {
       return; // Task was undone or widget disposed
     }
+
+    // Clean up timer
+    _deletionTimers.remove(taskId);
 
     widget.controller
         .deleteTask(taskId)
@@ -139,6 +148,16 @@ class _TasksListState extends State<TasksList> {
             ToastService.error('Failed to delete task');
           }
         });
+  }
+
+  @override
+  void dispose() {
+    // Cancel all pending deletion timers
+    for (final timer in _deletionTimers.values) {
+      timer.cancel();
+    }
+    _deletionTimers.clear();
+    super.dispose();
   }
 
   void _openEditTaskModal(Task task) {
@@ -307,39 +326,28 @@ class _TasksReorderableListState extends State<_TasksReorderableList> {
       },
       itemBuilder: (context, i) {
         final t = _displayTasks[i];
-        return Dismissible(
+        return Padding(
           key: ValueKey(t.id),
-          direction: DismissDirection.endToStart,
-          background: const _SwipeDeleteBg(),
-          confirmDismiss: (dir) async {
-            if (dir == DismissDirection.endToStart) {
-              widget.onDelete(t);
-              return false;
-            }
-            return false;
-          },
-          child: Padding(
-            padding: EdgeInsets.only(bottom: BSizes.sm),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ReorderableDragStartListener(
-                  index: i,
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Icon(Icons.drag_handle, color: Colors.grey),
-                  ),
+          padding: EdgeInsets.only(bottom: BSizes.sm),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ReorderableDragStartListener(
+                index: i,
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Icon(Icons.drag_handle, color: Colors.grey),
                 ),
-                Expanded(
-                  child: TaskItem(
-                    key: ValueKey('${t.id}_${t.priority}_${t.isChecked}'),
-                    task: t,
-                    controller: widget.controller,
-                    onEdit: () => widget.onEdit(t),
-                  ),
+              ),
+              Expanded(
+                child: _SwipeableTaskItem(
+                  task: t,
+                  controller: widget.controller,
+                  onEdit: () => widget.onEdit(t),
+                  onDelete: () => widget.onDelete(t),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
@@ -468,39 +476,28 @@ class _CompletedTasksListState extends State<_CompletedTasksList> {
       },
       itemBuilder: (context, i) {
         final t = _displayTasks[i];
-        return Dismissible(
+        return Padding(
           key: ValueKey(t.id),
-          direction: DismissDirection.endToStart,
-          background: const _SwipeDeleteBg(),
-          confirmDismiss: (dir) async {
-            if (dir == DismissDirection.endToStart) {
-              widget.onDelete(t);
-              return false;
-            }
-            return false;
-          },
-          child: Padding(
-            padding: EdgeInsets.only(bottom: BSizes.sm),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ReorderableDragStartListener(
-                  index: i,
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Icon(Icons.drag_handle, color: Colors.grey),
-                  ),
+          padding: EdgeInsets.only(bottom: BSizes.sm),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ReorderableDragStartListener(
+                index: i,
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Icon(Icons.drag_handle, color: Colors.grey),
                 ),
-                Expanded(
-                  child: TaskItem(
-                    key: ValueKey('${t.id}_${t.priority}_${t.isChecked}'),
-                    task: t,
-                    controller: widget.controller,
-                    onEdit: () => widget.onEdit(t),
-                  ),
+              ),
+              Expanded(
+                child: _SwipeableTaskItem(
+                  task: t,
+                  controller: widget.controller,
+                  onEdit: () => widget.onEdit(t),
+                  onDelete: () => widget.onDelete(t),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
@@ -508,13 +505,127 @@ class _CompletedTasksListState extends State<_CompletedTasksList> {
   }
 }
 
-class _SwipeDeleteBg extends StatelessWidget {
-  const _SwipeDeleteBg();
+class _SwipeableTaskItem extends StatefulWidget {
+  final Task task;
+  final TaskController controller;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _SwipeableTaskItem({
+    required this.task,
+    required this.controller,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
   @override
-  Widget build(BuildContext context) => Container(
-    alignment: Alignment.centerRight,
-    padding: const EdgeInsets.symmetric(horizontal: 16),
-    color: BColors.error.withValues(alpha: 0.2),
-    child: const Icon(Icons.delete_outline, size: 28),
-  );
+  State<_SwipeableTaskItem> createState() => _SwipeableTaskItemState();
+}
+
+class _SwipeableTaskItemState extends State<_SwipeableTaskItem> {
+  double _dragOffset = 0.0;
+  static const double _actionWidth = 60.0;
+  static const double _maxDragDistance = _actionWidth * 2;
+
+  void _handleDragUpdate(DragUpdateDetails details) {
+    setState(() {
+      _dragOffset = (_dragOffset + details.delta.dx).clamp(
+        -_maxDragDistance,
+        0.0,
+      );
+    });
+  }
+
+  void _handleDragEnd(DragEndDetails details) {
+    setState(() {
+      _dragOffset = _dragOffset < -_maxDragDistance / 2
+          ? -_maxDragDistance
+          : 0.0;
+    });
+  }
+
+  void _handleTapDown(TapDownDetails details) {
+    if (_dragOffset != 0.0) {
+      setState(() => _dragOffset = 0.0);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRect(
+      child: GestureDetector(
+        onHorizontalDragUpdate: _handleDragUpdate,
+        onHorizontalDragEnd: _handleDragEnd,
+        onTapDown: _handleTapDown,
+        child: Stack(
+          clipBehavior: Clip.hardEdge,
+          children: [
+            // Background action buttons - only visible when swiped
+            Positioned(
+              right: 0,
+              top: 0,
+              bottom: 0,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Edit button
+                  GestureDetector(
+                    onTap: () {
+                      setState(() => _dragOffset = 0.0);
+                      widget.onEdit();
+                    },
+                    child: Container(
+                      width: _actionWidth,
+                      color: BColors.info.withValues(alpha: 0.2),
+                      child: const Center(
+                        child: Icon(Icons.edit, size: 24, color: BColors.info),
+                      ),
+                    ),
+                  ),
+                  // Delete button
+                  GestureDetector(
+                    onTap: () {
+                      setState(() => _dragOffset = 0.0);
+                      widget.onDelete();
+                    },
+                    child: Container(
+                      width: _actionWidth,
+                      decoration: BoxDecoration(
+                        color: BColors.error.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(BSizes.inputFieldRadius),
+                          bottomRight: Radius.circular(BSizes.inputFieldRadius),
+                        ),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.delete_outline,
+                          size: 24,
+                          color: BColors.error,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Foreground task item that slides - covers background when not swiped
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 10),
+              curve: Curves.easeOut,
+              transform: Matrix4.translationValues(_dragOffset, 0, 0),
+              color: BColors.white,
+              child: TaskItem(
+                key: ValueKey(
+                  '${widget.task.id}_${widget.task.priority}_${widget.task.isChecked}',
+                ),
+                task: widget.task,
+                controller: widget.controller,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
