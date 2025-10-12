@@ -135,7 +135,7 @@ class _HomePageState extends State<HomePage> {
 
       // 10-task limit check + FAB colors
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 50),
+        padding: const EdgeInsets.only(bottom: 65),
         child: FloatingActionButton(
           backgroundColor: BColors.primary,
           foregroundColor: BColors.textwhite,
