@@ -6,7 +6,6 @@ import 'package:lumra_project/theme/base_themes/colors.dart';
 /// Usage: ToastService.success('Your message');
 /// Usage: ToastService.info('the title','Your message');
 
-
 class ToastService {
   static void show(
     String title,
@@ -23,8 +22,8 @@ class ToastService {
       icon: isError
           ? const Icon(Icons.error, color: BColors.error)
           : isSuccess
-              ? const Icon(Icons.check, color: BColors.success)
-              : null,
+          ? const Icon(Icons.check, color: BColors.success)
+          : null,
       borderRadius: 24,
       margin: const EdgeInsets.all(12),
       duration: const Duration(seconds: 4),
@@ -64,7 +63,7 @@ class ToastService {
   static void error(String message) {
     show('Error', message, isError: true);
   }
-  
+
   static void info(String title, String message) {
     show(title, message, isInfo: true);
   }

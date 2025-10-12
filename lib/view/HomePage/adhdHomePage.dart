@@ -13,6 +13,7 @@ import 'package:lumra_project/view/HomePage/Reminders/upcomingReminders.dart';
 import 'package:lumra_project/controller/Homepage/Reminders/reminderController.dart';
 import 'package:get/get.dart';
 import 'package:lumra_project/utils/customWidgets/toastservice.dart';
+import "package:lumra_project/view/ChatBootADHD/ChatBotWidget.dart";
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -79,72 +80,80 @@ class _HomePageState extends State<HomePage> {
       ),
 
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(BSizes.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "How’s your mood today?",
-                style: tt.titleLarge?.copyWith(
-                  fontSize: BSizes.lg,
-                  color: BColors.black,
-                ),
-              ),
-
-              const MoodRow(),
-
-              SizedBox(height: BSizes.xs),
-
-              // Encouragement banner
-              const EncouragementMessage(),
-
-              SizedBox(height: BSizes.sm),
-
-              // Reminders section
-              const UpcomingReminders(),
-
-              SizedBox(height: BSizes.sm),
-
-              // Section headers
-              Row(
+        child: Stack(
+          children: [
+            Padding(
+              padding: EdgeInsets.all(BSizes.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(width: 8),
-                  const Icon(Icons.swap_vert, color: BColors.black),
-                  const SizedBox(width: 8), // spacing between icon and text
-                  Expanded(child: _SectionLabel(text: 'To Do list: ')),
+                  Text(
+                    "How’s your mood today?",
+                    style: tt.titleLarge?.copyWith(
+                      fontSize: BSizes.lg,
+                      color: BColors.black,
+                    ),
+                  ),
+
+                  const MoodRow(),
+
+                  SizedBox(height: BSizes.xs),
+
+                  // Encouragement banner
+                  const EncouragementMessage(),
+
+                  SizedBox(height: BSizes.sm),
+
+                  // Reminders section
+                  const UpcomingReminders(),
+
+                  SizedBox(height: BSizes.sm),
+
+                  // Section headers
+                  Row(
+                    children: [
+                      const SizedBox(width: 8),
+                      const Icon(Icons.swap_vert, color: BColors.black),
+                      const SizedBox(width: 8), // spacing between icon and text
+                      Expanded(child: _SectionLabel(text: 'To Do list: ')),
+                    ],
+                  ),
+
+                  SizedBox(height: BSizes.xs),
+
+                  // Tasks list
+                  Expanded(child: TasksList(controller: _taskController)),
+
+                  SizedBox(height: BSizes.sm),
                 ],
               ),
-
-              SizedBox(height: BSizes.xs),
-
-              // Tasks list
-              Expanded(child: TasksList(controller: _taskController)),
-
-              SizedBox(height: BSizes.sm),
-            ],
-          ),
+            ),
+            const ChatBotWidget(),
+          ],
         ),
       ),
 
       // 10-task limit check + FAB colors
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: BColors.primary,
-        foregroundColor: BColors.textwhite,
-        onPressed: () async {
-          final count = await _taskController
-              .getActiveTaskCount(); // or getOpenActiveTaskCount() in next sprint
-          if (count >= 10) {
-            ToastService.info(
-              "You have reached your 10 task limit.",
-              " Try finishing a task before adding more.",
-            );
-            return; // don't open the sheet
-          }
-          //open the add sheet
-          TasksList(controller: _taskController).openAddTaskSheet(context);
-        },
-        child: const Icon(Icons.add),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 50),
+        child: FloatingActionButton(
+          backgroundColor: BColors.primary,
+          foregroundColor: BColors.textwhite,
+          onPressed: () async {
+            final count = await _taskController
+                .getActiveTaskCount(); // or getOpenActiveTaskCount() in next sprint
+            if (count >= 10) {
+              ToastService.info(
+                "You have reached your 10 task limit.",
+                " Try finishing a task before adding more.",
+              );
+              return; // don't open the sheet
+            }
+            //open the add sheet
+            TasksList(controller: _taskController).openAddTaskSheet(context);
+          },
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }

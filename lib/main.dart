@@ -11,14 +11,15 @@ import 'package:lumra_project/theme/custom_themes/text_field_theme.dart';
 import 'package:lumra_project/view/homepage/adhdHomePage.dart';
 import 'package:lumra_project/theme/theme.dart';
 import 'package:flutter/services.dart';
+import "package:lumra_project/view/ChatBootADHD/ChatBootADHD.dart";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await SystemChrome.setPreferredOrientations([
-  DeviceOrientation.portraitUp,
-  DeviceOrientation.portraitDown,
-]);
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   Get.put(RegistrationFlowController());
   runApp(const MyApp());
 }

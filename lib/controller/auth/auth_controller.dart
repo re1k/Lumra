@@ -3,6 +3,9 @@ import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lumra_project/service/auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import "package:lumra_project/view/ChatBootADHD/ChatBootADHD.dart";
+//import "package:lumra_project/view/ChatBootADHD/ChatBootADHD.dart;
+import 'package:lumra_project/controller/ChatBoot/AdhdChatBootController.dart';
 
 class AuthController extends GetxController {
   final AuthService _authService = AuthService();
@@ -17,7 +20,7 @@ class AuthController extends GetxController {
       isLoading.value = true;
       await _authService.signIn(email, password);
       final user = currentUser;
-      if (user == null) return "User not found."; //
+      if (user == null) return "User not found.";
 
       if (!user.emailVerified) {
         return "EMAIL_NOT_VERIFIED";
@@ -25,7 +28,6 @@ class AuthController extends GetxController {
 
       // Route once cuz AppShell decides tabs based on role
       Get.offAllNamed('/app');
-
       return null;
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
@@ -46,7 +48,33 @@ class AuthController extends GetxController {
 
   // Logout
   Future<void> logout() async {
-    await _authService.signOut();
+    try {
+      // Get current user's role
+      final user = currentUser;
+      String? role;
+
+      if (user != null) {
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+        role = doc.data()?['role']; // assumes you have a 'role' field
+      }
+
+      role = role?.toLowerCase();
+
+      // Sign out
+      await _authService.signOut();
+
+      // If user is ADHD, clear the chat controller
+      if (role == 'adhd' && Get.isRegistered<ChatController>()) {
+        final chatCtrl = Get.find<ChatController>();
+        chatCtrl.chatHistory.clear();
+        Get.delete<ChatController>();
+      }
+    } catch (e) {
+      print('Logout failed: $e');
+    }
   }
 
   // Reset password
@@ -68,6 +96,7 @@ class AuthController extends GetxController {
     }
   }
 
+  // Check email
   Future<String?> checkIfEmailExists(String email) async {
     try {
       final snapshot = await FirebaseFirestore.instance

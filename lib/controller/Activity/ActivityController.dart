@@ -180,7 +180,7 @@ class Activitycontroller {
       filtered = all
           .where(
             (a) => [
-              'Team Sports',
+              'Team sports',
               'Fun Exercises',
               'Journaling',
             ].contains(a.title.trim()),
@@ -264,7 +264,7 @@ class Activitycontroller {
       filtered = allTemplates
           .where(
             (a) => [
-              'Team Sports',
+              'Team sports',
               'Fun Exercises',
               'Journaling',
             ].contains(a.title.trim()),
@@ -377,5 +377,38 @@ class Activitycontroller {
         });
       }
     }
+  }
+
+  // Jana and layan----------------------------------------------------------
+  Future<void> addSuggestedActivity({
+    required String title,
+    required String category,
+    required String description,
+    required String time,
+  }) async {
+    final uid = authController.currentUser?.uid;
+    if (uid == null) return;
+
+    // Optional: stable id to avoid duplicates (same title+category)
+    final slug =
+        '${category.trim().toLowerCase()}__${title.trim().toLowerCase()}'
+            .replaceAll(RegExp(r'[^a-z0-9_]+'), '_');
+
+    final ref = db
+        .collection('users')
+        .doc(uid)
+        .collection('activities')
+        .doc(slug);
+
+    await ref.set({
+      'title': title,
+      'category': category,
+      'description': description,
+      'time': time,
+      'isChecked': false,
+      'createdAt': FieldValue.serverTimestamp(),
+      'expireAt': null, // will be set when user checks
+      'isInitial': false, //  so UI knows it's a chatbot item
+    }, SetOptions(merge: true));
   }
 }
