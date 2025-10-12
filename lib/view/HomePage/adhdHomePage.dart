@@ -150,11 +150,13 @@ class _HomePageState extends State<HomePage> {
               return; // don't open the sheet
             }
             //open the add sheet
-            TasksList(controller: _taskController).openAddTaskSheet(context);
+            // TasksList(controller: _taskController).openAddTaskSheet(context);
           },
           child: const Icon(Icons.add),
         ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      bottomNavigationBar: const SizedBox(height: 23),
     );
   }
 }

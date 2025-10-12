@@ -7,7 +7,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:lumra_project/controller/ChatBoot/AdhdChatBootController.dart';
 import 'package:lumra_project/controller/Activity/ActivityController.dart';
+import 'package:lumra_project/model/Activity/ActivityModel.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
+
+import 'package:lumra_project/model/Activity/ActivityModel.dart';
 
 class ChatView extends StatefulWidget {
   const ChatView({super.key});
@@ -216,12 +219,15 @@ class _ChatViewState extends State<ChatView>
       int saved = 0;
       for (final a in chatCtrl.lastSuggested) {
         try {
-          await activityController.addSuggestedActivity(
+          final activity = Activitymodel(
             title: (a['title'] ?? '').trim(),
             category: (a['category'] ?? 'Activity').trim(),
             description: (a['description'] ?? '').trim(),
             time: (a['time'] ?? '').trim(),
           );
+
+          final jsonData = activity.toUserActivityJson();
+
           saved++;
         } catch (e) {
           debugPrint('Save failed: $e');

@@ -11,7 +11,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 //   • For CHATBOT activities → these live directly on the per-user doc.
 class Activitymodel {
   // Identity & content
-  final String id; // INITIAL: templateId | CHATBOT: user activity doc id
+  final String? id; // INITIAL: templateId | CHATBOT: user activity doc id
   final String title;
   final String description;
   final String category;
@@ -26,7 +26,7 @@ class Activitymodel {
   final bool isInitial; // true = initial template; false = per-user chatbot
 
   Activitymodel({
-    required this.id,
+    this.id,
     required this.title,
     required this.description,
     required this.category,

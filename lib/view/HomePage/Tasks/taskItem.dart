@@ -10,8 +10,14 @@ import 'priorityChip.dart';
 class TaskItem extends StatelessWidget {
   final Task task;
   final TaskController controller;
+  final VoidCallback? onEdit;
 
-  const TaskItem({super.key, required this.task, required this.controller});
+  const TaskItem({
+    super.key,
+    required this.task,
+    required this.controller,
+    this.onEdit,
+  });
 
   Color _priorityColor(String p) {
     switch (p.toLowerCase()) {
@@ -30,12 +36,10 @@ class TaskItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
 
-    final label = task.isChecked
-        ? 'Done'
-        : task.priority[0].toUpperCase() + task.priority.substring(1);
+    final label = task.priority[0].toUpperCase() + task.priority.substring(1);
 
     ///To start with capital letter
-    final chipColor = _priorityColor(label);
+    final chipColor = _priorityColor(task.priority);
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: BSizes.sm),
@@ -46,19 +50,10 @@ class TaskItem extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // left: checkbox + title
-          Expanded(
-            child: CheckboxListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                task.tasksTitle,
-                style: tt.bodyMedium?.copyWith(
-                  decoration: task.isChecked
-                      ? TextDecoration.lineThrough
-                      : null,
-                  color: task.isChecked ? Colors.grey : BColors.black,
-                ),
-              ),
+          // Checkbox
+          Transform.translate(
+            offset: const Offset(-8, 0),
+            child: Checkbox(
               value: task.isChecked,
               onChanged: (val) async {
                 if (val == null) return;
@@ -66,12 +61,38 @@ class TaskItem extends StatelessWidget {
                   await controller.updateTaskStatus(task.id, val);
                 } on FirebaseException catch (_) {}
               },
-              controlAffinity: ListTileControlAffinity.leading,
             ),
           ),
 
-          // right: priority chip
-          PriorityChip(label: label, color: chipColor),
+          // Title
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(
+                left: BSizes.sm,
+                right: BSizes.sm,
+                top: BSizes.sm,
+                bottom: BSizes.sm,
+              ),
+              child: Transform.translate(
+                offset: const Offset(-12, 0),
+                child: Text(
+                  task.tasksTitle,
+                  style: tt.bodyMedium?.copyWith(
+                    decoration: task.isChecked
+                        ? TextDecoration.lineThrough
+                        : null,
+                    color: task.isChecked ? Colors.grey : BColors.black,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Priority chip
+          Transform.translate(
+            offset: const Offset(-2, 0),
+            child: PriorityChip(label: label, color: chipColor),
+          ),
         ],
       ),
     );

@@ -8,26 +8,41 @@ class TaskController {
   TaskController({required this.userId});
   CollectionReference<Map<String, dynamic>> get _col =>
       _firestore.collection('users').doc(userId).collection('tasks');
-  //DONOT REMOVE THE COMMENTS
+
+  // NEW FUNCTION: Searches for tasks with expired 'expireAt' and deletes them.
+  Future<void> deleteExpiredTasks() async {
+    final now = Timestamp.now();
+
+    // Query for tasks where expireAt is in the past
+    final snap = await _col.where('expireAt', isLessThan: now).get();
+
+    if (snap.docs.isNotEmpty) {
+      final batch = _firestore.batch();
+      for (final doc in snap.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+      // Optional: Log the number of deleted tasks
+    }
+  }
+
+  // DONOT REMOVE THE COMMENTS
   // Hide expired tasks right away (TTL will delete them later) هو كذا طريقته مايتعامل بالثواني
-  //we will cancel the TTL because google cloud doesn’t allow direct billing
-  // Stream<List<Task>> getTasks() {
-  //   return _col
-  //       .where('expireAt', isGreaterThan: Timestamp.now()) // filter only
-  //       .orderBy('order', descending: true) // single sort key
-  //       .snapshots()
-  //       .map((snap) => snap.docs.map(Task.fromFirestore).toList());
-  // }
+  // we will cancel the TTL because google cloud doesn’t allow direct billing
   // FREE REORDERING: sort by 'order' only; filter expired in memory.
   Stream<List<Task>> getTasks() {
+    // 1. Trigger deletion before fetching (ensures cleanup occurs frequently)
+    deleteExpiredTasks();
+
     return _col.orderBy('order', descending: true).snapshots().map((snap) {
       final now = DateTime.now();
       final all = snap.docs.map(Task.fromFirestore).toList();
 
+      // 2. Filter expired tasks that were not deleted yet (filter in memory)
       return all.where((t) {
         final ts = t.expireAt; // may be null
-        if (ts == null) return true; // keep if no expireAt (NEXT SPRINT)
-        return ts.toDate().isAfter(now); // filter only when non null
+        if (ts == null) return true;
+        return ts.toDate().isAfter(now);
       }).toList();
     });
   }
@@ -36,9 +51,12 @@ class TaskController {
     final data = task.toFirestore(useServerTimestamp: true);
     data['createdAt'] = FieldValue.serverTimestamp();
     data['order'] = DateTime.now().microsecondsSinceEpoch; // higher = higher
+
+    // Ensure expireAt is set to now + 24 hours
     data['expireAt'] =
         (data['expireAt'] as Timestamp?) ??
         Timestamp.fromDate(DateTime.now().add(const Duration(hours: 24)));
+
     await _col.add(data);
   }
 
@@ -62,30 +80,6 @@ class TaskController {
     await batch.commit();
   }
 
-  //DO NOT DELETEeeeeee!!!!
-  // Stream<List<Task>> getTasks() {
-  //   final col = _firestore.collection('users').doc(userId).collection('tasks');
-
-  //   return col
-  //       .where('expireAt', isGreaterThan: Timestamp.now())
-  //       .snapshots()
-  //       .map((snap) => snap.docs.map((d) => Task.fromFirestore(d)).toList());
-  // }
-
-  // Future<void> addTask(Task task) async {
-  //   final col = _firestore.collection('users').doc(userId).collection('tasks');
-
-  //   // Ensure every new task has expireAt = now + 24hours
-  //   final data = task.toFirestore(useServerTimestamp: true);
-  //   data['expireAt'] =
-  //       (data['expireAt'] as Timestamp?) ??
-  //       Timestamp.fromDate(DateTime.now().add(const Duration(hours: 24)));
-
-  //   await col.add(data);
-  // }
-
-  /// When checked -> priority becomes 'done'.
-  /// When unchecked -> priority becomes the doc's basePriority (previous priority).
   Future<void> updateTaskStatus(String taskId, bool isChecked) async {
     final docRef = _firestore
         .collection('users')
@@ -93,17 +87,30 @@ class TaskController {
         .collection('tasks')
         .doc(taskId);
 
-    final snap = await docRef.get();
-    final data = snap.data() as Map<String, dynamic>? ?? {};
+    final updateData = {
+      'isChecked': isChecked,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
 
-    final currentPriority = (data['priority'] as String?) ?? 'low';
-    final basePriority = (data['basePriority'] as String?) ?? currentPriority;
-    final newPriority = isChecked ? 'done' : basePriority;
+    if (isChecked) {
+      updateData['order'] = -DateTime.now().microsecondsSinceEpoch;
+    }
+
+    await docRef.update(updateData);
+  }
+
+  /// Updates an existing task with new data.
+  Future<void> updateTask(Task task) async {
+    final docRef = _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('tasks')
+        .doc(task.id);
 
     await docRef.update({
-      'isChecked': isChecked,
-      'priority': newPriority,
-      'basePriority': basePriority,
+      'tasksTitle': task.tasksTitle,
+      'priority': task.priority,
+      'basePriority': task.basePriority,
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }
@@ -127,7 +134,7 @@ class TaskController {
         .get();
     return snap.docs.length;
   }
-  //ALSO FOR NEXT SPRINT
+  // ALSO FOR NEXT SPRINT
 
   Future<int> getActiveTaskCount() async {
     final nowTs = Timestamp.now();
@@ -140,7 +147,6 @@ class TaskController {
     return snap.docs.length;
   }
 
-  // if we want the cap to apply to open tasks only:
   Future<int> getOpenActiveTaskCount() async {
     final nowTs = Timestamp.now();
     final snap = await _firestore

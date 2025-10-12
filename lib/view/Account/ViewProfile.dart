@@ -6,6 +6,7 @@ import '../../controller/auth/auth_controller.dart';
 import '../../theme/base_themes/colors.dart';
 import '../../theme/custom_themes/text_theme.dart';
 import '../../theme/custom_themes/appbar_theme.dart';
+import 'package:lumra_project/theme/base_themes/sizes.dart';
 
 class ViewProfile extends StatelessWidget {
   ViewProfile({super.key}) {
@@ -30,20 +31,28 @@ class ViewProfile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
     return Obx(() {
       final user = userController.user.value;
       if (user == null) return const Center(child: CircularProgressIndicator());
 
       return Scaffold(
-        backgroundColor: BColors.light,
-        appBar: AppBar(
-          title: const Text("Profile Information"),
-          backgroundColor: BAppBarTheme.lightAppBarTheme.backgroundColor,
-          elevation: BAppBarTheme.lightAppBarTheme.elevation,
-          iconTheme: BAppBarTheme.lightAppBarTheme.iconTheme,
-          titleTextStyle: BAppBarTheme.lightAppBarTheme.titleTextStyle,
-          centerTitle: true,
+         backgroundColor: BColors.white,
+      appBar: AppBar(
+        title: Text(
+          "Activities",
+          style: t.titleLarge?.copyWith(
+            fontFamily: 'K2D',
+            fontSize: BSizes.fontSizeLg,
+            fontWeight: FontWeight.bold,
+            color: BColors.white,
+          ),
         ),
+        backgroundColor: BAppBarTheme.lightAppBarTheme.backgroundColor,
+        elevation: BAppBarTheme.lightAppBarTheme.elevation,
+        iconTheme: BAppBarTheme.lightAppBarTheme.iconTheme,
+        centerTitle: true,
+      ),
         body: Padding(
           padding: const EdgeInsets.all(20),
           child: SingleChildScrollView(
