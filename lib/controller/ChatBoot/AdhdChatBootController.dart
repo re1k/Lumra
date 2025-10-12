@@ -151,10 +151,8 @@ Do not add any extra words.
     // 1) classify first
     final state = await _classifyState(userMessage);
 
-    // 2) No clear state -> chat normally using your previous instruction prompt (NO JSON here)
-    if (state == 'NONE' || state == null) {
-      // شوفي هنا يشبه حقك بس استخدمنا نون
-      const casualPrompt = """
+    // i move it outside if in order to use it later
+    const casualPrompt = """ 
 You are Lumra, a personal assistant that supports individuals with ADHD.
 You are not a medical professional and must never provide diagnostic or clinical information.
 Your role is to offer warm emotional support and simple guidance related only to ADHD, self-care, focus, organization, and emotional well-being.
@@ -167,15 +165,56 @@ respond normally — be kind, supportive, and keep the flow natural. Do NOT sugg
 Keep the reply short and in ENGLISH.
 """;
 
-      final resp = await Gemini.instance.text(
-        'System:\n$casualPrompt\n\nUser:\n$userMessage',
-      );
+    // 2) No clear state -> chat normally using your previous instruction prompt (NO JSON here)
+    if (state == 'NONE' || state == null) {
+      //  Add memory to make Gemini aware of past context
+      final memory = _buildMemory(
+        limit: 4,
+      ); // must be the same with the others promt (number of remebred masseges)
+      final fullPrompt =
+          '''
+System:
+$casualPrompt
+
+${memory.isNotEmpty ? 'Previous Conversation:\n$memory\n' : ''}
+User:
+$userMessage
+''';
+
+      final resp = await Gemini.instance.text(fullPrompt);
       return resp?.output?.trim() ?? "Got it! How’s your day going?";
     }
 
     // 3) Clear state -> fetch strictly from JSON (no gemini suggestions)
     final all = _activitiesForState(state);
     final picked = _pickTwo(all);
+
+    print(
+      " [Lumra Debug] Detected state = $state, checking if user wants activity...",
+    );
+    final wantsActivity = await _detectNeedForActivity(
+      userMessage,
+    ); // Ask Gemini if the user actually wants help or an activity
+
+    if (!wantsActivity) {
+      final memory = _buildMemory(
+        limit: 4,
+      ); // for jano (here you can control the number of remembred masseges ) -- dont chnage the method only here also in the normal case (no detected mental state must change with this)
+      final fullPrompt =
+          '''
+System:
+$casualPrompt
+
+${memory.isNotEmpty ? 'Previous Conversation:\n$memory\n' : ''}
+User:
+$userMessage
+''';
+
+      final resp = await Gemini.instance.text(fullPrompt);
+      return resp?.output?.trim() ??
+          "That sounds like it’s been a lot to deal with. I’m here with you.";
+    }
+
     if (picked.isEmpty) {
       return 'I recognized your state as "$state", but I couldn’t find activities for it.';
     }
@@ -198,5 +237,51 @@ Keep the reply short and in ENGLISH.
     );
 
     return b.toString();
+  }
+
+  Future<bool> _detectNeedForActivity(String userMessage) async {
+    // to check if the user ask for help
+    final prompt = """
+You are analyzing a user's message sent to a self-care assistant.
+Decide if the user is *asking for help*, *asking for a solution*, or *wants an activity*.
+
+Return exactly:
+- "YES" → if the user clearly wants help, advice, or an activity.
+- "NO"  → if the user is just expressing feelings, talking casually, or not asking for help.
+
+Examples:
+User: "I feel bored" → NO  
+User: "I feel bored, what should I do?" → YES  
+User: "I'm tired" → NO  
+User: "Can you suggest something to calm me down?" → YES  
+User: "Help me focus please" → YES  
+User: "I'm just chatting" → NO
+""";
+
+    final resp = await Gemini.instance.text(
+      'System:\n$prompt\n\nUser:\n$userMessage',
+    );
+    print(" [Lumra Debug] Gemini raw response: ${resp?.output}"); // debug
+    final output = resp?.output?.trim().toUpperCase() ?? 'NO';
+    return output.contains('YES');
+  }
+
+  ///  Build a short memory for Gemini (recent messages)  to remember the chat
+  String _buildMemory({int limit = 4, int maxCharsPerMsg = 160}) {
+    if (chatHistory.isEmpty) return '';
+
+    // Since you insert at index 0 (newest first), reverse to oldest → newest.
+    final recent = chatHistory.take(limit).toList().reversed;
+
+    final lines = recent.map((m) {
+      final role = (m['author'] == 'user') ? 'User' : 'Lumra';
+      var text = (m['text'] ?? '').toString().replaceAll('\n', ' ').trim();
+      if (text.length > maxCharsPerMsg) {
+        text = text.substring(0, maxCharsPerMsg) + '…';
+      }
+      return '$role: $text';
+    }).toList();
+
+    return lines.join('\n');
   }
 }
