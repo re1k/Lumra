@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import "package:lumra_project/view/ChatBootADHD/ChatBootADHD.dart";
 //import "package:lumra_project/view/ChatBootADHD/ChatBootADHD.dart;
 import 'package:lumra_project/controller/ChatBoot/AdhdChatBootController.dart';
+import 'package:lumra_project/controller/ChatBoot/baseController.dart';
 
 class AuthController extends GetxController {
   final AuthService _authService = AuthService();
@@ -67,10 +68,10 @@ class AuthController extends GetxController {
       await _authService.signOut();
 
       // If user is ADHD, clear the chat controller
-      if (role == 'adhd' && Get.isRegistered<ChatController>()) {
-        final chatCtrl = Get.find<ChatController>();
+      if (role == 'adhd' && Get.isRegistered<BaseChatController>()) {
+        final chatCtrl = Get.find<BaseChatController>();
         chatCtrl.chatHistory.clear();
-        Get.delete<ChatController>();
+        Get.delete<BaseChatController>();
       }
     } catch (e) {
       print('Logout failed: $e');

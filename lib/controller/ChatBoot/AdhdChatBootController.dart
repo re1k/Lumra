@@ -5,8 +5,9 @@ import 'package:get/get.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:lumra_project/theme/base_themes/api_constants.dart';
+import 'baseController.dart';
 
-class ChatController extends GetxController {
+class AdhdChatController extends BaseChatController {
   List<dynamic>? _cases; // JSON data
   final Random _rng = Random();
 

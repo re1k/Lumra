@@ -12,6 +12,7 @@ import 'package:lumra_project/view/HomePage/EncouragemenMessage/adhdMessage.dart
 import 'package:lumra_project/view/HomePage/Tasks/tasksView.dart';
 import 'package:lumra_project/view/HomePage/Reminders/upcomingReminders.dart';
 import 'package:lumra_project/controller/Homepage/Reminders/reminderController.dart';
+import "package:lumra_project/view/ChatBootADHD/ChatBotWidget.dart";
 
 class CareGiverHomePage extends StatefulWidget {
   const CareGiverHomePage({super.key});
@@ -76,46 +77,54 @@ class _CareGiverHomePageState extends State<CareGiverHomePage> {
         ],
       ),
 
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.all(BSizes.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: BSizes.md),
+      body: Stack(
+        children: [
+          // Main scrollable content
+          SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.all(BSizes.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: BSizes.md),
 
-                // Encouragement banner
-                const EncouragementMessage(
-                  text:
-                      'Write a message you would like you\'re linked Adhd user to read!',
+                    const EncouragementMessage(
+                      text:
+                          'Write a message you would like you\'re linked Adhd user to read!',
+                    ),
+
+                    SizedBox(height: BSizes.sm),
+
+                    const UpcomingReminders(),
+
+                    Transform.translate(
+                      offset: const Offset(0, -8),
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 8),
+                          const Icon(Icons.swap_vert, color: BColors.black),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: _SectionLabel(text: 'To Do list '),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    TasksList(controller: _taskController),
+                    SizedBox(
+                      height: 96,
+                    ), // leave space at bottom so content doesn't sit under FABs
+                  ],
                 ),
-
-                SizedBox(height: BSizes.sm),
-
-                // Reminders section
-                const UpcomingReminders(),
-
-                Transform.translate(
-                  offset: const Offset(0, -8),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 8),
-                      const Icon(Icons.swap_vert, color: BColors.black),
-                      const SizedBox(width: 8), // spacing between icon and text
-                      Expanded(child: _SectionLabel(text: 'To Do list ')),
-                    ],
-                  ),
-                ),
-
-                // Tasks list - no longer wrapped in Expanded
-                TasksList(controller: _taskController),
-
-                SizedBox(height: BSizes.sm),
-              ],
+              ),
             ),
           ),
-        ),
+
+          //  Overlay the chatbot on top of the page
+          const ChatBotWidget(role: 'caregiver'),
+        ],
       ),
 
       // FAB+ 10 limitation
@@ -141,7 +150,9 @@ class _CareGiverHomePageState extends State<CareGiverHomePage> {
         child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-      bottomNavigationBar: const SizedBox(height: 23),
+      bottomNavigationBar: const SizedBox(
+        height: 72,
+      ), /////note for remaz :it was 23
     );
   }
 }

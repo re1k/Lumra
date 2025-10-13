@@ -9,9 +9,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lumra_project/controller/ChatBoot/AdhdChatBootController.dart';
 import 'package:lumra_project/model/Activity/ActivityModel.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
+import 'package:lumra_project/controller/ChatBoot/baseController.dart';
 
 class ChatView extends StatefulWidget {
-  const ChatView({super.key});
+  final BaseChatController controller;
+  const ChatView({super.key, required this.controller});
 
   @override
   State<ChatView> createState() => _ChatViewState();
@@ -22,7 +24,9 @@ class _ChatViewState extends State<ChatView>
   @override
   bool get wantKeepAlive => true;
 
-  final ChatController controller = Get.find<ChatController>();
+  BaseChatController get controller => widget.controller;
+
+  // final BaseChatController controller = Get.find<BaseChatController>();
 
   // Build messages from controller.chatHistory
   List<types.Message> get _messages => controller.chatHistory
@@ -99,7 +103,11 @@ class _ChatViewState extends State<ChatView>
   }
 
   Future<int> _autoSaveSuggestions() async {
-    final picks = controller.lastSuggested;
+    // Only ADHD bot stores activities
+    if (controller is! AdhdChatController) return 0;
+    final adhd = controller as AdhdChatController;
+
+    final picks = adhd.lastSuggested;
     if (picks.isEmpty) return 0;
 
     int saved = 0;
@@ -117,7 +125,7 @@ class _ChatViewState extends State<ChatView>
         debugPrint('Save failed: $e');
       }
     }
-    controller.lastSuggested = []; // avoid duplicates on next message
+    adhd.lastSuggested = []; // avoid duplicates on next message
     return saved;
   }
 

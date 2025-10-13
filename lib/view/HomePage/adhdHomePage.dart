@@ -128,7 +128,7 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            const ChatBotWidget(),
+            const ChatBotWidget(role: 'adhd'),
           ],
         ),
       ),
