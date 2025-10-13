@@ -43,7 +43,7 @@ class _ChatViewState extends State<ChatView>
 
   late final AnimationController _waveCtrl = AnimationController(
     vsync: this,
-    duration: const Duration(seconds: 12),
+    duration: const Duration(seconds: 8),
   )..repeat();
 
   @override
@@ -91,7 +91,7 @@ class _ChatViewState extends State<ChatView>
             'isInitial': false, // chatbot-suggested
             'createdAt': FieldValue.serverTimestamp(),
           });
-      debugPrint('✅ stored activity: ${ref.id}');
+      debugPrint('✅ stored activity: ${ref.id}'); ///// easier for us
     } catch (e, st) {
       debugPrint('🔥 Firestore write failed: $e');
       debugPrint(st.toString());
@@ -121,7 +121,7 @@ class _ChatViewState extends State<ChatView>
     return saved;
   }
 
-  // ----------------- SEND FLOW -----------------
+  // SEND FLOW
 
   Future<void> _handleSend(types.PartialText message) async {
     // 1) user message -> UI + history
@@ -279,36 +279,81 @@ class _ChatViewState extends State<ChatView>
                           fontSize: 15,
                           color: Colors.black87,
                         ),
-                        inputBackgroundColor: Colors.white,
+
+                        // background
+                        inputBackgroundColor: Colors.transparent,
+                        inputContainerDecoration:
+                            const BoxDecoration(), // remove outer border completely, shall we change it?
+                        // Style text input only
                         inputTextColor: Colors.black87,
                         inputTextStyle: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.black87,
+                          fontSize: 15,
+                          height: 1.4,
                         ),
                         inputPadding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 10,
+                          horizontal: 12,
+                          vertical: 8,
                         ),
-                        inputContainerDecoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: BColors.primary.withOpacity(0.6),
-                            width: 1.6,
+
+                        // line border
+                        inputTextDecoration: InputDecoration(
+                          hintText: 'Write your message...',
+                          hintStyle: TextStyle(color: Colors.grey.shade500),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: BColors.primary.withOpacity(0.05),
-                              blurRadius: 4,
-                              offset: const Offset(0, 1),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide(
+                              color: Colors.grey.shade300,
+                              width: 1,
                             ),
-                          ],
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide(
+                              color: Colors.grey.shade300,
+                              width: 1,
+                            ),
+                          ),
+                          //INPUT FIELD BORDER
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(18),
+                            borderSide: const BorderSide(
+                              color: Color.fromARGB(255, 160, 160, 160),
+                              width: 1.2,
+                            ),
+                          ),
                         ),
+
+                        //  send arrow
                         sendButtonIcon: const Icon(
                           Icons.send_rounded,
-                          color: BColors.primary,
-                          size: 22,
+                          color: BColors.buttonPrimary,
+                          size: 24,
                         ),
+                      ),
+
+                      // Remove upload icon
+                      onAttachmentPressed: null,
+
+                      // Behavior of input
+                      inputOptions: const InputOptions(
+                        // maxLines: 5, shall we add it ?
+                        autocorrect: true,
+                        enableSuggestions: true,
+                        sendButtonVisibilityMode:
+                            SendButtonVisibilityMode.editing,
+                      ),
+
+                      //  Empty chat placeholder////////////////////////
+                      l10n: const ChatL10nEn(
+                        emptyChatPlaceholder:
+                            "No chats yet, but I’m here whenever you’re ready.",
+                        inputPlaceholder: "Write your message...",
                       ),
                     ),
                   ),
@@ -322,7 +367,7 @@ class _ChatViewState extends State<ChatView>
   }
 }
 
-// ----------------- Wave clipper -----------------
+// Wave clipper
 
 class _AnimatedWaveClipper extends CustomClipper<Path> {
   final double phase; // 0..1
