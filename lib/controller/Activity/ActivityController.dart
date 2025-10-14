@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:lumra_project/view/Activity/ActivityWidgets/SportTimer.dart';
 import '../../model/Activity/ActivityModel.dart';
 import 'package:lumra_project/controller/auth/auth_controller.dart';
+import 'package:lumra_project/view/Activity/ActivityWidgets/PuzzleGame.dart';
 
 // ---------------------------------------------------------------------------
 // ActivityController Goal:
@@ -518,7 +519,8 @@ class Activitycontroller {
     if (category.contains('sport')) {
       // Open sport timer
       Get.to(() => SportTimer(duration: Duration(minutes: minutes)));
-    } else if (category.contains('')) {
+    } else if (category.contains('learning')) {
+      Get.to(() => const NumberPuzzle());
       //for now nothing until the rest is added
     }
   }

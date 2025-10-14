@@ -183,6 +183,8 @@ class _ActivityTileState extends State<_ActivityTile> {
     // The variable that reflects the correct real-time status:
     final isDone = item.isInitial ? _isInitialItemChecked : item.isChecked;
 
+    final activityCategory = item.category.toLowerCase().trim();
+    final isLearningActivity = activityCategory == 'learning';
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 180),
       opacity: isDone ? 0.65 : 1.0,
@@ -316,22 +318,25 @@ class _ActivityTileState extends State<_ActivityTile> {
               SizedBox(height: BSizes.sm + 4),
 
               // Bottom row: timer (right-aligned)
-              if (item.time.trim().isNotEmpty)
+              if  (isLearningActivity || item.time.trim().isNotEmpty)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    GestureDetector(
-                      onTap: () => widget.activityController.onActivityTimeTap(
-                        widget.item,
-                        context,
-                      ),
+                    GestureDetector( 
+                      onTap: () {
+                   
+                    widget.activityController.onActivityTimeTap(
+                      widget.item,
+                      context,
+                    );
+                  },
                       child: Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: BSizes.sm + 2,
                           vertical: BSizes.xs + 2,
                         ),
                         decoration: BoxDecoration(
-                          color: BColors.secondry.withOpacity(0.40),
+                          color: BColors.primary,
                           borderRadius: BorderRadius.circular(
                             BSizes.borderRadiusLg,
                           ),
@@ -339,21 +344,25 @@ class _ActivityTileState extends State<_ActivityTile> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
-                              Icons.timer_outlined,
-                              size: BSizes.iconSm + 2,
-                              color: BColors.primary,
-                            ),
+                            // const Icon( BColors.primary
+                            //   Icons.timer_outlined,
+                            //   size: BSizes.iconSm + 2,
+                            //   color: BColors.primary,
+                            // ),
                             SizedBox(width: BSizes.xs + 2),
                             Text(
-                              '${widget.item.time} minute', //Show "X minute"
+                          // If it's a 'learning' activity, display "Start"
+                          isLearningActivity 
+                              ? 'Start' 
+                              // Otherwise, display the time value
+                              : '${widget.item.time} minute', 
                               style: const TextStyle(
-                                fontFamily: 'K2D',
-                                fontSize: BSizes.fontSizeSm,
-                                color: BColors.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                            fontFamily: 'K2D',
+                            fontSize: BSizes.fontSizeSm,
+                            color: Color.fromARGB(255, 255, 255, 255),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                           ],
                         ),
                       ),
