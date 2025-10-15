@@ -24,7 +24,11 @@ ${memory.isNotEmpty ? 'Previous Conversation:\n$memory\n' : ''}
 User:
 $userMessage
 ''';
-    final resp = await Gemini.instance.text(prompt);
-    return resp?.output?.trim() ?? "I'm here to help. What’s on your mind?";
+    try {
+      final resp = await Gemini.instance.text(prompt);
+      return resp?.output?.trim() ?? "I'm here to help. What’s on your mind?";
+    } catch (e) {
+      return "Sorry, I'm having trouble connecting right now. Please try again in a moment 💫";
+    }
   }
 }

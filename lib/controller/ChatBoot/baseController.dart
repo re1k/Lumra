@@ -15,13 +15,20 @@ abstract class BaseChatController extends GetxController {
   String buildMemory({int limit = 4, int maxCharsPerMsg = 160}) {
     if (chatHistory.isEmpty) return '';
     final recent = chatHistory.take(limit).toList().reversed;
-    return recent.map((m) {
-      final role = (m['author'] == 'user') ? 'User' : 'Lumra';
-      var text = (m['text'] ?? '').toString().replaceAll('\n', ' ').trim();
-      if (text.length > maxCharsPerMsg) text = '${text.substring(0, maxCharsPerMsg)}…';
-      return '$role: $text';
-    }).join('\n');
+    return recent
+        .map((m) {
+          final role = (m['author'] == 'user') ? 'User' : 'Lumra';
+          var text = (m['text'] ?? '').toString().replaceAll('\n', ' ').trim();
+          if (text.length > maxCharsPerMsg)
+            text = '${text.substring(0, maxCharsPerMsg)}…';
+          return '$role: $text';
+        })
+        .join('\n');
   }
 
   Future<String> sendMessage(String userMessage); // each bot implements this
+  void clearChat() {
+    chatHistory.clear();
+    print(" Chat history cleared on logout");
+  }
 }
