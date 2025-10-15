@@ -526,6 +526,7 @@ class Activitycontroller {
       //for now nothing until the rest is added
     }
     if (title.contains('writing') ||
+        title.contains('write') ||
         title.contains('art') ||
         title.contains('drawing') ||
         title.contains('journaling')) {
