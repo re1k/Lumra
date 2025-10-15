@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:lumra_project/view/Activity/ActivityWidgets/DrawingAndWritingPrompts.dart';
 import 'package:lumra_project/view/Activity/ActivityWidgets/SportTimer.dart';
 import '../../model/Activity/ActivityModel.dart';
 import 'package:lumra_project/controller/auth/auth_controller.dart';
@@ -515,6 +516,7 @@ class Activitycontroller {
 
     // Action differs by category
     final category = item.category.toLowerCase().trim();
+    final title = item.title.toLowerCase().trim();
 
     if (category.contains('sport')) {
       // Open sport timer
@@ -522,6 +524,22 @@ class Activitycontroller {
     } else if (category.contains('learning')) {
       Get.to(() => const NumberPuzzle());
       //for now nothing until the rest is added
+    }
+    if (title.contains('writing') ||
+        title.contains('art') ||
+        title.contains('drawing') ||
+        title.contains('journaling')) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          content: ActivityPrompts(activityTitle: item.title),
+        ),
+      );
+      return; // stop further navigation
     }
   }
 }
