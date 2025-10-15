@@ -318,7 +318,7 @@ class _ActivityTileState extends State<_ActivityTile> {
               SizedBox(height: BSizes.sm + 4),
 
               // Bottom row: timer (right-aligned)
-              if  (isLearningActivity || item.time.trim().isNotEmpty)
+              if  (item.time.trim().isNotEmpty)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -351,11 +351,10 @@ class _ActivityTileState extends State<_ActivityTile> {
                             // ),
                             SizedBox(width: BSizes.xs + 2),
                             Text(
-                          // If it's a 'learning' activity, display "Start"
-                          isLearningActivity 
-                              ? 'Start' 
+                          
+                         'Start' 
                               // Otherwise, display the time value
-                              : '${widget.item.time} minute', 
+                              , 
                               style: const TextStyle(
                             fontFamily: 'K2D',
                             fontSize: BSizes.fontSizeSm,

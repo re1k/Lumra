@@ -93,6 +93,9 @@ flutter:
     - assets/images/Successful.svg
     - assets/images/verified.svg
     - assets/images/final_image.png
+    - assets/images/energy_balls.jpg
+    - assets/images/banana_icecream.jpg
+    - assets/images/berry_smoothie.jpg
     #- assets/PDFs/TestCaseLumra.pdf
     - assets/adhd_cases/AdhdActivites.json
     - assets/animation/sportTimer.json

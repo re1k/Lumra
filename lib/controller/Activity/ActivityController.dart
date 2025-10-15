@@ -4,9 +4,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:lumra_project/view/Activity/ActivityWidgets/DrawingAndWritingPrompts.dart';
 import 'package:lumra_project/view/Activity/ActivityWidgets/SportTimer.dart';
+import 'package:lumra_project/view/Activity/ActivityWidgets/cooking.dart';
 import '../../model/Activity/ActivityModel.dart';
 import 'package:lumra_project/controller/auth/auth_controller.dart';
 import 'package:lumra_project/view/Activity/ActivityWidgets/PuzzleGame.dart';
+import 'package:lumra_project/theme/base_themes/colors.dart';
 
 // ---------------------------------------------------------------------------
 // ActivityController Goal:
@@ -39,7 +41,7 @@ class Activitycontroller {
   bool _pendingInitialReset = false; // do we need to reset initial statuses?
   //bool _emitting = false; //make sure emitCombined runs one at a time (no overlap)
   bool _initialsCycleDone = false;
-
+ 
   void init() {
     titleController = TextEditingController();
     descriptionController = TextEditingController();
@@ -463,6 +465,30 @@ class Activitycontroller {
     return count;
   }
 
+
+    // to retrive the age of user \
+    Future<int> getUserAge() async {
+  final uid = authController.currentUser?.uid;
+  if (uid == null) return 0;
+
+  final doc = await db.collection('users').doc(uid).get();
+  final data = doc.data();
+  if (data == null || data['dob'] == null) return 0;
+
+  final Timestamp dobTs = data['dob'];
+  final DateTime dob = dobTs.toDate();
+
+  final now = DateTime.now();
+  int age = now.year - dob.year;
+
+  // Adjust if birthday hasn't happened yet this year
+  if (now.month < dob.month || (now.month == dob.month && now.day < dob.day)) {
+    age--;
+  }
+
+  return age;
+}
+   
   /// Calculates the number of activities completed in the last 7 days.
   /// Relies on the 'checkedAt' field which must exist for completed items (before deletion).
   Future<int> getWeeklyCompletedCount() async {
@@ -473,7 +499,7 @@ class Activitycontroller {
     final lastWeekTimestamp = Timestamp.fromDate(lastWeek);
 
     int count = 0;
-
+      // for cooking activity
     // 1. Check completed INITIAL activities (via activityStatus)
 
     final statusSnap = await db
@@ -521,7 +547,7 @@ class Activitycontroller {
     if (category.contains('sport')) {
       // Open sport timer
       Get.to(() => SportTimer(duration: Duration(minutes: minutes)));
-    } else if (category.contains('learning')) {
+    } else if (title.contains('large puzzle') || title.contains('flash memory challenge') || title.contains('brain games') ) {
       Get.to(() => const NumberPuzzle());
       //for now nothing until the rest is added
     }
@@ -542,5 +568,16 @@ class Activitycontroller {
       );
       return; // stop further navigation
     }
+
+                if (title.contains('cooking')) {
+  getUserAge().then((age) {
+    
+      Get.to(() => Cooking(userAge: age));
+    }
+  );
+}
+
+
+  
   }
 }
