@@ -44,6 +44,7 @@ class _ChatViewState extends State<ChatView>
 
   final _user = const types.User(id: 'user');
   final _bot = const types.User(id: 'lumra');
+  final TextEditingController _inputCtrl = TextEditingController();
 
   late final AnimationController _waveCtrl = AnimationController(
     vsync: this,
@@ -53,11 +54,16 @@ class _ChatViewState extends State<ChatView>
   @override
   void initState() {
     super.initState();
+    _inputCtrl.addListener(() {
+      // rebuild input when the first char is entered or removed
+      setState(() {});
+    });
   }
 
   @override
   void dispose() {
     _waveCtrl.dispose();
+    _inputCtrl.dispose();
     super.dispose();
   }
 
@@ -349,12 +355,13 @@ class _ChatViewState extends State<ChatView>
                       onAttachmentPressed: null,
 
                       // Behavior of input
-                      inputOptions: const InputOptions(
-                        // maxLines: 5, shall we add it ?
-                        autocorrect: true,
-                        enableSuggestions: true,
+                      inputOptions: InputOptions(
+                        textEditingController:
+                            _inputCtrl, // attach our controller
                         sendButtonVisibilityMode:
                             SendButtonVisibilityMode.editing,
+                        autocorrect: true,
+                        enableSuggestions: true,
                       ),
 
                       //  Empty chat placeholder////////////////////////

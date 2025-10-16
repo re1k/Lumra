@@ -22,7 +22,7 @@ class _ChatBotWidgetState extends State<ChatBotWidget> {
   late final AdhdChatController adhdCtrl;
   late final CaregiverChatController cgCtrl;
 
-  // ✅ choose controller based on role
+  // choose controller based on role
   BaseChatController get _activeCtrl =>
       widget.role == 'caregiver' ? cgCtrl : adhdCtrl;
 
@@ -46,38 +46,55 @@ class _ChatBotWidgetState extends State<ChatBotWidget> {
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      isDismissible: true, // keep this
+      enableDrag: true, // swipe down still works
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withOpacity(0.15),
-      builder: (BuildContext context) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 20, right: 20, left: 20),
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: Material(
-              elevation: 10,
-              borderRadius: BorderRadius.circular(20),
-              color: Colors.transparent,
-              child: Container(
-                width: 340,
-                height: 480,
-                decoration: BoxDecoration(
-                  color: Colors.white,
+      builder: (ctx) {
+        return Stack(
+          children: [
+            // 1) FULLSCREEN TAP-TO-DISMISS LAYER (behind the sheet)
+            Positioned.fill(
+              child: GestureDetector(
+                behavior:
+                    HitTestBehavior.opaque, // make the whole area tappable
+                onTap: () => Navigator.of(ctx).pop(),
+                child: const SizedBox.shrink(),
+              ),
+            ),
+
+            // 2) YOUR SHEET (on top)
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 20, right: 20, left: 20),
+                child: Material(
+                  elevation: 10,
                   borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: BColors.primary.withOpacity(0.25),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
+                  color: Colors.transparent,
+                  child: Container(
+                    width: 340,
+                    height: 620, //  height (AVOID OVERLAP)
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: BColors.primary.withOpacity(0.25),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.all(Radius.circular(20)),
-                  child: ChatView(controller: _activeCtrl), // ✅ now defined
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.all(Radius.circular(20)),
+                      child: ChatView(controller: _activeCtrl),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         );
       },
     );
