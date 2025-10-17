@@ -161,7 +161,7 @@ class _ChatViewState extends State<ChatView>
   }
 
   // SEND FLOW
-
+  bool _showDots = false;
   Future<void> _handleSend(types.PartialText message) async {
     // 1) user message -> UI + history
     final userMsg = types.TextMessage(
@@ -177,40 +177,51 @@ class _ChatViewState extends State<ChatView>
       'text': userMsg.text,
       'createdAt': userMsg.createdAt,
     });
+    setState(() => _showDots = true); // show dots immediately
 
-    // 2) typing
-    final typingMsg = types.TextMessage(
-      id: 'typing',
-      author: _bot,
-      text: '...',
-      createdAt: DateTime.now().millisecondsSinceEpoch,
-    );
-    setState(() => _messages.insert(0, typingMsg));
-
-    // 3) Gemini reply
+    // 2️⃣ Wait for Gemini reply (logic unchanged)
     final replyText = await controller.sendMessage(message.text);
 
-    // 4) remove typing
-    setState(() => _messages.removeWhere((m) => m.id == 'typing'));
+    // 3️⃣ Hide dots after getting reply
+    if (!mounted) return;
+    setState(() => _showDots = false);
+
+    // 2) typing
+    // final typingMsg = types.TextMessage(
+    //   id: 'typing',
+    //   author: _bot,
+    //   text: '...',
+    //   createdAt: DateTime.now().millisecondsSinceEpoch,
+    // );
+    // setState(() => _messages.insert(0, typingMsg));
+
+    // // 3) Gemini reply
+    // final replyText = await controller.sendMessage(message.text);
+
+    // // 4) remove typing
+    // setState(() => _messages.removeWhere((m) => m.id == 'typing'));
 
     // 5) bot message -> UI + history
+    // 4️⃣ Bot message → UI + history
     final botMsg = types.TextMessage(
       id: Random().nextInt(999999).toString(),
       author: _bot,
       text: replyText,
       createdAt: DateTime.now().millisecondsSinceEpoch,
     );
-    setState(() => _messages.insert(0, botMsg));
-    controller.chatHistory.insert(0, {
-      'id': botMsg.id,
-      'author': 'bot',
-      'text': botMsg.text,
-      'createdAt': botMsg.createdAt,
-    });
+    setState(
+      () => controller.chatHistory.insert(0, {
+        'id': botMsg.id,
+        'author': 'bot',
+        'text': botMsg.text,
+        'createdAt': botMsg.createdAt,
+      }),
+    );
 
     // 6) STORE (no retrieval here)
-    final savedCount = await _autoSaveSuggestions(); //we can delete it
-    if (!mounted) return;
+    await _autoSaveSuggestions();
+    // final savedCount = await _autoSaveSuggestions(); //we can delete it
+    // if (!mounted) return;
     /* if (savedCount > 0) {  no need 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -302,100 +313,194 @@ class _ChatViewState extends State<ChatView>
                         ),
                       ],
                     ),
-                    child: Chat(
-                      messages: _messages,
-                      onSendPressed: _handleSend,
-                      user: _user,
-                      theme: DefaultChatTheme(
-                        backgroundColor: Colors.white,
-                        primaryColor: BColors.primary,
-                        messageBorderRadius: 14,
-                        sentMessageBodyTextStyle: const TextStyle(
-                          fontSize: 15,
-                          color: Colors.white,
-                        ),
-                        receivedMessageBodyTextStyle: const TextStyle(
-                          fontSize: 15,
-                          color: Colors.black87,
-                        ),
-
-                        // background
-                        inputBackgroundColor: Colors.transparent,
-                        inputContainerDecoration:
-                            const BoxDecoration(), // remove outer border completely, shall we change it?
-                        // Style text input only
-                        inputTextColor: Colors.black87,
-                        inputTextStyle: const TextStyle(
-                          fontSize: 15,
-                          height: 1.4,
-                        ),
-                        inputPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-
-                        // line border
-                        inputTextDecoration: InputDecoration(
-                          hintText: 'Write your message...',
-                          hintStyle: TextStyle(color: Colors.grey.shade500),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
-                          ),
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide(
-                              color: Colors.grey.shade300,
-                              width: 1,
+                    // ...inside build(), where you currently have: child: Chat(...)
+                    child: Stack(
+                      children: [
+                        Chat(
+                          messages: _messages,
+                          onSendPressed: _handleSend,
+                          user: _user,
+                          theme: DefaultChatTheme(
+                            backgroundColor: Colors.white,
+                            primaryColor: BColors.primary,
+                            messageBorderRadius: 14,
+                            sentMessageBodyTextStyle: const TextStyle(
+                              fontSize: 15,
+                              color: Colors.white,
+                            ),
+                            receivedMessageBodyTextStyle: const TextStyle(
+                              fontSize: 15,
+                              color: Colors.black87,
+                            ),
+                            inputBackgroundColor: Colors.transparent,
+                            inputContainerDecoration: const BoxDecoration(),
+                            inputTextColor: Colors.black87,
+                            inputTextStyle: const TextStyle(
+                              fontSize: 15,
+                              height: 1.4,
+                            ),
+                            inputPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            inputTextDecoration: InputDecoration(
+                              hintText: 'Write your message...',
+                              hintStyle: TextStyle(color: Colors.grey.shade500),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 10,
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(24),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.shade300,
+                                  width: 1,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(24),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.shade300,
+                                  width: 1,
+                                ),
+                              ),
+                              focusedBorder: const OutlineInputBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(18),
+                                ),
+                                borderSide: BorderSide(
+                                  color: Color.fromARGB(255, 160, 160, 160),
+                                  width: 1.2,
+                                ),
+                              ),
+                            ),
+                            sendButtonIcon: const Icon(
+                              Icons.send_rounded,
+                              color: BColors.buttonPrimary,
+                              size: 24,
                             ),
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide(
-                              color: Colors.grey.shade300,
-                              width: 1,
-                            ),
+                          onAttachmentPressed: null,
+                          inputOptions: InputOptions(
+                            textEditingController: _inputCtrl,
+                            sendButtonVisibilityMode:
+                                SendButtonVisibilityMode.editing,
+                            autocorrect: true,
+                            enableSuggestions: true,
                           ),
-                          //INPUT FIELD BORDER
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(18),
-                            borderSide: const BorderSide(
-                              color: Color.fromARGB(255, 160, 160, 160),
-                              width: 1.2,
-                            ),
+                          l10n: const ChatL10nEn(
+                            emptyChatPlaceholder:
+                                "No chats yet, but I’m here whenever you’re ready.",
+                            inputPlaceholder: "Write your message...",
                           ),
                         ),
 
-                        //  send arrow
-                        sendButtonIcon: const Icon(
-                          Icons.send_rounded,
-                          color: BColors.buttonPrimary,
-                          size: 24,
-                        ),
-                      ),
-
-                      // Remove upload icon
-                      onAttachmentPressed: null,
-
-                      // Behavior of input
-                      inputOptions: InputOptions(
-                        textEditingController:
-                            _inputCtrl, // attach our controller
-                        sendButtonVisibilityMode:
-                            SendButtonVisibilityMode.editing,
-                        autocorrect: true,
-                        enableSuggestions: true,
-                      ),
-
-                      //  Empty chat placeholder////////////////////////
-                      l10n: const ChatL10nEn(
-                        emptyChatPlaceholder:
-                            "No chats yet, but I’m here whenever you’re ready.",
-                        inputPlaceholder: "Write your message...",
-                      ),
+                        // 👇 dots overlay (shows while _showDots == true)
+                        if (_showDots)
+                          const Positioned(
+                            left: 16,
+                            bottom: 100, // adjust to sit above the input
+                            child: _TypingDotsBubble(),
+                          ),
+                      ],
                     ),
+
+                    // child: Chat(
+                    //   messages: _messages,
+                    //   onSendPressed: _handleSend,
+                    //   user: _user,
+                    //   theme: DefaultChatTheme(
+                    //     backgroundColor: Colors.white,
+                    //     primaryColor: BColors.primary,
+                    //     messageBorderRadius: 14,
+                    //     sentMessageBodyTextStyle: const TextStyle(
+                    //       fontSize: 15,
+                    //       color: Colors.white,
+                    //     ),
+                    //     receivedMessageBodyTextStyle: const TextStyle(
+                    //       fontSize: 15,
+                    //       color: Colors.black87,
+                    //     ),
+
+                    //     // background
+                    //     inputBackgroundColor: Colors.transparent,
+                    //     inputContainerDecoration:
+                    //         const BoxDecoration(), // remove outer border completely, shall we change it?
+                    //     // Style text input only
+                    //     inputTextColor: Colors.black87,
+                    //     inputTextStyle: const TextStyle(
+                    //       fontSize: 15,
+                    //       height: 1.4,
+                    //     ),
+                    //     inputPadding: const EdgeInsets.symmetric(
+                    //       horizontal: 12,
+                    //       vertical: 8,
+                    //     ),
+
+                    //     // line border
+                    //     inputTextDecoration: InputDecoration(
+                    //       hintText: 'Write your message...',
+                    //       hintStyle: TextStyle(color: Colors.grey.shade500),
+                    //       contentPadding: const EdgeInsets.symmetric(
+                    //         horizontal: 14,
+                    //         vertical: 10,
+                    //       ),
+                    //       filled: true,
+                    //       fillColor: Colors.white,
+                    //       border: OutlineInputBorder(
+                    //         borderRadius: BorderRadius.circular(24),
+                    //         borderSide: BorderSide(
+                    //           color: Colors.grey.shade300,
+                    //           width: 1,
+                    //         ),
+                    //       ),
+                    //       enabledBorder: OutlineInputBorder(
+                    //         borderRadius: BorderRadius.circular(24),
+                    //         borderSide: BorderSide(
+                    //           color: Colors.grey.shade300,
+                    //           width: 1,
+                    //         ),
+                    //       ),
+                    //       //INPUT FIELD BORDER
+                    //       focusedBorder: OutlineInputBorder(
+                    //         borderRadius: BorderRadius.circular(18),
+                    //         borderSide: const BorderSide(
+                    //           color: Color.fromARGB(255, 160, 160, 160),
+                    //           width: 1.2,
+                    //         ),
+                    //       ),
+                    //     ),
+
+                    //     //  send arrow
+                    //     sendButtonIcon: const Icon(
+                    //       Icons.send_rounded,
+                    //       color: BColors.buttonPrimary,
+                    //       size: 24,
+                    //     ),
+                    //   ),
+
+                    //   // Remove upload icon
+                    //   onAttachmentPressed: null,
+
+                    //   // Behavior of input
+                    //   inputOptions: InputOptions(
+                    //     textEditingController:
+                    //         _inputCtrl, // attach our controller
+                    //     sendButtonVisibilityMode:
+                    //         SendButtonVisibilityMode.editing,
+                    //     autocorrect: true,
+                    //     enableSuggestions: true,
+                    //   ),
+
+                    //   //  Empty chat placeholder////////////////////////
+                    //   l10n: const ChatL10nEn(
+                    //     emptyChatPlaceholder:
+                    //         "No chats yet, but I’m here whenever you’re ready.",
+                    //     inputPlaceholder: "Write your message...",
+                    //   ),
+                    // ),
                   ),
                 ),
               ],
@@ -531,6 +636,64 @@ class _ChatViewState extends State<ChatView>
     final userDup = await _userActivityExists(uid, key);
     return userDup; // only block if user already has a chatbot activity (not initials)
   }
+}
+
+// --- typing dots bubble (private to this file) ---
+class _TypingDotsBubble extends StatefulWidget {
+  const _TypingDotsBubble({super.key});
+
+  @override
+  State<_TypingDotsBubble> createState() => _TypingDotsBubbleState();
+}
+
+class _TypingDotsBubbleState extends State<_TypingDotsBubble>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget dot(int i) => FadeTransition(
+      opacity: Tween(begin: 0.25, end: 1.0)
+          .chain(CurveTween(curve: Curves.easeInOut))
+          .animate(DelayTween(i * 0.2).animate(_c)),
+      child: const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 3),
+        child: CircleAvatar(radius: 3, backgroundColor: Color(0xFF6B6F76)),
+      ),
+    );
+
+    return Align(
+      alignment: Alignment.centerLeft, // bot side
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F2F4),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [dot(0), dot(1), dot(2)],
+        ),
+      ),
+    );
+  }
+}
+
+class DelayTween extends Tween<double> {
+  final double delay;
+  DelayTween(this.delay) : super(begin: 0, end: 1);
+  @override
+  double transform(double t) => ((t + (1 - delay)) % 1);
 }
 
 // Wave clipper
