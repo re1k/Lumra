@@ -29,84 +29,106 @@ class _CommunityPageState extends State<CommunityPage> {
     postController.fetchPosts();
   }
 
-  @override
+@override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: BColors.lightGrey,
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              // Custom header
-              BAppBarTheme.createHeader(
-                context: context,
-                title: 'Community',
-                subtitle: "Connect with others",
-              ),
-              // Page content
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    bottom: 110,
-                  ), // distance from bottom
-                  child: PostView(),
-                ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child:Column(
+          children: [
+           SizedBox(
+  width: double.infinity,
+  child: Stack(
+    clipBehavior: Clip.none,
+    children: [
+      /// Header stays at the top
+       Transform.translate(
+        offset: const Offset(0, -23), // push upward by 10 px
+        child: BAppBarTheme.createHeader(
+          context: context,
+          title: 'Community',
+          subtitle: "Connect with others",
+        ),
+      ),
+      /// Add post button absolutely positioned
+      Positioned(
+        top: BSizes.lg+8,   // distance from the top of the screen
+        right: 24, // adjust as needed
+        child: Container(
+          decoration: BoxDecoration(
+            color: BColors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
-
-          //Add Post Button
-          Positioned(
-            bottom: 135,
-            right: 23,
-            child: Container(
-              decoration: BoxDecoration(
-                color: BColors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+          child: IconButton(
+            tooltip: 'Create a post',
+            icon: const Icon(
+              Icons.edit,
+              color: BColors.primary,
+              size: BSizes.iconLg,
+            ),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                useSafeArea: true,
+                backgroundColor: BColors.white,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(32),
                   ),
-                ],
-              ),
-              child: IconButton(
-                tooltip: 'Create a post',
-                icon: const Icon(
-                  Icons.edit,
-                  color: BColors.primary,
-                  size: BSizes.iconMd,
                 ),
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    useSafeArea: true,
-                    backgroundColor: BColors.white,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(32),
-                      ),
-                    ),
-                    builder: (context) => FractionallySizedBox(
-                      heightFactor: 0.80,
-                      child: AddPostView(
-                        promptMessage:
-                            "Share a tip, experience, or resource that has helped. Your insight might help someone else!",
-                      ),
-                    ),
-                  ).whenComplete(() {
-                    // Reset input field when the sheet closes
-                    postController.contentController.clear();
-                    postController.updateFormValidity();
-                  });
-                },
-              ),
+                builder: (context) => FractionallySizedBox(
+                  heightFactor: 0.80,
+                  child: AddPostView(
+                    promptMessage:
+                        "Share a tip, experience, or resource that has helped. Your insight might help someone else!",
+                  ),
+                ),
+              ).whenComplete(() {
+                postController.contentController.clear();
+                postController.updateFormValidity();
+              });
+            },
+          ),
+        ),
+      ),
+    ],
+  ),
+)
+                
+                ,
+
+           Padding(
+            padding: EdgeInsets.fromLTRB(
+              BSizes.lg,
+              0,
+              BSizes.lg,
+              BSizes.lg + 80, // space for bottom nav bar
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // POST LIST (scrollable with header)
+                PostView(),
+              ],
             ),
           ),
-        ],
+
+          ],
+         
+        ),
       ),
+    )
     );
   }
+
+
 }

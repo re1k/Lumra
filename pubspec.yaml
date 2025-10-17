@@ -98,6 +98,8 @@ flutter:
     - assets/images/banana_icecream.jpg
     - assets/images/berry_smoothie.jpg
     - assets/images/Avatar.png
+    - assets/images/NoPosts.png
+    - assets/images/NoSavedPosts.png
     #- assets/PDFs/TestCaseLumra.pdf
     - assets/adhd_cases/AdhdActivites.json
     - assets/animation/sportTimer.json

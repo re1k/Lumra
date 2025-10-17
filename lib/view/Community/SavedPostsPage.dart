@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lumra_project/controller/Community/PostController.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
+import 'package:lumra_project/theme/base_themes/sizes.dart';
 import 'package:lumra_project/theme/custom_themes/appbar_theme.dart';
 import 'package:lumra_project/view/Community/communityWidgets/postView.dart';
 
@@ -35,7 +36,10 @@ class SavedPostsPage extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(
+                    top: 12,
                     bottom: 30,
+                    left:BSizes.defaultSpace,
+                    right:BSizes.defaultSpace,
                   ), // distance from bottom
                   child: PostView(showSaved: true),
                 ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart'; // Firebase import
+import 'package:firebase_core/firebase_core.dart';
+import 'package:lumra_project/theme/base_themes/colors.dart'; // Firebase import
 
 class SplashGifScreen extends StatefulWidget {
   final Widget nextScreen; // This one is screen to go after initialization{LAYAN}
@@ -34,17 +35,44 @@ class _SplashGifScreenState extends State<SplashGifScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Image.asset(
-          'assets/images/LumraSplash.GIF',
-          height: 200,
-          width: 200,
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: const Color.fromARGB(252, 255, 255, 255),
+    body: Stack(
+      children: [
+        // Centered GIF
+        Center(
+          child: Image.asset(
+            'assets/images/LumraSplash.GIF',
+            height: 200,
+            width: 200,
+          ),
         ),
-      ),
-      backgroundColor: Color.fromARGB(252, 255, 255, 255),
-    );
-  }
+        // Skip button at top left
+        Positioned(
+          top: 72, // adjust depending on status bar height
+          left: 24,
+          child: GestureDetector(
+            onTap: () {
+              // Navigate to next screen
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => widget.nextScreen),
+              );
+            },
+            child: Text(
+              'Skip',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: BColors.darkGrey,
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 }

@@ -119,8 +119,9 @@ class _HomePageState extends State<HomePage> {
                               child: IconButton(
                                 tooltip: 'Open calendar',
                                 icon: const Icon(
-                                  Icons.calendar_today,
+                                  Icons.calendar_month_rounded,
                                   color: BColors.primary,
+                                  size: BSizes.iconLg,
                                 ),
                                 onPressed: () {
                                   openCalendar(

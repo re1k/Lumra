@@ -9,9 +9,8 @@ class BSizes {
   ///icon sizes
   static const double iconXs = 12.0;
   static const double iconSm = 16.0;
-  static const double iconMd = 24.0;
-  static const double iconXMd = 18.0;
-  static const double iconLg = 32.0;
+  static const double iconMd = 20.0;
+  static const double iconLg = 30.0;
 
   ///font sizes
   static const double fontSizeSm = 14.0;
@@ -67,7 +66,7 @@ class BSizes {
 
   ///Card view spacing
   static const double gridViewSpacing = 16.0;
-  
+
   ///Radius for less harsh looks
   static const double unifiedRaduis = 16;
   static const double roundedRaduis = 24;

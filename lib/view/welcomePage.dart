@@ -86,7 +86,7 @@ class Welcomepage extends StatelessWidget {
                               ),
                             ),
                             child: const Text(
-                              "Register as ADHD person",
+                              "Register As Member",
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 18,
@@ -119,7 +119,7 @@ class Welcomepage extends StatelessWidget {
                               ),
                             ),
                             child: const Text(
-                              "Register as Caregiver",
+                              "Register As Caregiver",
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 18,

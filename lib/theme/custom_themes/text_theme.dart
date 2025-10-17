@@ -24,7 +24,7 @@ class BTextTheme {
 
       headlineSmall: const TextStyle().copyWith(
       fontSize: 18,
-      fontWeight: FontWeight.w500,
+      fontWeight: FontWeight.bold,
       color: Colors.black,
       fontFamily: 'K2D'
     ),
