@@ -107,9 +107,23 @@ class _ChatBotWidgetState extends State<ChatBotWidget> {
     return Stack(
       alignment: Alignment.bottomRight,
       children: [
-        // Positioned above the nav bar
+        // 🩵 Chat hint bubble (appears above chat button)
+        if (!_isChatOpen)
+          Positioned(
+            bottom: 170, // adjust position above the chat button
+            right: 35,
+            child: AnimatedOpacity(
+              opacity: 1.0,
+              duration: const Duration(milliseconds: 800),
+              child: const ChatHintBubble(
+                message: "👋 Need a new activity? Chat with Lumra!",
+              ),
+            ),
+          ),
+
+        // 💬 Chat button
         Positioned(
-          bottom: 110, // Position above the nav bar
+          bottom: 110,
           right: 23,
           child: Container(
             decoration: BoxDecoration(
@@ -135,6 +149,41 @@ class _ChatBotWidgetState extends State<ChatBotWidget> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class ChatHintBubble extends StatelessWidget {
+  final String message;
+  const ChatHintBubble({super.key, required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.black87,
+          ),
+        ),
+      ),
     );
   }
 }
