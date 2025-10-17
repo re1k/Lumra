@@ -13,36 +13,22 @@ class UpcomingReminders extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            const SizedBox(width: 8),
-            const Icon(Icons.access_time, color: BColors.black),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Transform.translate(
-                    offset: const Offset(0, 2),
-                    child: _SectionLabel(text: 'Reminders'),
-                  ),
-                  Transform.translate(
-                    offset: const Offset(0, -2),
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: BSizes.sm),
-                      child: Text(
-                        'Upcoming events in the next 24 hours',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: BColors.darkGrey,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+        // Section header
+        Padding(
+          padding: EdgeInsets.only(bottom: BSizes.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Upcoming Events',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: BColors.black,
+                  fontSize: 20,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
 
         // Reminders content
@@ -165,16 +151,52 @@ class _ErrorState extends StatelessWidget {
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+
     return Container(
-      padding: const EdgeInsets.all(BSizes.md),
-      child: Center(
-        child: Text(
-          'Nothing for now, breathe and relax',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: BColors.darkGrey,
-            fontStyle: FontStyle.italic,
+      width: double.infinity,
+      padding: EdgeInsets.all(BSizes.md),
+      decoration: BoxDecoration(
+        color: BColors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
-        ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: BColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Icon(Icons.task_alt, color: BColors.primary, size: 20),
+          ),
+          SizedBox(width: BSizes.md),
+          Expanded(
+            child: Text(
+              'Enjoy the calm! We\'ll remind you when something\'s coming up.',
+              style: tt.bodyMedium?.copyWith(
+                color: BColors.black,
+                fontWeight: FontWeight.w500,
+                height: 1.4,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 3,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -196,10 +218,7 @@ class _RemindersListState extends State<_RemindersList> {
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(
-        horizontal: BSizes.sm,
-        vertical: BSizes.xs,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: BSizes.xs),
       itemCount: widget.reminders.length,
       separatorBuilder: (_, __) => const SizedBox(height: BSizes.sm),
       itemBuilder: (context, index) =>
@@ -218,75 +237,62 @@ class _ReminderCard extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: BSizes.sm),
+      padding: EdgeInsets.all(BSizes.md),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 253, 254, 253),
-        borderRadius: BorderRadius.circular(BSizes.inputFieldRadius),
-        border: Border.all(color: BColors.grey),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: BSizes.sm,
-                right: BSizes.sm,
-                top: BSizes.sm,
-                bottom: BSizes.sm,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    reminder.title,
-                    style: tt.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: BColors.black,
-                    ),
-                  ),
-
-                  const SizedBox(height: BSizes.xs),
-
-                  Text(
-                    reminder.dateTimeRange,
-                    style: tt.bodySmall?.copyWith(
-                      color: BColors.darkGrey,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+        color: BColors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-    );
-  }
-}
-
-class _SectionLabel extends StatelessWidget {
-  final String text;
-
-  const _SectionLabel({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: BSizes.sm,
-        vertical: BSizes.xs,
-      ),
-      decoration: BoxDecoration(
-        color: BColors.white,
-        borderRadius: BorderRadius.circular(BSizes.borderRadiusSm),
-        border: Border.all(color: Colors.transparent),
-      ),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w700,
-          color: BColors.texBlack,
-        ),
+      child: Row(
+        children: [
+          SizedBox(width: BSizes.sm),
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: BColors.primary,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          SizedBox(width: BSizes.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  reminder.title,
+                  style: tt.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: BColors.black,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
+                ),
+                SizedBox(height: BSizes.xs),
+                Text(
+                  reminder.dateTimeRange,
+                  style: tt.bodySmall?.copyWith(
+                    color: BColors.darkGrey,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

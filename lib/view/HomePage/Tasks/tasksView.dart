@@ -204,61 +204,75 @@ class _TasksListState extends State<TasksList> {
             .toList();
 
         if (tasks.isEmpty) {
-          return const Center(child: Text('No tasks yet, press ➕ to add'));
-        }
-
-        final activeTasks = tasks.where((task) => !task.isChecked).toList();
-        final completedTasks = tasks.where((task) => task.isChecked).toList();
-
-        // If all tasks are completed, show the same message as reminders
-        if (activeTasks.isEmpty && completedTasks.isNotEmpty) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(BSizes.md),
-                child: Center(
-                  child: Text(
-                    'All caught up, add more and keep going!',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: BColors.darkGrey,
-                      fontStyle: FontStyle.italic,
+          return Container(
+            padding: EdgeInsets.all(BSizes.md),
+            decoration: BoxDecoration(
+              color: BColors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Column(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: BColors.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: const Icon(
+                      Icons.checklist,
+                      color: BColors.primary,
+                      size: 24,
                     ),
                   ),
-                ),
+                  SizedBox(height: BSizes.md),
+                  Text(
+                    'No tasks yet',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: BColors.black,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: BSizes.xs),
+                  Text(
+                    'Tap the + icon to add your first task',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: BColors.darkGrey,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: BSizes.md),
-              _CompletedTasksSection(
-                tasks: completedTasks,
-                controller: widget.controller,
-                onDelete: _deleteTaskWithUndo,
-                onEdit: _openEditTaskModal,
-              ),
-            ],
+            ),
           );
         }
+
+        // Show all tasks in a single list, sorted so active tasks come first
+        final sortedTasks = tasks.toList()
+          ..sort((a, b) {
+            if (a.isChecked == b.isChecked) return 0;
+            return a.isChecked ? 1 : -1; // Active tasks first
+          });
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (activeTasks.isNotEmpty)
+            if (sortedTasks.isNotEmpty)
               _TasksReorderableList(
-                tasks: activeTasks,
+                tasks: sortedTasks,
                 controller: widget.controller,
                 onDelete: _deleteTaskWithUndo,
                 onEdit: _openEditTaskModal,
               ),
-            if (completedTasks.isNotEmpty) ...[
-              const SizedBox(height: BSizes.xs),
-              _CompletedTasksSection(
-                tasks: completedTasks,
-                controller: widget.controller,
-                onDelete: _deleteTaskWithUndo,
-                onEdit: _openEditTaskModal,
-              ),
-            ],
           ],
         );
       },
@@ -300,208 +314,35 @@ class _TasksReorderableListState extends State<_TasksReorderableList> {
     }
   }
 
-  void _onReorder(int oldIndex, int newIndex) {
-    setState(() {
-      if (newIndex > oldIndex) newIndex -= 1;
-      final moved = _displayTasks.removeAt(oldIndex);
-      _displayTasks.insert(newIndex, moved);
-    });
-
-    widget.controller.reorderTasks(
-      List<Task>.from(widget.tasks),
-      oldIndex,
-      newIndex > oldIndex ? newIndex + 1 : newIndex,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return ReorderableListView.builder(
-      key: const ValueKey('tasks_reorderable_list'),
+      key: const ValueKey('tasks_list'),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: _displayTasks.length,
       onReorder: _onReorder,
-      proxyDecorator: (child, index, animation) {
-        return Material(elevation: 0, color: Colors.transparent, child: child);
-      },
       itemBuilder: (context, i) {
         final t = _displayTasks[i];
         return Padding(
           key: ValueKey(t.id),
-          padding: EdgeInsets.only(bottom: BSizes.sm),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ReorderableDragStartListener(
-                index: i,
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Icon(Icons.drag_handle, color: Colors.grey),
-                ),
-              ),
-              Expanded(
-                child: _SwipeableTaskItem(
-                  task: t,
-                  controller: widget.controller,
-                  onEdit: () => widget.onEdit(t),
-                  onDelete: () => widget.onDelete(t),
-                ),
-              ),
-            ],
+          padding: EdgeInsets.only(bottom: BSizes.md),
+          child: _SwipeableTaskItem(
+            task: t,
+            controller: widget.controller,
+            onEdit: () => widget.onEdit(t),
+            onDelete: () => widget.onDelete(t),
           ),
         );
       },
     );
   }
-}
 
-class _CompletedTasksSection extends StatelessWidget {
-  final List<Task> tasks;
-  final TaskController controller;
-  final Function(Task) onDelete;
-  final Function(Task) onEdit;
-
-  const _CompletedTasksSection({
-    required this.tasks,
-    required this.controller,
-    required this.onDelete,
-    required this.onEdit,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section header with check icon
-        Row(
-          children: [
-            const SizedBox(width: 8),
-            const Icon(Icons.done, color: BColors.success, size: 20),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: BSizes.sm,
-                  vertical: BSizes.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: BColors.white,
-                  borderRadius: BorderRadius.circular(BSizes.borderRadiusSm),
-                  border: Border.all(color: Colors.transparent),
-                ),
-                child: Text(
-                  'Completed Tasks',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: BColors.texBlack,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: BSizes.sm),
-        // Completed tasks list
-        _CompletedTasksList(
-          tasks: tasks,
-          controller: controller,
-          onDelete: onDelete,
-          onEdit: onEdit,
-        ),
-      ],
-    );
-  }
-}
-
-class _CompletedTasksList extends StatefulWidget {
-  final List<Task> tasks;
-  final TaskController controller;
-  final Function(Task) onDelete;
-  final Function(Task) onEdit;
-
-  const _CompletedTasksList({
-    required this.tasks,
-    required this.controller,
-    required this.onDelete,
-    required this.onEdit,
-  });
-
-  @override
-  State<_CompletedTasksList> createState() => _CompletedTasksListState();
-}
-
-class _CompletedTasksListState extends State<_CompletedTasksList> {
-  late List<Task> _displayTasks;
-
-  @override
-  void initState() {
-    super.initState();
-    _displayTasks = List.from(widget.tasks);
-  }
-
-  @override
-  void didUpdateWidget(_CompletedTasksList oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.tasks != oldWidget.tasks) {
-      _displayTasks = List.from(widget.tasks);
+  void _onReorder(int oldIndex, int newIndex) {
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
     }
-  }
-
-  void _onReorder(int oldIndex, int newIndex) {
-    setState(() {
-      if (newIndex > oldIndex) newIndex -= 1;
-      final moved = _displayTasks.removeAt(oldIndex);
-      _displayTasks.insert(newIndex, moved);
-    });
-
-    widget.controller.reorderTasks(
-      List<Task>.from(widget.tasks),
-      oldIndex,
-      newIndex > oldIndex ? newIndex + 1 : newIndex,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ReorderableListView.builder(
-      key: const ValueKey('completed_tasks_reorderable_list'),
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: _displayTasks.length,
-      onReorder: _onReorder,
-      proxyDecorator: (child, index, animation) {
-        return Material(elevation: 0, color: Colors.transparent, child: child);
-      },
-      itemBuilder: (context, i) {
-        final t = _displayTasks[i];
-        return Padding(
-          key: ValueKey(t.id),
-          padding: EdgeInsets.only(bottom: BSizes.sm),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ReorderableDragStartListener(
-                index: i,
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Icon(Icons.drag_handle, color: Colors.grey),
-                ),
-              ),
-              Expanded(
-                child: _SwipeableTaskItem(
-                  task: t,
-                  controller: widget.controller,
-                  onEdit: () => widget.onEdit(t),
-                  onDelete: () => widget.onDelete(t),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
+    widget.controller.reorderTasks(_displayTasks, oldIndex, newIndex);
   }
 }
 

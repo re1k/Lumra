@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/theme/base_themes/sizes.dart';
+import 'package:lumra_project/theme/custom_themes/appbar_theme.dart';
 
+// i added this comment to fix the conflicts
 class NumberPuzzle extends StatefulWidget {
   const NumberPuzzle({super.key});
 
@@ -91,143 +93,146 @@ class _NumberPuzzleState extends State<NumberPuzzle> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: BColors.primary,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Number Puzzle',
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
+      backgroundColor: BColors.lightGrey,
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: BSizes.defaultSpace,
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(BSizes.md), // مسافة داخل الصندوق
-              decoration: BoxDecoration(
-                color: BColors.lightGrey, // خلفية فاتحة مثل البوكسات
-                borderRadius: BorderRadius.circular(
-                  BSizes.cardRadiusLg,
-                ), // حواف دائرية
-                border: Border.all(
-                  color: BColors.borderSecondary,
-                ), // حدود مشابهة للبوكسات
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x11000000),
-                    blurRadius: 8,
-                    offset: Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: const Text(
-                "Your game is to arrange the numbers in order from 1 to the empty square.\n"
-                "Choose the level that suits you to start the challenge!",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87,
-                ),
-              ),
-            ),
+          BAppBarTheme.createHeader(
+            context: context,
+            title: 'Number Puzzle',
+            showBackButton: true,
+            onBackPressed: () => Navigator.pop(context),
           ),
-          const SizedBox(height: 20),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  _gridSize = 3;
-                  _generateItems();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: BColors.primary,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-
-                child: const Text("Easy"),
-              ),
-              const SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: () {
-                  _gridSize = 4;
-                  _generateItems();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: BColors.primary,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                ),
-                child: const Text("Medium"),
-              ),
-              const SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: () {
-                  _gridSize = 5;
-                  _generateItems();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: BColors.primary,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                ),
-                child: const Text("Hard"),
-              ),
-            ],
-          ),
-          const SizedBox(height: 30),
-
           Expanded(
-            child: Center(
-              child: AspectRatio(
-                aspectRatio: 1,
-                child: GridView.count(
-                  crossAxisCount: _gridSize,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: BSizes.defaultSpace,
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(
+                      BSizes.md,
+                    ), // مسافة داخل الصندوق
+                    decoration: BoxDecoration(
+                      color: BColors.lightGrey, // خلفية فاتحة مثل البوكسات
+                      borderRadius: BorderRadius.circular(
+                        BSizes.cardRadiusLg,
+                      ), // حواف دائرية
+                      border: Border.all(
+                        color: BColors.borderSecondary,
+                      ), // حدود مشابهة للبوكسات
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x11000000),
+                          blurRadius: 8,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: const Text(
+                      "Your game is to arrange the numbers in order from 1 to the empty square.\n"
+                      "Choose the level that suits you to start the challenge!",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    for (int i = 0; i < _iteams.length; i++)
-                      InkWell(
-                        onTap: () => _changeIndex(i),
-                        child: Container(
-                          margin: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: _getNumberHintColor(_iteams[i]),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Center(
-                            child: Text(
-                              '${_iteams[i]}',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Color.fromARGB(255, 8, 8, 8),
-                              ),
-                            ),
-                          ),
+                    ElevatedButton(
+                      onPressed: () {
+                        _gridSize = 3;
+                        _generateItems();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: BColors.primary,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
                         ),
                       ),
+
+                      child: const Text("Easy"),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        _gridSize = 4;
+                        _generateItems();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: BColors.primary,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                      ),
+                      child: const Text("Medium"),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        _gridSize = 5;
+                        _generateItems();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: BColors.primary,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                      ),
+                      child: const Text("Hard"),
+                    ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 20),
+
+                Expanded(
+                  child: Center(
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: GridView.count(
+                        crossAxisCount: _gridSize,
+                        children: [
+                          for (int i = 0; i < _iteams.length; i++)
+                            InkWell(
+                              onTap: () => _changeIndex(i),
+                              child: Container(
+                                margin: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: _getNumberHintColor(_iteams[i]),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '${_iteams[i]}',
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color.fromARGB(255, 8, 8, 8),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

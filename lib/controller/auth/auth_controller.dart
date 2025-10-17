@@ -43,21 +43,31 @@ class AuthController extends GetxController {
 
       print("------the role is $name");
 
-      //  Pass the name to the ADHD chat controller if role is ADHD
+      //  Create ONLY the relevant chat controller for this user
       if (role == 'adhd') {
-        final adhdCtrl = Get.isRegistered<AdhdChatController>()
-            ? Get.find<AdhdChatController>()
-            : Get.put(AdhdChatController());
-
+        final adhdCtrl = Get.put(AdhdChatController());
         adhdCtrl.setUserName(name);
-        print("fter method");
-        print(adhdCtrl.userName);
       } else if (role == 'caregiver') {
-        final caregiverCtrl = Get.isRegistered<CaregiverChatController>()
-            ? Get.find<CaregiverChatController>()
-            : Get.put(CaregiverChatController());
+        final caregiverCtrl = Get.put(CaregiverChatController());
         caregiverCtrl.setUserName(name);
       }
+
+      //  Pass the name to the ADHD chat controller if role is ADHD
+      /* if (role == 'adhd') {
+        if (Get.isRegistered<AdhdChatController>()) {
+          Get.delete<AdhdChatController>();
+        }
+        final adhdCtrl = Get.put(AdhdChatController());
+        adhdCtrl.setUserName(name);
+        print(adhdCtrl.userName);
+      } else if (role == 'caregiver') {
+        if (Get.isRegistered<CaregiverChatController>()) {
+          Get.delete<CaregiverChatController>();
+        }
+        final caregiverCtrl = Get.put(CaregiverChatController());
+
+        caregiverCtrl.setUserName(name);
+      } */
 
       // Route once cuz AppShell decides tabs based on role
       Get.offAllNamed('/app');

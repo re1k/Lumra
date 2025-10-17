@@ -26,11 +26,10 @@ class AppShell extends StatelessWidget {
       final Color selectedBg = primary.withOpacity(0.15);
 
       final bottomInset = MediaQuery.of(context).viewPadding.bottom;
-      const double barHeight = 68;
+      const double barHeight = 80;
       const double side = 16;
       const double vMargin = 10;
       final double floatOffset = (bottomInset > 0 ? bottomInset : 8) + vMargin;
-      final double bottomPadForPages = floatOffset + barHeight + 6;
 
       return Scaffold(
         extendBody: true,
@@ -38,11 +37,10 @@ class AppShell extends StatelessWidget {
         body: Stack(
           clipBehavior: Clip.none,
           children: [
-            Padding(
-              padding: EdgeInsets.only(bottom: bottomPadForPages),
-              child: IndexedStack(index: index, children: pages),
-            ),
+            // Main content - no bottom padding since navbar floats
+            IndexedStack(index: index, children: pages),
 
+            // Floating transparent navbar with glass effect
             Positioned(
               left: side,
               right: side,
@@ -50,14 +48,18 @@ class AppShell extends StatelessWidget {
               child: Container(
                 height: barHeight,
                 decoration: BoxDecoration(
-                  color: BColors.lightGrey,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: primary.withOpacity(0.4), width: 1),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 12,
-                      offset: const Offset(0, 3),
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
@@ -97,7 +99,7 @@ class _CompactNavBar extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final perItem = constraints.maxWidth / items.length;
-        final maxLabelWidth = (perItem - 20).clamp(50.0, 120.0);
+        final maxLabelWidth = (perItem - 16).clamp(60.0, 140.0);
 
         return Row(
           children: List.generate(items.length, (i) {
@@ -109,40 +111,48 @@ class _CompactNavBar extends StatelessWidget {
                 behavior: HitTestBehavior.translucent,
                 onTap: () => onTap(i),
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 220),
+                  duration: const Duration(milliseconds: 300),
                   curve: Curves.easeOutCubic,
-                  transform: Matrix4.identity()
-                    ..translate(0.0, selected ? -3.0 : 0.0),
-                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 10,
+                    horizontal: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? primary.withOpacity(0.15)
+                        : Colors.transparent,
+                    shape: BoxShape.circle,
+                  ),
+                  transform: Matrix4.identity()..scale(selected ? 1.0 : 0.95),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: selected ? selectedBg : Colors.transparent,
-                          shape: BoxShape.circle,
-                        ),
-                        alignment: Alignment.center,
-                        child: Icon(item.icon, size: 22, color: primary),
+                      Icon(
+                        item.icon,
+                        size: 24,
+                        color: selected ? primary : Colors.grey[600],
                       ),
                       const SizedBox(height: 4),
                       ConstrainedBox(
                         constraints: BoxConstraints(maxWidth: maxLabelWidth),
-                        child: Text(
-                          item.label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          softWrap: false,
-                          textAlign: TextAlign.center,
+                        child: AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutCubic,
                           style: TextStyle(
-                            fontSize: 10.5,
-                            height: 1.1,
+                            fontSize: 11,
+                            height: 1.0,
                             fontWeight: selected
-                                ? FontWeight.w700
-                                : FontWeight.w500,
-                            color: primary,
+                                ? FontWeight.w800
+                                : FontWeight.w700,
+                            color: selected ? primary : Colors.grey[800],
+                          ),
+                          child: Text(
+                            item.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            softWrap: false,
+                            textAlign: TextAlign.center,
                           ),
                         ),
                       ),

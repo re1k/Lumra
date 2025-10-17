@@ -53,77 +53,143 @@ class _HomePageState extends State<HomePage> {
     final tt = Theme.of(context).textTheme;
 
     return Scaffold(
-      backgroundColor: BColors.white,
-      appBar: AppBar(
-        backgroundColor: BColors.primary,
-        elevation: 0,
-        centerTitle: false,
-        title: Obx(() {
-          final name = _userController.user.value?.firstName;
-          return Text(
-            'Hello, ${name?.trim().isNotEmpty == true ? name : '...'}',
-            style: tt.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: BColors.textwhite,
-            ),
-          );
-        }),
-        actions: [
-          IconButton(
-            tooltip: 'Open calendar',
-            icon: const Icon(Icons.calendar_today, color: BColors.textwhite),
-            onPressed: () {
-              openCalendar(currentUid: authContoller.currentUser!.uid);
-            },
-          ),
-        ],
-      ),
-
+      backgroundColor: BColors.lightGrey,
       body: SafeArea(
         child: Stack(
           children: [
             // Main scrollable content
             SingleChildScrollView(
               child: Padding(
-                padding: EdgeInsets.all(BSizes.md),
+                padding: EdgeInsets.fromLTRB(
+                  BSizes.lg,
+                  BSizes.lg,
+                  BSizes.lg,
+                  BSizes.lg + 100, // Extra bottom padding for navbar
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "How's your mood today?",
-                      style: tt.titleLarge?.copyWith(
-                        fontSize: BSizes.lg,
-                        color: BColors.black,
-                      ),
-                    ),
+                    // header with greeting
+                    Obx(() {
+                      final name = _userController.user.value?.firstName;
+                      return Container(
+                        padding: EdgeInsets.only(bottom: BSizes.lg),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Hi, ${name?.trim().isNotEmpty == true ? name : '...'}',
+                                    style: tt.headlineMedium?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: BColors.black,
+                                      fontSize: 28,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                  SizedBox(height: BSizes.xs),
+                                  Text(
+                                    "How's your mood today?",
+                                    style: tt.bodyLarge?.copyWith(
+                                      color: BColors.darkGrey,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(width: BSizes.md),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: BColors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: IconButton(
+                                tooltip: 'Open calendar',
+                                icon: const Icon(
+                                  Icons.calendar_today,
+                                  color: BColors.primary,
+                                ),
+                                onPressed: () {
+                                  openCalendar(
+                                    currentUid: authContoller.currentUser!.uid,
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
 
+                    // Mood section
                     const MoodRow(),
 
-                    SizedBox(height: BSizes.xs),
+                    SizedBox(height: BSizes.md),
 
                     // Encouragement banner
                     const EncouragementMessage(),
 
-                    SizedBox(height: BSizes.sm),
+                    SizedBox(height: BSizes.md),
 
                     // Reminders section
                     const UpcomingReminders(),
 
-                    SizedBox(height: BSizes.sm),
+                    SizedBox(height: BSizes.lg),
 
-                    // Section headers
+                    // To-Do List section with integrated + icon
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const SizedBox(width: 8),
-                        const Icon(Icons.swap_vert, color: BColors.black),
-                        const SizedBox(
-                          width: 8,
-                        ), // spacing between icon and text
-                        Expanded(child: _SectionLabel(text: 'To Do list: ')),
+                        Text(
+                          'To-Do List',
+                          style: tt.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: BColors.black,
+                            fontSize: 20,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () async {
+                            final count = await _taskController
+                                .getActiveTaskCount();
+                            if (count >= 10) {
+                              ToastService.info(
+                                "You have reached your 10 task limit.",
+                                " Try finishing a task before adding more.",
+                              );
+                              return;
+                            }
+                            TasksList.openAddTaskSheet(
+                              context,
+                              _taskController,
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: const Icon(
+                              Icons.add,
+                              size: 20,
+                              color: BColors.primary,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
 
-                    SizedBox(height: BSizes.xs),
+                    SizedBox(height: BSizes.md),
 
                     // Tasks list
                     TasksList(controller: _taskController),
@@ -133,63 +199,6 @@ class _HomePageState extends State<HomePage> {
             ),
             const ChatBotWidget(role: 'adhd'),
           ],
-        ),
-      ),
-
-      // 10-task limit check + FAB colors
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(right: 7, bottom: 59),
-        child: SizedBox(
-          width: 50,
-          height: 50,
-          child: FloatingActionButton(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(32),
-            ),
-            backgroundColor: BColors.primary,
-            foregroundColor: BColors.textwhite,
-            onPressed: () async {
-              final count = await _taskController
-                  .getActiveTaskCount(); // or getOpenActiveTaskCount() in next sprint
-              if (count >= 10) {
-                ToastService.info(
-                  "You have reached your 10 task limit.",
-                  " Try finishing a task before adding more.",
-                );
-                return; // don't open the sheet
-              }
-              //open the add sheet
-              TasksList.openAddTaskSheet(context, _taskController);
-            },
-            child: const Icon(Icons.add, size: 23, color: Colors.white),
-          ),
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-      bottomNavigationBar: const SizedBox(height: 23),
-    );
-  }
-}
-
-//  small widget
-class _SectionLabel extends StatelessWidget {
-  final String text;
-  const _SectionLabel({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: BSizes.sm, vertical: BSizes.xs),
-      decoration: BoxDecoration(
-        color: BColors.white,
-        borderRadius: BorderRadius.circular(BSizes.borderRadiusSm),
-        border: Border.all(color: Colors.transparent),
-      ),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w700,
-          color: BColors.texBlack,
         ),
       ),
     );

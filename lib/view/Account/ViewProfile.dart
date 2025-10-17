@@ -31,91 +31,97 @@ class ViewProfile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = Theme.of(context).textTheme;
     return Obx(() {
       final user = userController.user.value;
       if (user == null) return const Center(child: CircularProgressIndicator());
 
       return Scaffold(
-         backgroundColor: BColors.white,
-      appBar: AppBar(
-        title: Text(
-          "Activities",
-          style: t.titleLarge?.copyWith(
-            fontFamily: 'K2D',
-            fontSize: BSizes.fontSizeLg,
-            fontWeight: FontWeight.bold,
-            color: BColors.white,
-          ),
-        ),
-        backgroundColor: BAppBarTheme.lightAppBarTheme.backgroundColor,
-        elevation: BAppBarTheme.lightAppBarTheme.elevation,
-        iconTheme: BAppBarTheme.lightAppBarTheme.iconTheme,
-        centerTitle: true,
-      ),
-        body: Padding(
-          padding: const EdgeInsets.all(20),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 40),
-
-                _buildTextField(
-                  label: "First Name",
-                  controller: userController.firstNameController,
-                  enable: enableName,
-                ),
-
-                _buildTextField(
-                  label: "Last Name",
-                  controller: userController.lastNameController,
-                  enable: enableName,
-                ),
-
-                _buildTextField(
-                  label: "Email",
-                  controller: userController.emailController,
-                  enable: enableEmail,
-                ),
-
-                _buildGenderField(),
-
-                const SizedBox(height: 10),
-
-                _buildTextField(
-                  label: "Date of Birth",
-                  controller: TextEditingController(
-                    text: "${userController.dob.value.toLocal()}".split(' ')[0],
-                  ),
-                  enable: enableDob,
-                  icon: Icons.calendar_today,
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () async {},
-                    label: const Text("save"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: BColors.primary,
-                      foregroundColor: BColors.textwhite,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 15,
-                        horizontal: 0,
+        backgroundColor: BColors.lightGrey,
+        body: Column(
+          children: [
+            BAppBarTheme.createHeader(
+              context: context,
+              title: 'Profile',
+              showBackButton: true,
+              onBackPressed: () => Navigator.pop(context),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Profile content
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        BSizes.lg,
+                        BSizes.lg, // Add top spacing from App Bar
+                        BSizes.lg,
+                        BSizes.lg + 100, // Extra bottom padding for navbar
                       ),
-                      textStyle: BTextTheme.lightTextTheme.headlineSmall,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildTextField(
+                            label: "First Name",
+                            controller: userController.firstNameController,
+                            enable: enableName,
+                          ),
+
+                          _buildTextField(
+                            label: "Last Name",
+                            controller: userController.lastNameController,
+                            enable: enableName,
+                          ),
+
+                          _buildTextField(
+                            label: "Email",
+                            controller: userController.emailController,
+                            enable: enableEmail,
+                          ),
+
+                          _buildGenderField(),
+
+                          const SizedBox(height: 10),
+
+                          _buildTextField(
+                            label: "Date of Birth",
+                            controller: TextEditingController(
+                              text: "${userController.dob.value.toLocal()}"
+                                  .split(' ')[0],
+                            ),
+                            enable: enableDob,
+                            icon: Icons.calendar_today,
+                          ),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () async {},
+                              label: const Text("save"),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: BColors.primary,
+                                foregroundColor: BColors.textwhite,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 15,
+                                  horizontal: 0,
+                                ),
+                                textStyle:
+                                    BTextTheme.lightTextTheme.headlineSmall,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
-
       );
     });
   }
