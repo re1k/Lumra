@@ -216,6 +216,7 @@ Choose the single best match from this list:
 ${options.join(' | ')}
 
 If you are not sure, or the message does not fit any state, return EXACTLY: NONE
+if the user ask for help without mention any mental state or some emotion that could related to it , return :NONE 
 Do not add any extra words.
 
 otherwise return ONLY the state name , Do not add any extra words.
