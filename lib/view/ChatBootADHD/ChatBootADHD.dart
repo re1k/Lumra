@@ -397,7 +397,6 @@ class _ChatViewState extends State<ChatView>
                           ),
                         ),
 
-                        // 👇 dots overlay (shows while _showDots == true)
                         if (_showDots)
                           const Positioned(
                             left: 16,
@@ -406,7 +405,8 @@ class _ChatViewState extends State<ChatView>
                           ),
                       ],
                     ),
-
+                    // DO NOT REMOVE THIS COMMENT/////////////////////////////
+                    // I don’t trust the chatbot anymore 😭
                     // child: Chat(
                     //   messages: _messages,
                     //   onSendPressed: _handleSend,
@@ -580,7 +580,7 @@ class _ChatViewState extends State<ChatView>
     return filtered;
   }
 
-  // Is there an *initial* activity with same (title, category) that is *currently visible* in the tab?
+  // Is there an initial activity with same (title, category) that is *currently visible* in the tab?
   //ASK LOBA AND LATIFA IF WE NEED IT OR NOT
   Future<bool> _initialVisibleDuplicate(
     String uid,
@@ -610,7 +610,7 @@ class _ChatViewState extends State<ChatView>
         .get();
 
     if (!status.exists) {
-      // Fresh initial template without status -> it IS visible
+      // Fresh initial template without status ->it IS visible
       return true;
     }
 
@@ -626,7 +626,7 @@ class _ChatViewState extends State<ChatView>
     return isVisible;
   }
 
-  // Combined: is this activity already visible (user doc OR initial list)?
+  // Combined: is this activity already visible (user doc OR initial list)?// ASK team
   Future<bool> _isAlreadyInActivitiesTab({
     required String uid,
     required String title,
