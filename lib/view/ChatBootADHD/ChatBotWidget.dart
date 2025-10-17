@@ -107,10 +107,10 @@ class _ChatBotWidgetState extends State<ChatBotWidget> {
     return Stack(
       alignment: Alignment.bottomRight,
       children: [
-        // 🩵 Chat hint bubble (appears above chat button)
+        //  Chat hint bubble (appears above chat button)
         if (!_isChatOpen)
           Positioned(
-            bottom: 170, // adjust position above the chat button
+            bottom: 170, //  position above the chat button
             right: 35,
             child: AnimatedOpacity(
               opacity: 1.0,
