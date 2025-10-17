@@ -9,6 +9,7 @@ import '../../model/Activity/ActivityModel.dart';
 import 'package:lumra_project/controller/auth/auth_controller.dart';
 import 'package:lumra_project/view/Activity/ActivityWidgets/PuzzleGame.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
+import 'package:lumra_project/view/Activity/ActivityWidgets/Timer.dart';
 
 // ---------------------------------------------------------------------------
 // ActivityController Goal:
@@ -547,13 +548,13 @@ class Activitycontroller {
     if (category.contains('sport')) {
       // Open sport timer
       Get.to(() => SportTimer(duration: Duration(minutes: minutes)));
+     
     } else if (title.contains('large puzzle') ||
         title.contains('flash memory challenge') ||
         title.contains('brain games')) {
       Get.to(() => const NumberPuzzle());
       //for now nothing until the rest is added
-    }
-    if (title.contains('writing') ||
+    }else if (title.contains('writing') ||
         title.contains('write') ||
         title.contains('art') ||
         title.contains('drawing') ||
@@ -570,12 +571,13 @@ class Activitycontroller {
         ),
       );
       return; // stop further navigation
-    }
-
-    if (title.contains('cooking')) {
+    }else if (title.contains('cooking')) {
       getUserAge().then((age) {
         Get.to(() => Cooking(userAge: age));
       });
+    }else {
+      Get.to(() => LiquidTimer(duration: Duration(minutes: minutes)));
+
     }
   }
 }
