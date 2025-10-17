@@ -12,6 +12,7 @@ class AuthController extends GetxController {
   final AuthService _authService = AuthService();
 
   var isLoading = false.obs; // loading state for buttons
+  final userRole = ''.obs; // reactive variable to hold role (adhd / caregiver)
 
   User? get currentUser => FirebaseAuth.instance.currentUser;
 
@@ -38,7 +39,7 @@ class AuthController extends GetxController {
 
       final role = data['role']?.toString().toLowerCase();
       final name = data['firstName']?.toString();
-
+      userRole.value = role ?? '';
       print("-------the role is $role");
 
       print("------the role is $name");
