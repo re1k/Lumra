@@ -29,7 +29,7 @@ class PostControllerX extends GetxController {
     contentController.addListener(updateFormValidity);
   }
 
-  /// 🔹 Initializes community collection and sets up real-time listeners
+  /// Initializes community collection and sets up real-time listeners
   Future<void> _init() async {
     final userDoc = await FirebaseFirestore.instance
         .collection('users')
@@ -37,16 +37,21 @@ class PostControllerX extends GetxController {
         .get();
 
     String role = 'adhd';
+
+    print("-------the inital community role is $role");
     if (userDoc.exists) {
       final data = userDoc.data();
       if (data != null && data['role'] != null) {
         role = data['role'].toString().toLowerCase();
       }
     }
+     print("-------the community role is $role");
 
     communityCollection = role == 'caregiver'
         ? 'CareGiverCommunityPosts'
         : 'ADHDCommunityPosts';
+
+       
 
     // Real-time updates
     db

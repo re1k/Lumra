@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lumra_project/theme/custom_themes/appbar_theme.dart';
+import 'package:lumra_project/view/Community/SavedPostsPage.dart';
 import '../../controller/Account/UserController.dart';
 import '../../theme/base_themes/colors.dart';
 import '../../theme/base_themes/sizes.dart';
@@ -115,7 +116,11 @@ class AccountPage extends StatelessWidget {
                   _buildOption(
                     icon: Icons.bookmark,
                     text: "Saved Posts",
-                    onTap: () {},
+                    onTap: () {
+                        Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SavedPostsPage()),
+                      );},
                   ),
                   const SizedBox(height: 10),
 
