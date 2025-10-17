@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lumra_project/theme/custom_themes/appbar_theme.dart';
+import 'package:lumra_project/view/Community/SavedPostsPage.dart';
 import '../../controller/Account/UserController.dart';
 import '../../theme/base_themes/colors.dart';
 import '../../theme/base_themes/sizes.dart';
@@ -29,27 +31,11 @@ class AccountPage extends StatelessWidget {
       backgroundColor: BColors.lightGrey,
       body: Column(
         children: [
-          // Custom centered header for Account
-          Container(
-            padding: EdgeInsets.fromLTRB(
-              BSizes.lg,
-              MediaQuery.of(context).viewPadding.top + BSizes.lg,
-              BSizes.lg,
-              BSizes.lg,
+            BAppBarTheme.createHeader(
+              context: context,
+              title: 'Account',
+              subtitle: "",
             ),
-            child: Center(
-              child: Text(
-                'Account',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: BColors.black,
-                  fontSize: 28,
-                ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-              ),
-            ),
-          ),
 
           // Main content
           Expanded(
@@ -59,12 +45,26 @@ class AccountPage extends StatelessWidget {
                 children: [
                   const SizedBox(height: 20),
                   Center(
-                    child: CircleAvatar(
-                      radius: 80,
-                      backgroundImage: const AssetImage(
-                        'assets/images/final_image.png',
-                      ),
-                    ),
+                    child: Padding(
+              padding: const EdgeInsets.all(BSizes.sm),
+              child: Container(
+                width: 140,
+                height: 140,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: BColors.grey, // border color
+                    width: 1.5, // border thickness
+                  ),
+                ),
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/images/Avatar.png',
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            ),
                   ),
                   const SizedBox(height: 20),
 
@@ -116,7 +116,11 @@ class AccountPage extends StatelessWidget {
                   _buildOption(
                     icon: Icons.bookmark,
                     text: "Saved Posts",
-                    onTap: () {},
+                    onTap: () {
+                        Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SavedPostsPage()),
+                      );},
                   ),
                   const SizedBox(height: 10),
 

@@ -1,6 +1,10 @@
 // lib/controller/chat/caregiver_chat_controller.dart
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'baseController.dart';
+import 'package:get/get.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import "package:lumra_project/controller/auth/auth_controller.dart";
 
 class CaregiverChatController extends BaseChatController {
   String? _userName;
@@ -37,6 +41,29 @@ If asked for medical or clinical advice, politely respond:
 Keep your tone warm, understanding, and empowering — like a gentle friend who truly cares.
 Write in clear ENGLISH, with short and supportive responses.
 """;
+
+  @override
+  void onInit() {
+    super.onInit();
+
+    //  Access the existing AuthController to get the current user
+    if (Get.isRegistered<AuthController>()) {
+      final authCtrl = Get.find<AuthController>();
+      final user = authCtrl.currentUser;
+
+      if (user != null) {
+        FirebaseFirestore.instance.collection('users').doc(user.uid).get().then(
+          (doc) {
+            final name = doc.data()?['firstName'];
+            if (name != null && name.toString().trim().isNotEmpty) {
+              setUserName(name);
+              print("🔹 Loaded caregiver name from Firestore: $name");
+            }
+          },
+        );
+      }
+    }
+  }
 
   @override
   Future<String> sendMessage(String userMessage) async {

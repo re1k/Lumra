@@ -10,6 +10,8 @@ import 'package:lumra_project/view/Activity/ActivityWidgets/categoryStyle.dart';
 import 'package:lumra_project/theme/base_themes/sizes.dart';
 import 'dart:async'; // Required for StreamSubscription
 
+import "package:lumra_project/view/ChatBootADHD/ChatBotWidget.dart";
+
 class ActivityView extends StatefulWidget {
   const ActivityView({super.key});
 
@@ -37,57 +39,116 @@ class _ActivityViewState extends State<ActivityView> {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
-
     return Scaffold(
       backgroundColor: BColors.lightGrey,
-      body: StreamBuilder<List<Activitymodel>>(
-        stream: activityController.activities$(),
-        builder: (context, snap) {
-          if (!snap.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Obx(() {
+        final isAdhd = authController.userRole.value == 'adhd';
 
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                // Header that scrolls with content
-                BAppBarTheme.createHeader(
-                  context: context,
-                  title: 'Activities',
-                  subtitle: "Track your daily activities",
-                ),
+        final content = StreamBuilder<List<Activitymodel>>(
+          stream: activityController.activities$(),
+          builder: (context, snap) {
+            if (!snap.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-                // Main content
-                Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    BSizes.defaultSpace,
-                    BSizes.sm,
-                    BSizes.defaultSpace,
-                    BSizes.xl + 100, // Extra bottom padding for navbar
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  BAppBarTheme.createHeader(
+                    context: context,
+                    title: 'Activities',
+                    subtitle: "Track your daily activities",
                   ),
-                  child: Column(
-                    children: [
-                      for (int i = 0; i < snap.data!.length; i++) ...[
-                        _ActivityTile(
-                          key: ValueKey(snap.data![i].id),
-                          item: snap.data![i],
-                          textTheme: t,
-                          onToggle: () =>
-                              activityController.toggle(snap.data![i]),
-                          activityController: activityController,
-                        ),
-                        if (i < snap.data!.length - 1)
-                          SizedBox(height: BSizes.SpaceBtwItems),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      BSizes.defaultSpace,
+                      BSizes.sm,
+                      BSizes.defaultSpace,
+                      BSizes.xl + 100,
+                    ),
+                    child: Column(
+                      children: [
+                        for (int i = 0; i < snap.data!.length; i++) ...[
+                          _ActivityTile(
+                            key: ValueKey(snap.data![i].id),
+                            item: snap.data![i],
+                            textTheme: Theme.of(context).textTheme,
+                            onToggle: () =>
+                                activityController.toggle(snap.data![i]),
+                            activityController: activityController,
+                          ),
+                          if (i < snap.data!.length - 1)
+                            SizedBox(height: BSizes.SpaceBtwItems),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+                ],
+              ),
+            );
+          },
+        );
+
+        // Overlay chatbot only for ADHD
+        return Stack(
+          children: [
+            content,
+            if (isAdhd) const ChatBotWidget(role: 'adhd'),
+          ],
+        );
+      }),
     );
+    //////////////////////////////////////LOBA AND LATIFA /////////////////////////////////////////////////////////////////////////////
+    // return Scaffold(
+    //   backgroundColor: BColors.lightGrey,
+    //   body: StreamBuilder<List<Activitymodel>>(
+    //     stream: activityController.activities$(),
+    //     builder: (context, snap) {
+    //       if (!snap.hasData) {
+    //         return const Center(child: CircularProgressIndicator());
+    //       }
+
+    //       return SingleChildScrollView(
+    //         child: Column(
+    //           children: [
+    //             // Header that scrolls with content
+    //             BAppBarTheme.createHeader(
+    //               context: context,
+    //               title: 'Activities',
+    //               subtitle: "Track your daily activities",
+    //             ),
+
+    //             // Main content
+    //             Padding(
+    //               padding: EdgeInsets.fromLTRB(
+    //                 BSizes.defaultSpace,
+    //                 BSizes.sm,
+    //                 BSizes.defaultSpace,
+    //                 BSizes.xl + 100, // Extra bottom padding for navbar
+    //               ),
+    //               child: Column(
+    //                 children: [
+    //                   for (int i = 0; i < snap.data!.length; i++) ...[
+    //                     _ActivityTile(
+    //                       key: ValueKey(snap.data![i].id),
+    //                       item: snap.data![i],
+    //                       textTheme: t,
+    //                       onToggle: () =>
+    //                           activityController.toggle(snap.data![i]),
+    //                       activityController: activityController,
+    //                     ),
+    //                     if (i < snap.data!.length - 1)
+    //                       SizedBox(height: BSizes.SpaceBtwItems),
+    //                   ],
+    //                 ],
+    //               ),
+    //             ),
+    //           ],
+    //         ),
+    //       );
+    //     },
+    //   ),
+    // );
   }
 }
 
@@ -193,7 +254,7 @@ class _ActivityTileState extends State<_ActivityTile> {
         decoration: BoxDecoration(
           color: isDone
               ? BColors.darkGrey.withOpacity(0.01)
-              : BColors.lightGrey,
+              : BColors.white,
           borderRadius: BorderRadius.circular(BSizes.cardRadiusLg),
           border: Border.all(color: BColors.borderSecondary),
           boxShadow: const [

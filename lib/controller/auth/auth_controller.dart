@@ -1,17 +1,16 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lumra_project/service/auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import "package:lumra_project/view/ChatBootADHD/ChatBootADHD.dart";
-//import "package:lumra_project/view/ChatBootADHD/ChatBootADHD.dart;
 import 'package:lumra_project/controller/ChatBoot/AdhdChatBootController.dart';
 import "package:lumra_project/controller/ChatBoot/careGiverController.dart";
+import 'package:lumra_project/controller/Community/PostController.dart';
 
 class AuthController extends GetxController {
   final AuthService _authService = AuthService();
 
   var isLoading = false.obs; // loading state for buttons
+  final userRole = ''.obs; // reactive variable to hold role (adhd / caregiver)
 
   User? get currentUser => FirebaseAuth.instance.currentUser;
 
@@ -38,26 +37,36 @@ class AuthController extends GetxController {
 
       final role = data['role']?.toString().toLowerCase();
       final name = data['firstName']?.toString();
-
+      userRole.value = role ?? '';
       print("-------the role is $role");
 
       print("------the role is $name");
 
-      //  Pass the name to the ADHD chat controller if role is ADHD
+      //  Create ONLY the relevant chat controller for this user
       if (role == 'adhd') {
-        final adhdCtrl = Get.isRegistered<AdhdChatController>()
-            ? Get.find<AdhdChatController>()
-            : Get.put(AdhdChatController());
-
+        final adhdCtrl = Get.put(AdhdChatController());
         adhdCtrl.setUserName(name);
-        print("fter method");
-        print(adhdCtrl.userName);
       } else if (role == 'caregiver') {
-        final caregiverCtrl = Get.isRegistered<CaregiverChatController>()
-            ? Get.find<CaregiverChatController>()
-            : Get.put(CaregiverChatController());
+        final caregiverCtrl = Get.put(CaregiverChatController());
         caregiverCtrl.setUserName(name);
       }
+
+      //  Pass the name to the ADHD chat controller if role is ADHD
+      /* if (role == 'adhd') {
+        if (Get.isRegistered<AdhdChatController>()) {
+          Get.delete<AdhdChatController>();
+        }
+        final adhdCtrl = Get.put(AdhdChatController());
+        adhdCtrl.setUserName(name);
+        print(adhdCtrl.userName);
+      } else if (role == 'caregiver') {
+        if (Get.isRegistered<CaregiverChatController>()) {
+          Get.delete<CaregiverChatController>();
+        }
+        final caregiverCtrl = Get.put(CaregiverChatController());
+
+        caregiverCtrl.setUserName(name);
+      } */
 
       // Route once cuz AppShell decides tabs based on role
       Get.offAllNamed('/app');
@@ -99,6 +108,11 @@ class AuthController extends GetxController {
 
       // Sign out
       await _authService.signOut();
+
+      // Clear PostControllerX to ensure fresh state on next login
+      if (Get.isRegistered<PostControllerX>()) {
+        Get.delete<PostControllerX>();
+      }
 
       // If user is ADHD, clear the chat controller
       if (role == 'adhd' && Get.isRegistered<AdhdChatController>()) {

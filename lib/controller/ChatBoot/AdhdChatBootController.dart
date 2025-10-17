@@ -6,6 +6,8 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:lumra_project/theme/base_themes/api_constants.dart';
 import 'baseController.dart';
+import 'package:lumra_project/controller/auth/auth_controller.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AdhdChatController extends BaseChatController {
   String? userName;
@@ -14,6 +16,8 @@ class AdhdChatController extends BaseChatController {
 
     final n = name?.trim();
     userName = (n == null || n.isEmpty) ? null : n;
+
+    print(userName);
   }
 
   List<dynamic>? _cases; // JSON data
@@ -32,6 +36,23 @@ class AdhdChatController extends BaseChatController {
     super.onInit();
     Gemini.init(apiKey: APIsConstants.Gimini_API, enableDebugging: true);
     _loadJsonCases();
+
+    if (Get.isRegistered<AuthController>()) {
+      final authCtrl = Get.find<AuthController>();
+      final user = authCtrl.currentUser;
+
+      if (user != null) {
+        FirebaseFirestore.instance.collection('users').doc(user.uid).get().then(
+          (doc) {
+            final name = doc.data()?['firstName'];
+            if (name != null && name.toString().trim().isNotEmpty) {
+              setUserName(name);
+              print("🔹 Loaded user name from AuthController: $name");
+            }
+          },
+        );
+      }
+    }
   }
 
   Future<void> _loadJsonCases() async {
@@ -195,6 +216,7 @@ Choose the single best match from this list:
 ${options.join(' | ')}
 
 If you are not sure, or the message does not fit any state, return EXACTLY: NONE
+if the user ask for help without mention any mental state or some emotion that could related to it , return :NONE 
 Do not add any extra words.
 
 otherwise return ONLY the state name , Do not add any extra words.

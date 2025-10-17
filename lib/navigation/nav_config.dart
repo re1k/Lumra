@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lumra_project/view/Activity/activityView.dart';
+import 'package:lumra_project/view/Community/CommunityPage.dart';
 import 'package:lumra_project/view/homepage/adhdHomePage.dart';
 import 'package:lumra_project/view/homepage/careGiverHomePage.dart';
 import 'package:lumra_project/view/Account/AccountPage.dart';
@@ -25,9 +26,7 @@ final Map<UserRole, List<NavItem>> navConfig = {
     NavItem(
       label: 'Community',
       icon: Icons.people,
-      page: ComingSoonPage(
-        feature: 'Community',
-      ), //  Later :replace with CommunityPage()
+      page: CommunityPage(),
     ),
     NavItem(label: 'Account', icon: Icons.account_box, page: AccountPage()),
   ],
@@ -44,9 +43,7 @@ final Map<UserRole, List<NavItem>> navConfig = {
     NavItem(
       label: 'Community',
       icon: Icons.people,
-      page: ComingSoonPage(
-        feature: 'Community',
-      ), //  Later: replace with CommunityPage()
+      page: CommunityPage(),
     ),
     NavItem(label: 'Account', icon: Icons.account_box, page: AccountPage()),
   ],

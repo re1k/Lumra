@@ -32,7 +32,7 @@ class BAppBarTheme {
         BSizes.lg,
         MediaQuery.of(context).viewPadding.top + BSizes.lg,
         BSizes.lg,
-        BSizes.lg,
+        BSizes.xs,
       ),
       child: showBackButton
           ? Stack(
