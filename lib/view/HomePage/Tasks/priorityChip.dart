@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lumra_project/theme/base_themes/colors.dart';
 
 class PriorityChip extends StatelessWidget {
   final String label;
@@ -12,21 +11,24 @@ class PriorityChip extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return Container(
-      width: 90, // fixed size
-      height: 34,
+      width: 60, // Fixed width for all chips
+      height: 24, // Fixed height for all chips
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1), // fill based on priority color
-        borderRadius: BorderRadius.circular(34),
-        border: Border.all(color: color, width: 1.5),
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
       ),
-      alignment: Alignment.center,
-      child: Text(
-        label,
-        overflow: TextOverflow.ellipsis,
-        maxLines: 1,
-        style: tt.labelLarge?.copyWith(
-          color: color,
-          fontWeight: FontWeight.w600,
+      child: Center(
+        child: Text(
+          label,
+          style: tt.bodySmall?.copyWith(
+            color: color,
+            fontWeight: FontWeight.w600,
+            fontSize: 11,
+          ),
+          textAlign: TextAlign.center,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
         ),
       ),
     );

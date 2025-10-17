@@ -7,7 +7,7 @@ import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/theme/base_themes/sizes.dart';
 import 'priorityChip.dart';
 
-class TaskItem extends StatelessWidget {
+class TaskItem extends StatefulWidget {
   final Task task;
   final TaskController controller;
   final VoidCallback? onEdit;
@@ -18,6 +18,42 @@ class TaskItem extends StatelessWidget {
     required this.controller,
     this.onEdit,
   });
+
+  @override
+  State<TaskItem> createState() => _TaskItemState();
+}
+
+class _TaskItemState extends State<TaskItem>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   Color _priorityColor(String p) {
     switch (p.toLowerCase()) {
@@ -36,64 +72,110 @@ class TaskItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
 
-    final label = task.priority[0].toUpperCase() + task.priority.substring(1);
+    final label =
+        widget.task.priority[0].toUpperCase() +
+        widget.task.priority.substring(1);
 
     ///To start with capital letter
-    final chipColor = _priorityColor(task.priority);
+    final chipColor = _priorityColor(widget.task.priority);
 
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: BSizes.sm),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 253, 254, 253),
-        borderRadius: BorderRadius.circular(BSizes.inputFieldRadius),
-        border: Border.all(color: BColors.grey),
-      ),
-      child: Row(
-        children: [
-          // Checkbox
-          Transform.translate(
-            offset: const Offset(-8, 0),
-            child: Checkbox(
-              value: task.isChecked,
-              onChanged: (val) async {
-                if (val == null) return;
-                try {
-                  await controller.updateTaskStatus(task.id, val);
-                } on FirebaseException catch (_) {}
-              },
-            ),
-          ),
-
-          // Title
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: BSizes.sm,
-                right: BSizes.sm,
-                top: BSizes.sm,
-                bottom: BSizes.sm,
+    return SlideTransition(
+      position: _slideAnimation,
+      child: FadeTransition(
+        opacity: _fadeAnimation,
+        child: Container(
+          padding: EdgeInsets.all(BSizes.md),
+          decoration: BoxDecoration(
+            color: BColors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
-              child: Transform.translate(
-                offset: const Offset(-12, 0),
-                child: Text(
-                  task.tasksTitle,
-                  style: tt.bodyMedium?.copyWith(
-                    decoration: task.isChecked
-                        ? TextDecoration.lineThrough
-                        : null,
-                    color: task.isChecked ? Colors.grey : BColors.black,
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Checkbox
+              GestureDetector(
+                onTap: () async {
+                  try {
+                    await widget.controller.updateTaskStatus(
+                      widget.task.id,
+                      !widget.task.isChecked,
+                    );
+                  } on FirebaseException catch (_) {}
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: widget.task.isChecked
+                        ? BColors.primary
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: widget.task.isChecked
+                          ? BColors.primary
+                          : BColors.grey,
+                      width: 2,
+                    ),
+                  ),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: widget.task.isChecked
+                        ? const Icon(
+                            Icons.check,
+                            size: 16,
+                            color: BColors.white,
+                            key: ValueKey('check'),
+                          )
+                        : const SizedBox(key: ValueKey('empty')),
                   ),
                 ),
               ),
-            ),
-          ),
 
-          // Priority chip
-          Transform.translate(
-            offset: const Offset(-2, 0),
-            child: PriorityChip(label: label, color: chipColor),
+              SizedBox(width: BSizes.md),
+
+              // Title
+              Expanded(
+                child: AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 200),
+                  style:
+                      tt.bodyMedium?.copyWith(
+                        decoration: widget.task.isChecked
+                            ? TextDecoration.lineThrough
+                            : null,
+                        color: widget.task.isChecked
+                            ? BColors.darkGrey
+                            : BColors.black,
+                        fontWeight: FontWeight.w500,
+                      ) ??
+                      const TextStyle(),
+                  child: Text(
+                    widget.task.tasksTitle,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                  ),
+                ),
+              ),
+
+              SizedBox(width: BSizes.sm),
+
+              // Priority chip
+              PriorityChip(label: label, color: chipColor),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

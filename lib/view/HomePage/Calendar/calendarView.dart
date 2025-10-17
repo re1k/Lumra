@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lumra_project/controller/Homepage/Calendar/calendarController.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
+import 'package:lumra_project/theme/base_themes/sizes.dart';
 import 'package:lumra_project/view/Homepage/Calendar/calendarWidgets/monthGrid.dart';
 import 'package:lumra_project/view/Homepage/Calendar/calendarWidgets/weekdayHeader.dart';
 import 'package:lumra_project/view/Homepage/Calendar/calendarWidgets/bottomArea.dart';
@@ -61,77 +62,160 @@ class _CalendarPageState extends State<CalendarPage> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final appBarTitleStyle =
-        Theme.of(context).appBarTheme.titleTextStyle ?? textTheme.titleLarge;
 
     return Scaffold(
-      //provide page structure
-      appBar: AppBar(
-        backgroundColor: BColors.primary,
-        //what appears at the top of the page
-        iconTheme: const IconThemeData(
-          color: BColors.white,
-        ), // back arrow color goes back to the caller
-        title: Obx(() {
-          final m = c.visibleMonth.value;
-          return Text(
-            '${monthName(m.month)} ${m.year}', //the text displayed like: "September 2025"
-            style: appBarTitleStyle?.copyWith(color: BColors.white),
-          );
-        }),
-
-        //icons to navigate between the months
-        actions: [
-          IconButton(
-            tooltip: 'Previous month',
-            icon: const Icon(Icons.chevron_left, color: BColors.white),
-            onPressed: () => _pager.previousPage(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOut,
-            ),
-          ),
-          IconButton(
-            tooltip: 'Next month',
-            icon: const Icon(Icons.chevron_right, color: BColors.white),
-            onPressed: () => _pager.nextPage(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOut,
-            ),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          const WeekdayHeader(), // Sun..Sat (fixed)
-          Expanded(
-            child: PageView.builder(
-              controller: _pager,
-              onPageChanged: (i) => c.goToMonth(
-                _monthForIndex(i),
-              ), //notify the contoller when the page changes
-              //each page is a MonthGrid wrapped in Obx so that the selected day and event dots update reactively
-              itemBuilder: (_, i) => Obx(
-                () => MonthGrid(
-                  month: _monthForIndex(i),
-                  hasEvent: c.hasEvent,
-                  selected: c.selectedDay.value,
-                  onTapDay: c.onDayTapped,
-                ),
+      backgroundColor: BColors.lightGrey,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // header
+            Padding(
+              padding: EdgeInsets.all(BSizes.lg),
+              child: Row(
+                children: [
+                  // Back arrow icon
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: BColors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new,
+                        color: BColors.primary,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: BSizes.sm),
+                  Expanded(
+                    child: Obx(() {
+                      final m = c.visibleMonth.value;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            '${monthName(m.month)} ${m.year}',
+                            style: textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: BColors.black,
+                              fontSize: 24,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      );
+                    }),
+                  ),
+                  SizedBox(width: BSizes.sm),
+                  // Navigation buttons
+                  Container(
+                    decoration: BoxDecoration(
+                      color: BColors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          tooltip: 'Previous month',
+                          icon: const Icon(
+                            Icons.chevron_left,
+                            color: BColors.primary,
+                          ),
+                          onPressed: () => _pager.previousPage(
+                            duration: const Duration(milliseconds: 200),
+                            curve: Curves.easeOut,
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: 'Next month',
+                          icon: const Icon(
+                            Icons.chevron_right,
+                            color: BColors.primary,
+                          ),
+                          onPressed: () => _pager.nextPage(
+                            duration: const Duration(milliseconds: 200),
+                            curve: Curves.easeOut,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
 
-          //if no day selected render nothing, otherwise, render "BottomArea"
-          Obx(() {
-            final d = c.selectedDay.value;
-            if (d == null) return const SizedBox.shrink();
-            return BottomArea(
-              selected: d,
-              events: c.eventsFor(d),
-              // onAddTap: () { REEM },
-            );
-          }),
-        ],
+            // Calendar content
+            Expanded(
+              child: Column(
+                children: [
+                  const WeekdayHeader(), // Sun..Sat (fixed)
+                  Expanded(
+                    child: Column(
+                      children: [
+                        // Calendar grid with bottom spacing
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 24),
+                            child: PageView.builder(
+                              controller: _pager,
+                              onPageChanged: (i) => c.goToMonth(
+                                _monthForIndex(i),
+                              ), //notify the contoller when the page changes
+                              //each page is a MonthGrid wrapped in Obx so that the selected day and event dots update reactively
+                              itemBuilder: (_, i) => Obx(
+                                () => MonthGrid(
+                                  month: _monthForIndex(i),
+                                  hasEvent: c.hasEvent,
+                                  selected: c.selectedDay.value,
+                                  onTapDay: c.onDayTapped,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // Bottom area with proper spacing
+                        Obx(() {
+                          final d = c.selectedDay.value;
+                          if (d == null) return const SizedBox.shrink();
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 40),
+                            child: BottomArea(
+                              selected: d,
+                              events: c.eventsFor(d),
+                              // onAddTap: () { REEM },
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

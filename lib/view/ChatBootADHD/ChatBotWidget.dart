@@ -49,7 +49,7 @@ class _ChatBotWidgetState extends State<ChatBotWidget> {
       isDismissible: true, // keep this
       enableDrag: true, // swipe down still works
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.15),
+      barrierColor: Colors.transparent,
       builder: (ctx) {
         return Stack(
           children: [
@@ -107,24 +107,30 @@ class _ChatBotWidgetState extends State<ChatBotWidget> {
     return Stack(
       alignment: Alignment.bottomRight,
       children: [
+        // Positioned above the nav bar
         Positioned(
-          bottom: 0,
+          bottom: 110, // Position above the nav bar
           right: 23,
-          child: SizedBox(
-            width: 50,
-            height: 50,
-            child: FloatingActionButton(
-              backgroundColor: BColors.primary,
-              elevation: 6,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(32),
+          child: Container(
+            decoration: BoxDecoration(
+              color: BColors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              tooltip: _isChatOpen ? 'Close chat' : 'Open chat',
+              icon: Icon(
+                _isChatOpen ? Icons.close_rounded : Icons.chat_bubble_rounded,
+                color: BColors.primary,
+                size: 24,
               ),
               onPressed: _toggleChat,
-              child: Icon(
-                _isChatOpen ? Icons.close_rounded : Icons.chat_bubble_rounded,
-                size: 18,
-                color: Colors.white,
-              ),
             ),
           ),
         ),

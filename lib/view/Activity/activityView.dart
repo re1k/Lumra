@@ -39,23 +39,7 @@ class _ActivityViewState extends State<ActivityView> {
     final t = Theme.of(context).textTheme;
 
     return Scaffold(
-      backgroundColor: BColors.white,
-      appBar: AppBar(
-        title: Text(
-          "Activities",
-          style: t.titleLarge?.copyWith(
-            fontFamily: 'K2D',
-            fontSize: BSizes.fontSizeLg,
-            fontWeight: FontWeight.bold,
-            color: BColors.white,
-          ),
-        ),
-        backgroundColor: BAppBarTheme.lightAppBarTheme.backgroundColor,
-        elevation: BAppBarTheme.lightAppBarTheme.elevation,
-        iconTheme: BAppBarTheme.lightAppBarTheme.iconTheme,
-        centerTitle: true,
-      ),
-
+      backgroundColor: BColors.lightGrey,
       body: StreamBuilder<List<Activitymodel>>(
         stream: activityController.activities$(),
         builder: (context, snap) {
@@ -63,24 +47,42 @@ class _ActivityViewState extends State<ActivityView> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final items = snap.data!;
-          return ListView.separated(
-            // Margin between cards and screen edges = 24 px
-            padding: EdgeInsets.fromLTRB(
-              BSizes.defaultSpace,
-              BSizes.sm,
-              BSizes.defaultSpace,
-              BSizes.xl,
-            ),
-            itemCount: items.length,
-            separatorBuilder: (_, __) => SizedBox(height: BSizes.SpaceBtwItems),
-            // Pass item.id as a unique key to preserve the Tile state during list updates
-            itemBuilder: (context, i) => _ActivityTile(
-              key: ValueKey(items[i].id),
-              item: items[i],
-              textTheme: t,
-              onToggle: () => activityController.toggle(items[i]),
-              activityController: activityController,
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                // Header that scrolls with content
+                BAppBarTheme.createHeader(
+                  context: context,
+                  title: 'Activities',
+                  subtitle: "Track your daily activities",
+                ),
+
+                // Main content
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    BSizes.defaultSpace,
+                    BSizes.sm,
+                    BSizes.defaultSpace,
+                    BSizes.xl + 100, // Extra bottom padding for navbar
+                  ),
+                  child: Column(
+                    children: [
+                      for (int i = 0; i < snap.data!.length; i++) ...[
+                        _ActivityTile(
+                          key: ValueKey(snap.data![i].id),
+                          item: snap.data![i],
+                          textTheme: t,
+                          onToggle: () =>
+                              activityController.toggle(snap.data![i]),
+                          activityController: activityController,
+                        ),
+                        if (i < snap.data!.length - 1)
+                          SizedBox(height: BSizes.SpaceBtwItems),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
             ),
           );
         },
@@ -183,8 +185,6 @@ class _ActivityTileState extends State<_ActivityTile> {
     // The variable that reflects the correct real-time status:
     final isDone = item.isInitial ? _isInitialItemChecked : item.isChecked;
 
-    final activityCategory = item.category.toLowerCase().trim();
-    final isLearningActivity = activityCategory == 'learning';
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 180),
       opacity: isDone ? 0.65 : 1.0,

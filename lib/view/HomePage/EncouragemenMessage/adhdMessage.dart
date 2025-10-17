@@ -13,20 +13,54 @@ class EncouragementMessage extends StatelessWidget {
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
 
-    return OutlinedButton.icon(
-      onPressed: () {},
-      icon: const Icon(Icons.lightbulb_outline, color: BColors.texBlack),
-      label: Text(
-        text,
-        style: tt.bodyMedium?.copyWith(color: BColors.texBlack),
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(BSizes.lg),
+      decoration: BoxDecoration(
+        color: BColors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      style: OutlinedButton.styleFrom(
-        minimumSize: Size(double.infinity, BSizes.buttonHeight + 30),
-        side: const BorderSide(color: BColors.texBlack),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(BSizes.borderRadiusMd),
-        ),
-        backgroundColor: BColors.white,
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: BColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Icon(
+              Icons.lightbulb_outline,
+              color: BColors.primary,
+              size: 20,
+            ),
+          ),
+          SizedBox(width: BSizes.md),
+          Expanded(
+            child: Text(
+              text,
+              style: tt.bodyMedium?.copyWith(
+                color: BColors.black,
+                fontWeight: FontWeight.w500,
+                height: 1.4,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 3,
+            ),
+          ),
+        ],
       ),
     );
   }

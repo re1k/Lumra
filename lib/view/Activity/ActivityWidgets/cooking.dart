@@ -2,15 +2,16 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/theme/base_themes/sizes.dart';
-
+import 'package:lumra_project/theme/custom_themes/appbar_theme.dart';
 
 class Cooking extends StatefulWidget {
-  final int userAge; 
+  final int userAge;
   const Cooking({super.key, required this.userAge});
 
   @override
   State<Cooking> createState() => _CookingState();
 }
+
 // https://thenutritionjunky.com/50-adhd-friendly-recipes/
 class _CookingState extends State<Cooking> {
   final List recipes = [
@@ -90,78 +91,73 @@ class _CookingState extends State<Cooking> {
   }
 
   void _showCaregiverAlert() {
-  showDialog(
-    context: context,
-    barrierDismissible: false, 
-    builder: (context) => Dialog(
-      backgroundColor: Colors.transparent, 
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(30), 
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              spreadRadius: 2,
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "Notice",
-               textAlign: TextAlign.left,
-              style: const TextStyle(
-                
-                fontFamily: 'K2D',
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: BColors.primary,
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                spreadRadius: 2,
+                blurRadius: 10,
+                offset: const Offset(0, 5),
               ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              "Since your age is between 7 and 13, it's best to call a caregiver for guidance.",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: BSizes.fontSizeMd,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 25),
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: BColors.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Notice",
+                textAlign: TextAlign.left,
+                style: const TextStyle(
+                  fontFamily: 'K2D',
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: BColors.primary,
                 ),
-                onPressed: () {
-                  Navigator.pop(context); 
-                },
-                child: const Text(
-                  "OK",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                "Since your age is between 7 and 13, it's best to call a caregiver for guidance.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: BSizes.fontSizeMd,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 25),
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: BColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text(
+                    "OK",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -169,172 +165,187 @@ class _CookingState extends State<Cooking> {
     final randomRecipe = recipes[Random().nextInt(recipes.length)];
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: BColors.primary,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Stack(
+      backgroundColor: BColors.lightGrey,
+      body: Column(
         children: [
-          // الدائرة الخلفية
-          Positioned(
-            bottom: -60,
-            right: -60,
-            child: Container(
-              width: 180,
-              height: 180,
-              decoration: BoxDecoration(
-                color: BColors.primary.withOpacity(0.4),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(180),
-                ),
-              ),
-            ),
+          BAppBarTheme.createHeader(
+            context: context,
+            title: 'Cooking',
+            showBackButton: true,
+            onBackPressed: () => Navigator.pop(context),
           ),
-          // البوكس الأبيض
-          Positioned(
-            top: 5,
-            left: 20,
-            right: 20,
-            bottom: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    spreadRadius: 2,
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
+          Expanded(
+            child: Stack(
+              children: [
+                // الدائرة الخلفية
+                Positioned(
+                  bottom: -60,
+                  right: -60,
+                  child: Container(
+                    width: 180,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      color: BColors.primary.withOpacity(0.4),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(180),
+                      ),
+                    ),
                   ),
-                ],
-              ),
-              child: SingleChildScrollView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // الاسم والصورة
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
+                ),
+                // البوكس الأبيض
+                Positioned(
+                  top: 5,
+                  left: 20,
+                  right: 20,
+                  bottom: 0,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          spreadRadius: 2,
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 25,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // الاسم والصورة
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                randomRecipe["name"],
-                                style: const TextStyle(
-                                  fontFamily: 'K2D',
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.bold,
-                                  color: BColors.primary,
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      randomRecipe["name"],
+                                      style: const TextStyle(
+                                        fontFamily: 'K2D',
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.bold,
+                                        color: BColors.primary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 15),
+                              CircleAvatar(
+                                radius: size.width * 0.18,
+                                backgroundImage: AssetImage(
+                                  randomRecipe["image"],
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(width: 15),
-                        CircleAvatar(
-                          radius: size.width * 0.18,
-                          backgroundImage: AssetImage(randomRecipe["image"]),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 25),
-                    Text(
-                      randomRecipe["description"],
-                      style: const TextStyle(
-                        fontFamily: 'K2D',
-                        fontSize: BSizes.fontSizeMd,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 25),
-                    // Ingredients
-                    Text(
-                      "Ingredients:",
-                      style: const TextStyle(
-                        fontFamily: 'K2D',
-                        fontSize: BSizes.fontSizeLg,
-                        fontWeight: FontWeight.w700,
-                        color: BColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    ...List.generate(
-                      (randomRecipe["ingredients"] as List).length,
-                      (index) => Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text("• ",
-                                style: TextStyle(
-                                    fontSize: BSizes.fontSizeMd,
-                                    fontFamily: 'K2D')),
-                            Expanded(
-                              child: Text(
-                                randomRecipe["ingredients"][index],
-                                style: const TextStyle(
-                                    fontSize: BSizes.fontSizeMd,
-                                    fontFamily: 'K2D',
-                                    color: Colors.black87),
+                          const SizedBox(height: 25),
+                          Text(
+                            randomRecipe["description"],
+                            style: const TextStyle(
+                              fontFamily: 'K2D',
+                              fontSize: BSizes.fontSizeMd,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 25),
+                          // Ingredients
+                          Text(
+                            "Ingredients:",
+                            style: const TextStyle(
+                              fontFamily: 'K2D',
+                              fontSize: BSizes.fontSizeLg,
+                              fontWeight: FontWeight.w700,
+                              color: BColors.primary,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          ...List.generate(
+                            (randomRecipe["ingredients"] as List).length,
+                            (index) => Padding(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "• ",
+                                    style: TextStyle(
+                                      fontSize: BSizes.fontSizeMd,
+                                      fontFamily: 'K2D',
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      randomRecipe["ingredients"][index],
+                                      style: const TextStyle(
+                                        fontSize: BSizes.fontSizeMd,
+                                        fontFamily: 'K2D',
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 25),
-                    // Instructions
-                    Text(
-                      "Instructions:",
-                      style: const TextStyle(
-                        fontFamily: 'K2D',
-                        fontSize: BSizes.fontSizeLg,
-                        fontWeight: FontWeight.w700,
-                        color: BColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    ...List.generate(
-                      (randomRecipe["instructions"] as List).length,
-                      (index) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("${index + 1}. ",
-                                style: const TextStyle(
-                                  fontSize: BSizes.fontSizeMd,
-                                  fontFamily: 'K2D',
-                                  fontWeight: FontWeight.bold,
-                                )),
-                            Expanded(
-                              child: Text(
-                                randomRecipe["instructions"][index],
-                                style: const TextStyle(
-                                  fontSize: BSizes.fontSizeMd,
-                                  fontFamily: 'K2D',
-                                  color: Colors.black87,
-                                ),
+                          ),
+                          const SizedBox(height: 25),
+                          // Instructions
+                          Text(
+                            "Instructions:",
+                            style: const TextStyle(
+                              fontFamily: 'K2D',
+                              fontSize: BSizes.fontSizeLg,
+                              fontWeight: FontWeight.w700,
+                              color: BColors.primary,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          ...List.generate(
+                            (randomRecipe["instructions"] as List).length,
+                            (index) => Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "${index + 1}. ",
+                                    style: const TextStyle(
+                                      fontSize: BSizes.fontSizeMd,
+                                      fontFamily: 'K2D',
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      randomRecipe["instructions"][index],
+                                      style: const TextStyle(
+                                        fontSize: BSizes.fontSizeMd,
+                                        fontFamily: 'K2D',
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(height: 30),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 30),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ],
