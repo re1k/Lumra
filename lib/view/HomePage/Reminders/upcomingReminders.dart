@@ -193,8 +193,7 @@ class _EmptyState extends StatelessWidget {
                 fontWeight: FontWeight.w500,
                 height: 1.4,
               ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 3,
+              softWrap: true,
             ),
           ),
         ],
@@ -238,7 +237,7 @@ class _ReminderCard extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return Container(
-      padding: EdgeInsets.all(BSizes.md),
+      padding: EdgeInsets.fromLTRB(BSizes.md, BSizes.md, BSizes.lg, BSizes.md),
       decoration: BoxDecoration(
         color: BColors.white,
         borderRadius: BorderRadius.circular(16),
@@ -277,8 +276,7 @@ class _ReminderCard extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     color: BColors.black,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
+                  softWrap: true,
                 ),
                 SizedBox(height: BSizes.xs),
                 Text(
@@ -287,8 +285,7 @@ class _ReminderCard extends StatelessWidget {
                     color: BColors.darkGrey,
                     fontWeight: FontWeight.w500,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
+                  softWrap: true,
                 ),
               ],
             ),
