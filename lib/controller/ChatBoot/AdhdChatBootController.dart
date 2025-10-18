@@ -55,6 +55,21 @@ class AdhdChatController extends BaseChatController {
     }
   }
 
+  void printUsedActivities() {
+    if (_usedActivitiesByState.isEmpty) {
+      print("🟡 No used activities yet.");
+      return;
+    }
+
+    print("🧩 Used Activities by Mental State:");
+    _usedActivitiesByState.forEach((state, usedSet) {
+      print("\n🔹 Mental State: $state");
+      for (final activityKey in usedSet) {
+        print("   • $activityKey");
+      }
+    });
+  }
+
   Future<void> _loadJsonCases() async {
     try {
       final data = await rootBundle.loadString(
@@ -184,6 +199,7 @@ class AdhdChatController extends BaseChatController {
 
   // Ask Gemini to classify the user message into one of the mental states
   Future<String?> _classifyState(String contextMessage) async {
+    printUsedActivities();
     await ensureJsonLoaded();
     final options = _allMentalStates();
     if (options.isEmpty) return null;
@@ -203,24 +219,34 @@ class AdhdChatController extends BaseChatController {
 
     final sys =
         """
-You are a careful emotional classifier.
-You will analyze the user's message and decide which one mental state (from the list below)
-best describes the emotion or need behind the message — even if th
+You are an emotional classifier for an ADHD-support assistant.
+
+Your task:
+Read the user's message and choose ONE mental state that best describes it.
+Sometimes the user will not explicitly mention the mental state, so analyze the context and match it to the closest one if applicable.
+In some cases, you will receive a conversation — use the context from previous messages to help you detect the mental state.
+
+If the message does not clearly match any state, return "NONE".
 
 For example:
-- "I'm bored" → could mean "Less Motivation"
-- "I can't focus" → could mean "Distracted"
-- "I feel stressed" → could mean "Anxious"
+- "I'm bored" → could mean "Low Motivation"
 
-Choose the single best match from this list:
+- "I feel stressed" → could mean "Anxiety"
+
+Choose the single best match from this list only:
 ${options.join(' | ')}
 
-If you are not sure, or the message does not fit any state, return EXACTLY: NONE
-if the user ask for help without mention any mental state or some emotion that could related to it , return :NONE 
-Do not add any extra words.
+Your purpose:
+- If the user asks for help without mentioning any mental state or emotion, and there are no previous messages (for example: "What can I do?"), return "NONE".
+- However, if there are previous messages that show an emotion or mental context, then use the conversation to detect the correct mental state.
+- If the message expresses an emotion or mental state but it does not clearly match any item in the list, return "NONE".
 
-otherwise return ONLY the state name , Do not add any extra words.
+If you detect a mental state, return ONLY the exact mental state name from the list.
+Do not add any explanations, punctuation, or extra words.
 
+Remember:
+- When unsure, do not assume — return "NONE".
+- Be consistent and precise in your classification.
 """;
 
     String one = "";
@@ -273,11 +299,23 @@ You are not a medical professional and must never provide diagnostic or clinical
 Your role is to offer warm emotional support and simple guidance related only to ADHD, self-care, focus, organization, and emotional well-being.
 
 If the user talks about topics outside ADHD, mental health, or personal improvement, reply politely:
--"I'm sorry, but I’m only your personal assistant and can’t provide help with that."
+- "I'm sorry, but I’m only your personal assistant and can’t provide help with that."
 
-Engage in natural, friendly conversation. If the user is simply chatting or sharing thoughts that don’t clearly indicate a mental state,
-respond normally — be kind, supportive, and keep the flow natural. Do NOT suggest activities here.(if the user want chatting follow him and le the conversation smooth try to let him talk more  )
-Keep the reply short and in ENGLISH. The user's name is "$displayName". Use it naturally when appropriate (e.g., greetings or empathy).
+Your purpose:
+
+1. If the user is simply chatting or sharing thoughts that don’t clearly indicate a mental state,
+   respond naturally — be kind, supportive, and keep the conversation flowing smoothly. 
+   Do NOT suggest activities here. If the user wants to chat, follow their lead and keep the conversation relaxed.
+
+2. If the user talks about something that you can give a small piece of advice or simple tips for,
+   go ahead and share them (not a full activity — just short, practical suggestions).
+
+3. If the message shows emotions such as sadness, stress, or frustration,
+   respond with calm understanding — do NOT amplify the emotion. 
+   Stay positive, encouraging, and provide gentle reassurance.
+
+Keep the reply short and in ENGLISH.
+The user's name is "$displayName". Use it naturally when appropriate (e.g., greetings or empathy).
 """;
 
     // 2) No clear state -> chat normally using your previous instruction prompt (NO JSON here)
@@ -363,9 +401,10 @@ Below are two activities Lumra found in her library.
 Each activity includes a short description (inside parentheses).
 
 Your task:
-- Rephrase each description smoothly in your own warm and encouraging tone, keeping the same meaning.
+- Keep each activity TITLE EXACTLY as it is. Never change, rename, or reword it.
+- Only rephrase the DESCRIPTION to make it sound warm and human.
 - Keep each activity clearly separated from the other with a blank line between them.
-- Mention the activity name first, then its rephrased description on the next line.
+- Always show the original title exactly as provided, then its rephrased description below.
 
 $activitiesText
 
@@ -377,6 +416,8 @@ Write a friendly 3-part message for the user:
 2️ Present the two activities one by one, separated clearly with a blank line, each having its short rewritten description.  
 
 3️ End by reminding the user they can find these activities in the Activities section of Lumra.
+
+4-  Always reply in a way that feels human, simple, and easy to understan
 
 Keep your tone kind, calm, and human-like.
 Avoid quotes, emojis, or bold formatting.
@@ -418,15 +459,16 @@ Instructions:
 - You only need to check whether the user is currently asking for help or guidance.
 - The user might say general things like "help me", "please help", or "I need something" without specifying what — these still count as asking for help.
 - The user might also ask questions that imply a need for guidance (e.g., "what should I do", "how can I fix this").
-
-
-
+- If the user is only describing emotions or wondering if something is normal (e.g., "is it normal when I lose focus", "does it happen to others", "why do I feel this way"), they are seeking reassurance, not help — return "NO".
+- If the message includes phrases like "is it normal", "am I the only one", or "does this happen", return "NO".
+- If you are not sure, return "NO". Be conservative.
 
 Return exactly:
 - "YES" → if the user clearly wants help, advice, or an activity.
-- "NO"  → if the user is just expressing feelings, talking casually, or not asking for help.
+- "NO"  → if the user is just expressing feelings, talking casually, or asking for reassurance.
 
 Examples:
+user: "Can I dance to release energy?", "Should I try drawing to calm down?", "What if I take a walk?"), return "NO". They are reflecting or seeking confirmation, not asking for new help or activities.
 User: "I feel bored" → NO  
 User: "I feel bored, what should I do?" → YES  
 User: "I'm tired" → NO  
@@ -436,6 +478,9 @@ User: "I'm just chatting" → NO
 User: "Please help" → YES  
 User: "Can you help me?" → YES  
 User: "I need help" → YES  
+ 
+User: "Why do I feel anxious?" → NO  
+
 """;
     try {
       final resp = await Gemini.instance.text(
