@@ -31,7 +31,6 @@ class PostControllerX extends GetxController {
   var isInit = false;
   var isInitialized = false.obs;
 
-
   var currentLength = 0.obs;
 
   StreamSubscription<QuerySnapshot>? _postsSubscription;
@@ -152,7 +151,7 @@ class PostControllerX extends GetxController {
   }
 
   void updateFormValidity() {
-    final text = contentController.text.trim();
+    var text = contentController.text.trim();
     currentLength.value = text.length; // update length reactively
 
     if (text.isEmpty) {
@@ -167,7 +166,10 @@ class PostControllerX extends GetxController {
   Future<void> addPost() async {
     if (!isFormValid.value) return;
 
-    final text = contentController.text.trim();
+    var text = contentController.text.trim();
+     //Remove leading/trailing spaces and collapse multiple spaces between words
+    text = text.trim().replaceAll(RegExp(r'\s+'), ' ');
+
     if (text.isEmpty) {
       ToastService.error("Post cannot be empty");
       return;
