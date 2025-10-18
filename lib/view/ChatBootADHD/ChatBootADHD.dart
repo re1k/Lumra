@@ -313,7 +313,7 @@ class _ChatViewState extends State<ChatView>
                         ),
                       ],
                     ),
-                    // ...inside build(), where you currently have: child: Chat(...)
+
                     child: Stack(
                       children: [
                         Chat(
@@ -397,10 +397,11 @@ class _ChatViewState extends State<ChatView>
                           ),
                         ),
 
+                        ///here is the 3 dots
                         if (_showDots)
                           const Positioned(
                             left: 16,
-                            bottom: 100, // adjust to sit above the input
+                            bottom: 65, // adjust to sit above the input
                             child: _TypingDotsBubble(),
                           ),
                       ],
