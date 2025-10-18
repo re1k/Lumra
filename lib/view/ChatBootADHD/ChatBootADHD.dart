@@ -5,7 +5,6 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
 import 'package:lumra_project/controller/ChatBoot/AdhdChatBootController.dart';
 import 'package:lumra_project/model/Activity/ActivityModel.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
@@ -163,6 +162,8 @@ class _ChatViewState extends State<ChatView>
   // SEND FLOW
   bool _showDots = false;
   Future<void> _handleSend(types.PartialText message) async {
+    if (message.text.trim().isEmpty) return; // block empty sends
+
     // 1) user message -> UI + history
     final userMsg = types.TextMessage(
       id: Random().nextInt(999999).toString(),
@@ -376,19 +377,21 @@ class _ChatViewState extends State<ChatView>
                                 ),
                               ),
                             ),
-                            sendButtonIcon: const Icon(
+                            sendButtonIcon: Icon(
                               Icons.send_rounded,
-                              color: BColors.buttonPrimary,
+                              color: _inputCtrl.text.trim().isEmpty
+                                  ? Colors
+                                        .grey
+                                        .shade400 // disabled look
+                                  : BColors.buttonPrimary, // active color
                               size: 24,
                             ),
                           ),
                           onAttachmentPressed: null,
                           inputOptions: InputOptions(
                             textEditingController: _inputCtrl,
-                            sendButtonVisibilityMode:
-                                SendButtonVisibilityMode.editing,
-                            autocorrect: true,
-                            enableSuggestions: true,
+                            sendButtonVisibilityMode: SendButtonVisibilityMode
+                                .always, // always visible
                           ),
                           l10n: const ChatL10nEn(
                             emptyChatPlaceholder:
