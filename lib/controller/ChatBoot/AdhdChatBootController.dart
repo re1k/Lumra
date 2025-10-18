@@ -189,12 +189,19 @@ class AdhdChatController extends BaseChatController {
       if (next.isNotEmpty) picked.add(next as Map<String, String>);
     }
 
-    // 6️ Mark selected ones as used
+    /*      put it as a comment (sometimes gimini ignore the activity)
     for (final a in picked) {
       used.add(_activityKey(a));
-    }
+    } */
 
     return picked;
+  }
+
+  void _markUsed(String state, List<Map<String, String>> shown) {
+    final used = _usedActivitiesByState.putIfAbsent(state, () => <String>{});
+    for (final a in shown) {
+      used.add(_activityKey(a));
+    }
   }
 
   // Ask Gemini to classify the user message into one of the mental states
@@ -333,6 +340,7 @@ $userMessage
 
       try {
         final resp = await Gemini.instance.text(fullPrompt);
+
         return resp?.output?.trim() ?? "Got it! How’s your day going?";
       } catch (e) {
         return "Sorry, I'm having trouble connecting right now. Please try again in a moment 💫";
@@ -426,8 +434,35 @@ Write in English only.
 
     try {
       final resp = await Gemini.instance.text('System:\n$systemPrompt');
-      return resp?.output?.trim() ??
-          "It seems you’re feeling $state. You can check some helpful activities in your Activities section ";
+
+      final output = resp?.output?.trim() ?? '';
+
+      // Debug Gemini output
+      print("🔍 Gemini returned text:\n$output");
+
+      // Find which activity titles appear in Gemini’s message
+      final shown = picked.where((a) {
+        final cleanTitle = a['title']!
+            .replaceAll(RegExp(r'\s+'), ' ')
+            .trim()
+            .toLowerCase();
+        final cleanOutput = output
+            .replaceAll(RegExp(r'\s+'), ' ')
+            .trim()
+            .toLowerCase();
+        return cleanOutput.contains(cleanTitle);
+      }).toList();
+      print("🧩 Titles found:");
+      for (final a in shown) {
+        print("   ✅ ${a['title']}");
+      }
+
+      // Mark as used only what was shown
+      _markUsed(state, shown);
+
+      return output.isNotEmpty
+          ? output
+          : "It seems you’re feeling $state. You can check some helpful activities in your Activities section.";
     } catch (e) {
       return "Sorry, I'm having trouble connecting right now. Please try again in a moment 💫";
     }
