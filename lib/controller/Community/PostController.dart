@@ -31,6 +31,9 @@ class PostControllerX extends GetxController {
   var isInit = false;
   var isInitialized = false.obs;
 
+
+  var currentLength = 0.obs;
+
   StreamSubscription<QuerySnapshot>? _postsSubscription;
   StreamSubscription<QuerySnapshot>? _savedPostsSubscription;
   StreamSubscription<QuerySnapshot>? _userPostsSubscription;
@@ -143,13 +146,15 @@ class PostControllerX extends GetxController {
     listenToSavedPosts();
   }
 
- /// Refresh user posts listener for current user
-void refreshUserPostsListener() {
-  listenToUserPosts();
-}
+  /// Refresh user posts listener for current user
+  void refreshUserPostsListener() {
+    listenToUserPosts();
+  }
 
   void updateFormValidity() {
     final text = contentController.text.trim();
+    currentLength.value = text.length; // update length reactively
+
     if (text.isEmpty) {
       contentError.value = "Post cannot be empty";
       isFormValid.value = false;
@@ -211,36 +216,35 @@ void refreshUserPostsListener() {
     }
   }
 
+  void listenToUserPosts() {
+    // Clear existing posts to prevent duplicates
+    userPosts.clear();
 
-void listenToUserPosts() {
-  // Clear existing posts to prevent duplicates
-  userPosts.clear();
+    // Cancel any existing subscription
+    _userPostsSubscription?.cancel();
 
-  // Cancel any existing subscription
-  _userPostsSubscription?.cancel();
+    if (currentUid == null) {
+      print('No user logged in, skipping user posts listener');
+      return;
+    }
 
-  if (currentUid == null) {
-    print('No user logged in, skipping user posts listener');
-    return;
+    print('Setting up user posts listener for user: $currentUid');
+
+    _userPostsSubscription = db
+        .collection(communityCollection)
+        .where('userId', isEqualTo: currentUid)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .listen(
+          (snapshot) {
+            print('User posts listener received ${snapshot.docs.length} posts');
+            userPosts.value = snapshot.docs.map(Post.fromFirestore).toList();
+          },
+          onError: (e) {
+            print('Error in user posts listener: $e');
+          },
+        );
   }
-
-  print('Setting up user posts listener for user: $currentUid');
-
-  _userPostsSubscription = db
-      .collection(communityCollection)
-      .where('userId', isEqualTo: currentUid)
-      .orderBy('createdAt', descending: true)
-      .snapshots()
-      .listen(
-        (snapshot) {
-          print('User posts listener received ${snapshot.docs.length} posts');
-          userPosts.value = snapshot.docs.map(Post.fromFirestore).toList();
-        },
-        onError: (e) {
-          print('Error in user posts listener: $e');
-        },
-      );
-}
 
   void listenToSavedPosts() {
     // Clear existing reactive lists
@@ -361,6 +365,7 @@ void listenToUserPosts() {
       debugPrint('unsavePost error: $e');
     }
   }
+
   void showBookmarkCheck(String postId) {
     showingCheckIds.add(postId);
     Future.delayed(const Duration(milliseconds: 400), () {

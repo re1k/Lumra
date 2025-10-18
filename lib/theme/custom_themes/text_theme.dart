@@ -53,7 +53,7 @@ class BTextTheme {
     
     
     labelLarge: const TextStyle().copyWith(
-      fontSize: 16,
+      fontSize: 14,
       fontWeight: FontWeight.w500,
       color: Colors.black,
       fontFamily: 'K2D'
@@ -61,7 +61,7 @@ class BTextTheme {
 
     labelMedium: const TextStyle().copyWith(
       fontSize: 12,
-      fontWeight: FontWeight.normal,
+      fontWeight: FontWeight.w500,
       color: Colors.black.withOpacity(0.5),
      fontFamily: 'K2D'
     ),

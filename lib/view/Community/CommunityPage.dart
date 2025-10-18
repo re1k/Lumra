@@ -107,7 +107,7 @@ class _CommunityPageState extends State<CommunityPage> {
                       heightFactor: 0.80,
                       child: AddPostView(
                         promptMessage:
-                            "Share a tip, experience, or resource that has helped. Your insight might help someone else!",
+                            "Share a tip, experience, or resource that has helped you. Your insight might help someone else!",
                       ),
                     ),
                   ).whenComplete(() {

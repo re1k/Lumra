@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:lumra_project/controller/Community/PostController.dart';
 import 'package:lumra_project/controller/auth/auth_controller.dart';
@@ -39,17 +40,34 @@ class AddPostView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: BSizes.sm),
-              Text(promptMessage, style: BTextTheme.lightTextTheme.labelSmall),
 
-              const SizedBox(height: BSizes.SpaceBtwSections),
 
-              ///Input field
+             
+                Text(promptMessage, style: BTextTheme.lightTextTheme.labelSmall),
+              
+
+
+              const SizedBox(height: BSizes.SpaceBtwSections-5),
+                /// Warning note
+              Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: Text(
+                  "* Note that posts cannot exceed 180 charaters or be empty",
+                  style: TextStyle(
+                    color: BColors.darkGrey, // correct way to set text color
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+               const SizedBox(height: BSizes.sm),
+               
               TextField(
                 controller: postController.contentController,
-                maxLines: 7,
-                onChanged: (value) =>
-                    postController.updateFormValidity(), // <--- important
+                maxLines: 6,
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(180), // LIMIT 180
+                ],
+                onChanged: (value) => postController.updateFormValidity(),
                 decoration: InputDecoration(
                   hintText: "What's on your mind?",
                   border: OutlineInputBorder(
@@ -68,18 +86,24 @@ class AddPostView extends StatelessWidget {
               ),
 
               const SizedBox(height: BSizes.sm),
-
-              /// Warning note
-              Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: Text(
-                  "Note that posts containing inappropriate content will not be allowed. Keep it positive and motivating.",
-                  style: TextStyle(
-                    color: BColors.darkGrey, // correct way to set text color
-                    fontSize: 14, // optional: match your labelSmall size
+             // Reactive remaining characters
+              Obx(() {
+                final remaining = 180 - postController.currentLength.value;
+                final text = remaining <= 0
+                    ? "No characters left"
+                    : "$remaining characters left";
+                return Align(
+                  alignment: Alignment.centerRight, // aligns text to the right
+                  child: Text(
+                    text,
+                    style: const TextStyle(
+                      color: BColors.primary,
+                      fontSize: 12,
+                    ),
                   ),
-                ),
-              ),
+                );
+              }),
+            
               const SizedBox(height: BSizes.SpaceBtwSections + 20),
 
               Obx(

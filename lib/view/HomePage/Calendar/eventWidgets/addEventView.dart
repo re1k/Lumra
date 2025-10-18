@@ -48,9 +48,6 @@ class AddEventView extends StatelessWidget {
             children: [
               // ------------------EVENT TITLE------------------ //
 
-              //THE LABEL
-              Text("Title", style: BTextTheme.lightTextTheme.titleSmall),
-
               // Distance between the label and the feild
               const SizedBox(height: 8),
 
@@ -63,6 +60,26 @@ class AddEventView extends StatelessWidget {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: RichText(
+                        text: TextSpan(
+                          text: 'Title',
+                          style: BTextTheme.lightTextTheme.titleSmall?.copyWith(
+                            // using your BTextTheme
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
+                          children: const [
+                            TextSpan(
+                              text: ' *',
+                              style: TextStyle(color: Colors.red, fontSize: 16),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
                     TextField(
                       controller: controller.titleController,
                       // this method i made in my ontroller to watch out for input validity for turning red
@@ -133,25 +150,45 @@ class AddEventView extends StatelessWidget {
               const SizedBox(height: BSizes.spaceBtwinputFields),
 
               // ------------------ Start Time ------------------ //
-              Text("Start time", style: BTextTheme.lightTextTheme.titleSmall),
               const SizedBox(height: 8),
 
               //Obx is from GetX. It automatically rebuilds this widget whenever the reactive variable changes (eventStart).
               Obx(() {
                 final startTimestamp = controller.eventStart.value;
 
-                //this is just for UI, to make time human readable not timeStamp
                 final startText = startTimestamp != null
                     ? TimeOfDay.fromDateTime(
                         startTimestamp.toDate(),
                       ).format(Get.context!)
                     : 'Select Start Time';
+
                 final hasError = controller.startError.value != null;
+
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Title with red asterisk
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: RichText(
+                        text: TextSpan(
+                          text: 'Start Time',
+                          style: BTextTheme.lightTextTheme.titleSmall?.copyWith(
+                            // using your BTextTheme
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
+                          children: const [
+                            TextSpan(
+                              text: ' *',
+                              style: TextStyle(color: Colors.red, fontSize: 16),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
                     GestureDetector(
-                      //To show the TimePicker when user Clicks
                       onTap: () => controller.pickTime(isStart: true),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -161,22 +198,24 @@ class AddEventView extends StatelessWidget {
                         decoration: BoxDecoration(
                           border: Border.all(
                             color: hasError ? BColors.error : BColors.darkGrey,
-                          ), // border color
+                          ),
                           borderRadius: BorderRadius.circular(
                             BSizes.inputFieldRadius,
                           ),
                         ),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            Text(startText),
                             const Icon(Icons.access_time),
+                            const SizedBox(width: 8),
+                            Text(
+                              startText,
+                              style: const TextStyle(fontSize: 16),
+                            ),
                           ],
                         ),
                       ),
                     ),
-
-                    // Error message below the field
                     if (hasError)
                       Padding(
                         padding: const EdgeInsets.only(top: 4, left: 8),
@@ -195,7 +234,6 @@ class AddEventView extends StatelessWidget {
               const SizedBox(height: BSizes.SpaceBtwItems),
 
               // ------------------ End Time ------------------ //
-              Text("End time", style: BTextTheme.lightTextTheme.titleSmall),
               const SizedBox(height: 8),
 
               Obx(() {
@@ -206,9 +244,22 @@ class AddEventView extends StatelessWidget {
                       ).format(Get.context!)
                     : 'Select End Time';
                 final hasError = controller.endError.value != null;
+
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Title (no asterisk here)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        'End Time',
+                        style: BTextTheme.lightTextTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+
                     GestureDetector(
                       onTap: () => controller.pickTime(isStart: false),
                       child: Container(
@@ -225,16 +276,16 @@ class AddEventView extends StatelessWidget {
                           ),
                         ),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            Text(endText),
                             const Icon(Icons.access_time),
+                            const SizedBox(width: 8),
+                            Text(endText, style: const TextStyle(fontSize: 16)),
                           ],
                         ),
                       ),
                     ),
 
-                    // Error message below the field
                     if (hasError)
                       Padding(
                         padding: const EdgeInsets.only(top: 4, left: 8),
