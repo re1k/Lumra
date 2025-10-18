@@ -96,7 +96,7 @@ class BottomArea extends StatelessWidget {
                   style: FilledButton.styleFrom(
                     backgroundColor: canAdd
                         ? BColors.primary
-                        : BColors.darkGrey.withOpacity(0.3),
+                        : BColors.darkGrey.withOpacity(0.5),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 8,
@@ -203,28 +203,35 @@ class BottomArea extends StatelessWidget {
           Flexible(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxHeight: 240),
-              child: ListView.separated(
-                shrinkWrap: true,
-                itemCount: events.length,
-                separatorBuilder: (_, __) => SizedBox(height: BSizes.sm),
-                //to add the event + make it slidable for deleting
-                itemBuilder: (context, i) => Slidable(
-                  key: ValueKey(events[i].id),
-                  endActionPane: ActionPane(
-                    motion: const DrawerMotion(),
-                    extentRatio: 0.24,
-                    children: [
-                      SlidableAction(
-                        onPressed: null, //only UI for now
-                        backgroundColor: BColors.error,
-                        foregroundColor: BColors.white,
-                        icon: Icons.delete,
-                        label: 'Delete',
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ],
+              child: ClipRect(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  physics: const ClampingScrollPhysics(),
+                  itemCount: events.length,
+                  separatorBuilder: (_, __) => SizedBox(height: BSizes.sm),
+                  //to add the event + make it slidable for deleting
+                  itemBuilder: (context, i) => Slidable(
+                    key: ValueKey(events[i].id),
+                    endActionPane: ActionPane(
+                      motion: const DrawerMotion(),
+                      extentRatio: 0.23,
+                      children: [
+                        SlidableAction(
+                          onPressed: null, //only UI for now
+                          backgroundColor: BColors.error,
+                          foregroundColor: BColors.white,
+                          icon: Icons.delete,
+                          label: 'Delete',
+                          borderRadius: BorderRadius.circular(12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                        ),
+                      ],
+                    ),
+                    child: EventTile(event: events[i]),
                   ),
-                  child: EventTile(event: events[i]),
                 ),
               ),
             ),
