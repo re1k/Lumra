@@ -104,13 +104,27 @@ class _NameScreenState extends State<NameScreen> {
                                 ),
                               ),
                               const SizedBox(height: 24),
-                              const Text(
-                                'First Name',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  color: BColors.black,
-                                  fontFamily: 'K2D',
+                              Text.rich(
+                                TextSpan(
+                                  children: [
+                                    const TextSpan(
+                                      text: 'First Name',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        color: BColors.black,
+                                        fontFamily: 'K2D',
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: ' *',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        fontFamily: 'K2D',
+                                      ).copyWith(color: Colors.red),
+                                    ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(height: 8),
@@ -167,13 +181,27 @@ class _NameScreenState extends State<NameScreen> {
                                 ],
                               ),
                               const SizedBox(height: 24),
-                              const Text(
-                                'Last Name',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  color: BColors.black,
-                                  fontFamily: 'K2D',
+                              Text.rich(
+                                TextSpan(
+                                  children: [
+                                    const TextSpan(
+                                      text: 'Last Name',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        color: BColors.black,
+                                        fontFamily: 'K2D',
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: ' *',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        fontFamily: 'K2D',
+                                      ).copyWith(color: Colors.red),
+                                    ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(height: 8),
