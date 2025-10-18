@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import "package:lumra_project/view/ChatBootADHD/ChatBootADHD.dart";
 import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:get/get.dart';
+import 'dart:async';
 
 // controllers
 import 'package:lumra_project/controller/ChatBoot/baseController.dart';
@@ -18,7 +19,8 @@ class ChatBotWidget extends StatefulWidget {
 
 class _ChatBotWidgetState extends State<ChatBotWidget> {
   bool _isChatOpen = false;
-
+  bool _showHint = false; // start hidden
+  Timer? _hintTimer;
   late final AdhdChatController adhdCtrl;
   late final CaregiverChatController cgCtrl;
 
@@ -29,9 +31,25 @@ class _ChatBotWidgetState extends State<ChatBotWidget> {
   @override
   void initState() {
     super.initState();
+
     // register once
     adhdCtrl = Get.put(AdhdChatController(), permanent: true);
     cgCtrl = Get.put(CaregiverChatController(), permanent: true);
+    // Show after first frame, then auto-hide after 5s
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() => _showHint = true);
+      _hintTimer = Timer(const Duration(seconds: 7), () {
+        ////////////////HERE WE HANDLE THE SECONDS OF THE 💬
+        if (mounted) setState(() => _showHint = false);
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _hintTimer?.cancel();
+    super.dispose();
   }
 
   void _toggleChat() async {
@@ -41,7 +59,12 @@ class _ChatBotWidgetState extends State<ChatBotWidget> {
       return;
     }
 
-    setState(() => _isChatOpen = true);
+    // Opening
+    setState(() {
+      _isChatOpen = true;
+      _showHint = false; // hide now
+    });
+    _hintTimer?.cancel(); // stop any pending auto-hide
 
     await showModalBottomSheet(
       context: context,
@@ -107,19 +130,24 @@ class _ChatBotWidgetState extends State<ChatBotWidget> {
     return Stack(
       alignment: Alignment.bottomRight,
       children: [
-        //  Chat hint bubble (appears above chat button)
-        if (!_isChatOpen)
-          Positioned(
-            bottom: 170, //  position above the chat button
-            right: 35,
-            child: AnimatedOpacity(
-              opacity: 1.0,
-              duration: const Duration(milliseconds: 800),
-              child: const ChatHintBubble(
-                message: "👋 Need a new activity? Chat with Lumra!",
+        // Hint bubble (auto-fades after 5s, doesn't block taps when hidden)
+        Positioned(
+          bottom: 170,
+          right: 35,
+          child: AnimatedOpacity(
+            opacity: (_showHint && !_isChatOpen) ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOut,
+            child: IgnorePointer(
+              ignoring: !_showHint || _isChatOpen,
+              child: ChatHintBubble(
+                message: widget.role == 'caregiver'
+                    ? "💬 Need to talk? Chat with Lumra!"
+                    : "👋 Need a new activity? Chat with Lumra!",
               ),
             ),
           ),
+        ),
 
         // 💬 Chat button
         Positioned(
