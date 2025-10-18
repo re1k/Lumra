@@ -208,7 +208,8 @@ class _TasksListState extends State<TasksList> {
       builder: (context, snapshot) {
         // Show loader only on first ever load, never after reordering
         if (snapshot.connectionState == ConnectionState.waiting) {
-          final isFirstLoad = _currentTasks.isEmpty && !_isReordering && !_awaitingStreamSync;
+          final isFirstLoad =
+              _currentTasks.isEmpty && !_isReordering && !_awaitingStreamSync;
           if (isFirstLoad) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -219,7 +220,7 @@ class _TasksListState extends State<TasksList> {
         }
 
         // Filter out locally deleted (pending undo) tasks
-        final incoming = (snapshot.data ?? const <Task>[]) 
+        final incoming = (snapshot.data ?? const <Task>[])
             .where((task) => !_deletedTaskIds.contains(task.id))
             .toList();
 
@@ -404,10 +405,16 @@ class _TasksReorderableListState extends State<_TasksReorderableList> {
           switchInCurve: Curves.easeOut,
           switchOutCurve: Curves.easeIn,
           transitionBuilder: (child, anim) {
-            final offsetTween = Tween<Offset>(begin: const Offset(0, 0.05), end: Offset.zero);
+            final offsetTween = Tween<Offset>(
+              begin: const Offset(0, 0.05),
+              end: Offset.zero,
+            );
             return FadeTransition(
               opacity: anim,
-              child: SlideTransition(position: offsetTween.animate(anim), child: child),
+              child: SlideTransition(
+                position: offsetTween.animate(anim),
+                child: child,
+              ),
             );
           },
           child: KeyedSubtree(key: ValueKey('${t.id}_$i'), child: tile),
@@ -490,7 +497,13 @@ class _SwipeableTaskItemState extends State<_SwipeableTaskItem> {
                     },
                     child: Container(
                       width: _actionWidth,
-                      color: BColors.info.withValues(alpha: 0.2),
+                      decoration: BoxDecoration(
+                        color: BColors.info.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          bottomLeft: Radius.circular(16),
+                        ),
+                      ),
                       child: const Center(
                         child: Icon(Icons.edit, size: 24, color: BColors.info),
                       ),
@@ -507,8 +520,8 @@ class _SwipeableTaskItemState extends State<_SwipeableTaskItem> {
                       decoration: BoxDecoration(
                         color: BColors.error.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(BSizes.inputFieldRadius),
-                          bottomRight: Radius.circular(BSizes.inputFieldRadius),
+                          topRight: Radius.circular(16),
+                          bottomRight: Radius.circular(16),
                         ),
                       ),
                       child: const Center(

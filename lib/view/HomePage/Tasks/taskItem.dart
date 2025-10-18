@@ -1,6 +1,5 @@
 // lib/view/HomePage/Tasks/task_item.dart
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lumra_project/model/task/task.dart';
 import 'package:lumra_project/controller/task/taskController.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
@@ -96,7 +95,9 @@ class _TaskItemState extends State<TaskItem> {
                   widget.task.id,
                   !widget.task.isChecked,
                 );
-              } on FirebaseException catch (_) {}
+              } catch (e) {
+                // Handle error if needed
+              }
             },
             child: Container(
               width: 20,
