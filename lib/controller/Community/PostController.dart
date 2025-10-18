@@ -16,17 +16,24 @@ class PostControllerX extends GetxController {
   String? get currentUid => FirebaseAuth.instance.currentUser?.uid;
 
   var contentError = RxnString();
+
   var isFormValid = false.obs;
   var isLoading = false.obs;
+
   var posts = <Post>[].obs;
   var savedPosts = <Post>[].obs;
+  var userPosts = <Post>[].obs;
+
   late String communityCollection;
   var savedPostIds = <String>[].obs;
   var showingCheckIds = <String>[].obs;
+
   var isInit = false;
   var isInitialized = false.obs;
+
   StreamSubscription<QuerySnapshot>? _postsSubscription;
   StreamSubscription<QuerySnapshot>? _savedPostsSubscription;
+  StreamSubscription<QuerySnapshot>? _userPostsSubscription;
 
   @override
   void onInit() {
@@ -77,6 +84,7 @@ class PostControllerX extends GetxController {
         }, onError: (e) => print('Error fetching posts: $e'));
 
     listenToSavedPosts();
+    listenToUserPosts();
     isInitialized.value = true;
   }
 
@@ -134,6 +142,11 @@ class PostControllerX extends GetxController {
   void refreshSavedPostsListener() {
     listenToSavedPosts();
   }
+
+ /// Refresh user posts listener for current user
+void refreshUserPostsListener() {
+  listenToUserPosts();
+}
 
   void updateFormValidity() {
     final text = contentController.text.trim();
@@ -197,6 +210,37 @@ class PostControllerX extends GetxController {
       isLoading.value = false;
     }
   }
+
+
+void listenToUserPosts() {
+  // Clear existing posts to prevent duplicates
+  userPosts.clear();
+
+  // Cancel any existing subscription
+  _userPostsSubscription?.cancel();
+
+  if (currentUid == null) {
+    print('No user logged in, skipping user posts listener');
+    return;
+  }
+
+  print('Setting up user posts listener for user: $currentUid');
+
+  _userPostsSubscription = db
+      .collection(communityCollection)
+      .where('userId', isEqualTo: currentUid)
+      .orderBy('createdAt', descending: true)
+      .snapshots()
+      .listen(
+        (snapshot) {
+          print('User posts listener received ${snapshot.docs.length} posts');
+          userPosts.value = snapshot.docs.map(Post.fromFirestore).toList();
+        },
+        onError: (e) {
+          print('Error in user posts listener: $e');
+        },
+      );
+}
 
   void listenToSavedPosts() {
     // Clear existing reactive lists
@@ -317,7 +361,6 @@ class PostControllerX extends GetxController {
       debugPrint('unsavePost error: $e');
     }
   }
-
   void showBookmarkCheck(String postId) {
     showingCheckIds.add(postId);
     Future.delayed(const Duration(milliseconds: 400), () {

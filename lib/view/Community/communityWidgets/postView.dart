@@ -12,31 +12,50 @@ import 'package:lumra_project/theme/custom_themes/text_theme.dart';
 /// Uses a single PostControllerX for all posts & comments
 class PostView extends StatelessWidget {
   final bool showSaved;
+  final bool showUserPosts;
+  final bool isShrinkWrap;
+  final ScrollPhysics SrollType;
   final PostControllerX controller = Get.find<PostControllerX>();
 
-  PostView({super.key, this.showSaved = false});
+  PostView({super.key, this.showSaved = false, this.showUserPosts = false, this.isShrinkWrap = true, this.SrollType = const NeverScrollableScrollPhysics() });
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      //if from AccountPage, show saved
-      final postList = (!showSaved) ? controller.posts : controller.savedPosts;
-if (postList.isEmpty) {
-  return Center(
-    child: Image.asset(
-      !showSaved 
-          ? 'assets/images/NoPosts.png' 
-          : 'assets/images/NoSavedPosts.png',
-      width: 300, 
-      height: 300,
-      fit: BoxFit.contain,
-    ),
-  );
-}
+      //Decide Which lisrt to display
+      final postList ;
+          if (showUserPosts) {
+        postList = controller.userPosts;
+      } else if (showSaved) {
+        postList = controller.savedPosts;
+      } else {
+        postList = controller.posts;
+      }
+
+    // Handle empty state
+    if (postList.isEmpty) {
+      String imagePath;
+      if (showUserPosts) {
+        imagePath = 'assets/images/NoMyPosts.png';
+      } else if (showSaved) {
+        imagePath = 'assets/images/NoSavedPosts.png';
+      } else {
+        imagePath = 'assets/images/NoPosts.png';
+      }
+
+      return Center(
+        child: Image.asset(
+          imagePath,
+          width: 350,
+          height: 350,
+          fit: BoxFit.contain,
+        ),
+      );
+    }
       return ListView.separated(
         itemCount: postList.length,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: isShrinkWrap,
+        physics: SrollType,
         separatorBuilder: (_, __) => SizedBox(height: BSizes.SpaceBtwItems),
         itemBuilder: (context, index) => _postCard(postList[index]),
       );

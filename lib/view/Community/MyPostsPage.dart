@@ -7,15 +7,29 @@ import 'package:lumra_project/theme/base_themes/sizes.dart';
 import 'package:lumra_project/theme/custom_themes/appbar_theme.dart';
 import 'package:lumra_project/view/Community/communityWidgets/postView.dart';
 
-class SavedPostsPage extends StatelessWidget {
-  const SavedPostsPage({super.key});
+class MyPostsPage extends StatefulWidget {
+  const MyPostsPage({super.key});
+
+  @override
+  State<MyPostsPage> createState() => _MyPostsPageState();
+}
+
+class _MyPostsPageState extends State<MyPostsPage> {
+  late PostControllerX controller;
+
+  @override
+  void initState() {
+    super.initState();
+    // Make sure the PostControllerX is available
+    if (!Get.isRegistered<PostControllerX>()) {
+      controller = Get.put(PostControllerX(FirebaseFirestore.instance));
+    } else {
+      controller = Get.find<PostControllerX>();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Make sure the PostControllerX is available
-    if (!Get.isRegistered<PostControllerX>()) {
-      Get.put(PostControllerX(FirebaseFirestore.instance));
-    }
     return Scaffold(
       backgroundColor: BColors.lightGrey,
       body: Stack(
@@ -25,12 +39,12 @@ class SavedPostsPage extends StatelessWidget {
               // Custom header
               BAppBarTheme.createHeader(
                 context: context,
-                title: 'Saved Posts',
+                title: 'My Posts',
                 showBackButton: true,
                 onBackPressed: () => Navigator.pop(context),
               ),
-              // Page content
-                /// Scrollable posts list
+
+              /// Scrollable posts list
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(
@@ -41,7 +55,7 @@ class SavedPostsPage extends StatelessWidget {
                   child: Transform.translate(
                     offset: const Offset(0, -20), // negative Y moves up
                     child: PostView(
-                      showSaved: true,
+                      showUserPosts: true,
                       isShrinkWrap: false,
                       SrollType: const BouncingScrollPhysics(),
                     ),

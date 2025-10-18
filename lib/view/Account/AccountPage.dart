@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lumra_project/theme/custom_themes/appbar_theme.dart';
+import 'package:lumra_project/view/Community/MyPostsPage.dart';
 import 'package:lumra_project/view/Community/SavedPostsPage.dart';
 import '../../controller/Account/UserController.dart';
 import '../../theme/base_themes/colors.dart';
@@ -111,8 +112,11 @@ class AccountPage extends StatelessWidget {
                   const SizedBox(height: 10),
                   _buildOption(
                     icon: Icons.article,
-                    text: "Posts",
-                    onTap: () {},
+                    text: "My Posts",
+                    onTap: () {Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => MyPostsPage()),
+                      );},
                   ),
                   const SizedBox(height: 10),
                   _buildOption(

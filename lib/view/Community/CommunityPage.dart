@@ -48,26 +48,30 @@ class _CommunityPageState extends State<CommunityPage> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    BSizes.lg,
-                    0,
-                    BSizes.lg,
-                    BSizes.lg + 80, // space for bottom nav bar
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      PostView(), // your post list
-                    ],
-                  ),
-                ),
+  padding: EdgeInsets.fromLTRB(
+    BSizes.lg,
+    0,
+    BSizes.lg,
+    BSizes.lg + 40, // space for bottom nav bar
+  ),
+  child: Transform.translate(
+    offset: const Offset(0, -38), // moves content 20 pixels up
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        PostView(
+        ),
+      ],
+    ),
+  ),
+),
               ],
             ),
           ),
 
           // Floating Add Post button outside scroll
           Positioned(
-            top: 55,
+            top: 80,
             right: 24,
             child: Container(
               decoration: BoxDecoration(

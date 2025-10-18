@@ -100,6 +100,7 @@ flutter:
     - assets/images/Avatar.png
     - assets/images/NoPosts.png
     - assets/images/NoSavedPosts.png
+    - assets/images/NoMyPosts.png
     - assets/images/AvatarBetter.png
     - assets/images/AvatarSimple.png
     #- assets/PDFs/TestCaseLumra.pdf
