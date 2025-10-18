@@ -4,5 +4,5 @@ library;
 class APIsConstants {
   static const String bSecretAPIKey = '';
 
-  static const String Gimini_API = "AIzaSyCwHZZD1jrKu_HA92gvZSKjnnPSUfvfkMQ";
+  static const String Gimini_API = "AIzaSyBGYOzAB3JzQMICQTzPFdoTSTKCvsVKcz0";
 }
