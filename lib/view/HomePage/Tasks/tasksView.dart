@@ -49,6 +49,20 @@ class TasksList extends StatefulWidget {
 class _TasksListState extends State<TasksList> {
   final Set<String> _deletedTaskIds = <String>{};
   final Map<String, Timer> _deletionTimers = <String, Timer>{};
+  // Reorder control and task sources
+  bool _isReordering = false;
+  List<Task> _liveTasks = <Task>[]; // latest from stream (when not reordering)
+  List<Task> _currentTasks = <Task>[]; // driving the UI always
+  bool _awaitingStreamSync = false; // wait until Firestore order matches local
+
+  bool _ordersMatch(List<Task> a, List<Task> b) {
+    if (identical(a, b)) return true;
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i].id != b[i].id) return false;
+    }
+    return true;
+  }
 
   void _deleteTaskWithUndo(Task task) {
     setState(() {
@@ -192,18 +206,45 @@ class _TasksListState extends State<TasksList> {
     return StreamBuilder<List<Task>>(
       stream: widget.controller.getTasks(),
       builder: (context, snapshot) {
+        // Show loader only on first ever load, never after reordering
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          final isFirstLoad = _currentTasks.isEmpty && !_isReordering && !_awaitingStreamSync;
+          if (isFirstLoad) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          // Otherwise keep showing current UI without any loading
         }
         if (snapshot.hasError) {
           return Center(child: Text('Stream error: ${snapshot.error}'));
         }
 
-        final tasks = (snapshot.data ?? const <Task>[])
+        // Filter out locally deleted (pending undo) tasks
+        final incoming = (snapshot.data ?? const <Task>[]) 
             .where((task) => !_deletedTaskIds.contains(task.id))
             .toList();
 
-        if (tasks.isEmpty) {
+        // While reordering, freeze the UI order by ignoring incoming updates
+        if (_isReordering) {
+          // If we've persisted and the stream order now matches local, release the gate
+          if (_awaitingStreamSync && _ordersMatch(incoming, _currentTasks)) {
+            _liveTasks = List<Task>.from(incoming);
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() {
+                  _awaitingStreamSync = false;
+                  _isReordering = false;
+                  // Keep _currentTasks as-is (already matches), avoiding any visual change
+                });
+              }
+            });
+          }
+        } else {
+          // Accept new live tasks and drive UI from them
+          _liveTasks = List<Task>.from(incoming);
+          _currentTasks = List<Task>.from(_liveTasks);
+        }
+
+        if (_currentTasks.isEmpty) {
           return Container(
             padding: EdgeInsets.all(BSizes.md),
             decoration: BoxDecoration(
@@ -255,42 +296,65 @@ class _TasksListState extends State<TasksList> {
           );
         }
 
-        // Show all tasks in a single list, sorted so active tasks come first
-        final sortedTasks = tasks.toList()
-          ..sort((a, b) {
-            if (a.isChecked == b.isChecked) return 0;
-            return a.isChecked ? 1 : -1; // Active tasks first
-          });
-
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (sortedTasks.isNotEmpty)
+            if (_currentTasks.isNotEmpty)
               _TasksReorderableList(
-                tasks: sortedTasks,
+                tasks: _currentTasks,
+                isReordering: _isReordering,
                 controller: widget.controller,
                 onDelete: _deleteTaskWithUndo,
                 onEdit: _openEditTaskModal,
+                onReorder: _handleReorder,
               ),
           ],
         );
       },
     );
   }
+
+  Future<void> _handleReorder(int oldIndex, int newIndex) async {
+    // Normalize indexes like ReorderableListView expects
+    int from = oldIndex;
+    int to = newIndex;
+    if (from < to) to -= 1;
+
+    // Keep a copy for backend write to avoid double-move
+    final before = List<Task>.from(_currentTasks);
+
+    setState(() {
+      _isReordering = true;
+      _awaitingStreamSync = true;
+      final item = _currentTasks.removeAt(from);
+      _currentTasks.insert(to, item);
+    });
+
+    try {
+      // Persist only once after drop using the pre-move list and indices
+      await widget.controller.reorderTasks(before, oldIndex, newIndex);
+    } catch (_) {
+      // Avoid UI changes here per spec
+    } finally {}
+  }
 }
 
 class _TasksReorderableList extends StatefulWidget {
   final List<Task> tasks;
+  final bool isReordering;
   final TaskController controller;
   final Function(Task) onDelete;
   final Function(Task) onEdit;
+  final Future<void> Function(int oldIndex, int newIndex) onReorder;
 
   const _TasksReorderableList({
     required this.tasks,
+    required this.isReordering,
     required this.controller,
     required this.onDelete,
     required this.onEdit,
+    required this.onReorder,
   });
 
   @override
@@ -298,21 +362,7 @@ class _TasksReorderableList extends StatefulWidget {
 }
 
 class _TasksReorderableListState extends State<_TasksReorderableList> {
-  late List<Task> _displayTasks;
-
-  @override
-  void initState() {
-    super.initState();
-    _displayTasks = List.from(widget.tasks);
-  }
-
-  @override
-  void didUpdateWidget(_TasksReorderableList oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.tasks != oldWidget.tasks) {
-      _displayTasks = List.from(widget.tasks);
-    }
-  }
+  // Thin view: parent fully controls ordering/state.
 
   @override
   Widget build(BuildContext context) {
@@ -320,10 +370,21 @@ class _TasksReorderableListState extends State<_TasksReorderableList> {
       key: const ValueKey('tasks_list'),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: _displayTasks.length,
-      onReorder: _onReorder,
+      buildDefaultDragHandles: false,
+      itemCount: widget.tasks.length,
+      onReorder: widget.onReorder,
+      proxyDecorator: (child, index, animation) {
+        return ClipRRect(
+          borderRadius: BorderRadius.zero, // No corners during drag
+          child: Material(
+            color: Colors.transparent, // No background
+            shadowColor: Colors.transparent, // No shadows
+            child: child,
+          ),
+        );
+      },
       itemBuilder: (context, i) {
-        final t = _displayTasks[i];
+        final t = widget.tasks[i];
         return Padding(
           key: ValueKey(t.id),
           padding: EdgeInsets.only(bottom: BSizes.md),
@@ -332,17 +393,11 @@ class _TasksReorderableListState extends State<_TasksReorderableList> {
             controller: widget.controller,
             onEdit: () => widget.onEdit(t),
             onDelete: () => widget.onDelete(t),
+            index: i,
           ),
         );
       },
     );
-  }
-
-  void _onReorder(int oldIndex, int newIndex) {
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
-    widget.controller.reorderTasks(_displayTasks, oldIndex, newIndex);
   }
 }
 
@@ -351,12 +406,14 @@ class _SwipeableTaskItem extends StatefulWidget {
   final TaskController controller;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final int index;
 
   const _SwipeableTaskItem({
     required this.task,
     required this.controller,
     required this.onEdit,
     required this.onDelete,
+    required this.index,
   });
 
   @override
@@ -462,6 +519,7 @@ class _SwipeableTaskItemState extends State<_SwipeableTaskItem> {
                 ),
                 task: widget.task,
                 controller: widget.controller,
+                index: widget.index,
               ),
             ),
           ],
