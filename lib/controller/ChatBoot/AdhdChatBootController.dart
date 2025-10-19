@@ -243,7 +243,6 @@ Your purpose:
 
 If you detect a mental state, return ONLY the exact mental state name from the list.
 Do not add any explanations, punctuation, or extra words.
-
 Remember:
 - When unsure, do not assume — return "NONE".
 - Be consistent and precise in your classification.
@@ -315,6 +314,11 @@ Your purpose:
    Stay positive, encouraging, and provide gentle reassurance.
 
 Keep the reply short and in ENGLISH.
+Do not use Markdown, bold, italics, bullet lists, or any formatting.
+use only 2 numbers : 
+1- 911 for police
+2- 977 for emergancy
+
 The user's name is "$displayName". Use it naturally when appropriate (e.g., greetings or empathy).
 """;
 

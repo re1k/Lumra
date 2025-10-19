@@ -9,6 +9,35 @@ import "package:lumra_project/controller/auth/auth_controller.dart";
 class CaregiverChatController extends BaseChatController {
   String? _userName;
 
+  // ⬇️ Add this helper to remove Markdown
+  String _stripMarkdown(String input) {
+    var s = input;
+
+    // Bold/italic
+    s = s.replaceAll(RegExp(r'(\*\*|__)(.*?)\1'), r'$2');
+    s = s.replaceAll(RegExp(r'(\*|_)(.*?)\1'), r'$2');
+
+    // Inline & fenced code (remove backticks, keep content)
+    s = s.replaceAll(RegExp(r'`{3}([\s\S]*?)`{3}'), r'$1');
+    s = s.replaceAll(RegExp(r'`([^`]*)`'), r'$1');
+
+    // Headings
+    s = s.replaceAll(RegExp(r'^#{1,6}\s+', multiLine: true), '');
+
+    // Blockquotes
+    s = s.replaceAll(RegExp(r'^\s{0,3}>\s?', multiLine: true), '');
+
+    // Links: [text](url) -> text
+    s = s.replaceAll(RegExp(r'\[([^\]]+)\]\(([^)]+)\)'), r'$1');
+
+    // Trim repeated spaces/lines
+    s = s
+        .replaceAll(RegExp(r'[ \t]+\n'), '\n')
+        .replaceAll(RegExp(r'\n{3,}'), '\n\n');
+
+    return s.trim();
+  }
+
   void setUserName(String? name) {
     // to get the user name to use it in the chatbot
     _userName = name ?? 'Caregiver';
@@ -40,6 +69,10 @@ If asked for medical or clinical advice, politely respond:
 
 Keep your tone warm, understanding, and empowering — like a gentle friend who truly cares.
 Write in clear ENGLISH, with short and supportive responses.
+Do not use Markdown, bold, italics, bullet lists, or any formatting.
+use only 2 numbers : 
+1- 911 for police
+2- 977 for emergancy
 """;
 
   @override
