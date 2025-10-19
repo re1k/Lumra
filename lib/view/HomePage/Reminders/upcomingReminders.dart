@@ -175,14 +175,21 @@ class _EmptyState extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: BColors.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: BColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(
+                Icons.task_alt,
+                color: BColors.primary,
+                size: 20,
+              ),
             ),
-            child: const Icon(Icons.task_alt, color: BColors.primary, size: 20),
           ),
           SizedBox(width: BSizes.md),
           Expanded(

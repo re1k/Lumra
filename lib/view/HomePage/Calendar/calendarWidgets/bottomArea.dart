@@ -214,7 +214,7 @@ class BottomArea extends StatelessWidget {
                     key: ValueKey(events[i].id),
                     endActionPane: ActionPane(
                       motion: const DrawerMotion(),
-                      extentRatio: 0.23,
+                      extentRatio: 0.26,
                       children: [
                         SlidableAction(
                           onPressed: null, //only UI for now

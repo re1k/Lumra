@@ -4,7 +4,6 @@ import 'package:lumra_project/view/Community/CommunityPage.dart';
 import 'package:lumra_project/view/homepage/adhdHomePage.dart';
 import 'package:lumra_project/view/homepage/careGiverHomePage.dart';
 import 'package:lumra_project/view/Account/AccountPage.dart';
-import 'package:lumra_project/theme/base_themes/colors.dart';
 
 enum UserRole { adhd, caregiver }
 
@@ -19,15 +18,11 @@ final Map<UserRole, List<NavItem>> navConfig = {
   UserRole.adhd: [
     NavItem(label: 'Home', icon: Icons.home, page: HomePage()),
     NavItem(
-      label: 'Activity',
+      label: 'Activities',
       icon: Icons.local_activity_rounded,
       page: ActivityView(),
     ),
-    NavItem(
-      label: 'Community',
-      icon: Icons.people,
-      page: CommunityPage(),
-    ),
+    NavItem(label: 'Community', icon: Icons.people, page: CommunityPage()),
     NavItem(label: 'Account', icon: Icons.account_box, page: AccountPage()),
   ],
 
@@ -40,11 +35,7 @@ final Map<UserRole, List<NavItem>> navConfig = {
         feature: 'Dashboard',
       ), //  Later: replace with DashboardPage()
     ),
-    NavItem(
-      label: 'Community',
-      icon: Icons.people,
-      page: CommunityPage(),
-    ),
+    NavItem(label: 'Community', icon: Icons.people, page: CommunityPage()),
     NavItem(label: 'Account', icon: Icons.account_box, page: AccountPage()),
   ],
 };

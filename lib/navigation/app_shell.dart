@@ -147,12 +147,13 @@ class _CompactNavBar extends StatelessWidget {
                                 : FontWeight.w700,
                             color: selected ? primary : Colors.grey[800],
                           ),
-                          child: Text(
-                            item.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            softWrap: false,
-                            textAlign: TextAlign.center,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              item.label,
+                              maxLines: 1,
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ),
                       ),

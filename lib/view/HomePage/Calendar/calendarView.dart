@@ -104,16 +104,17 @@ class _CalendarPageState extends State<CalendarPage> {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Text(
-                            '${monthName(m.month)} ${m.year}',
-                            style: textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: BColors.black,
-                              fontSize: 24,
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              '${monthName(m.month)} ${m.year}',
+                              style: textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: BColors.black,
+                                fontSize: 24,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                            textAlign: TextAlign.center,
                           ),
                         ],
                       );
