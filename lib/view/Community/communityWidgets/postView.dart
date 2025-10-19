@@ -43,14 +43,20 @@ class PostView extends StatelessWidget {
         imagePath = 'assets/images/NoPosts.png';
       }
 
-      return Center(
-        child: Image.asset(
-          imagePath,
-          width: 350,
-          height: 350,
-          fit: BoxFit.contain,
-        ),
-      );
+        return Center(
+    child: Padding(
+      padding: EdgeInsets.only(
+        // to make centerd
+        top: imagePath.contains('assets/images/NoPosts.png') ? 130 : 0,
+      ),
+      child: Image.asset(
+        imagePath,
+        width: 295,
+        height: 295,
+        fit: BoxFit.contain,
+      ),
+    ),
+  );
     }
       return ListView.separated(
         itemCount: postList.length,

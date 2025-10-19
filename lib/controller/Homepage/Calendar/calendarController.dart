@@ -183,7 +183,6 @@ class CalendarController extends GetxController {
     _watchedEndExcl = endExcl;
 
     await _eventsSub?.cancel();
-    monthEvents.clear(); // avoid showing stale docs while re-subscribing
 
     // Build month window
     Query<Map<String, dynamic>> q = db
@@ -217,7 +216,10 @@ class CalendarController extends GetxController {
         list.sort((a, b) => a.start.compareTo(b.start));
       }
 
-      monthEvents.assignAll(map); //notify observers (Obx) reactively
+      // Only update events for the current month to prevent flicker
+      for (final entry in map.entries) {
+        monthEvents[entry.key] = entry.value;
+      }
     });
   }
 

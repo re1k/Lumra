@@ -5,6 +5,7 @@ import 'package:lumra_project/model/Homepage/Reminders/reminderModel.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/theme/base_themes/sizes.dart';
 
+// check
 class UpcomingReminders extends StatelessWidget {
   const UpcomingReminders({super.key});
 
@@ -166,7 +167,7 @@ class _EmptyState extends StatelessWidget {
             offset: const Offset(0, 4),
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(0.02),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -192,8 +193,7 @@ class _EmptyState extends StatelessWidget {
                 fontWeight: FontWeight.w500,
                 height: 1.4,
               ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 3,
+              softWrap: true,
             ),
           ),
         ],
@@ -237,7 +237,7 @@ class _ReminderCard extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return Container(
-      padding: EdgeInsets.all(BSizes.md),
+      padding: EdgeInsets.fromLTRB(BSizes.md, BSizes.md, BSizes.lg, BSizes.md),
       decoration: BoxDecoration(
         color: BColors.white,
         borderRadius: BorderRadius.circular(16),
@@ -256,7 +256,7 @@ class _ReminderCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          SizedBox(width: BSizes.sm),
+          SizedBox(width: 20),
           Container(
             width: 8,
             height: 8,
@@ -276,8 +276,7 @@ class _ReminderCard extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     color: BColors.black,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
+                  softWrap: true,
                 ),
                 SizedBox(height: BSizes.xs),
                 Text(
@@ -286,8 +285,7 @@ class _ReminderCard extends StatelessWidget {
                     color: BColors.darkGrey,
                     fontWeight: FontWeight.w500,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
+                  softWrap: true,
                 ),
               ],
             ),

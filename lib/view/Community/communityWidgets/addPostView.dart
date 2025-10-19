@@ -65,7 +65,7 @@ class AddPostView extends StatelessWidget {
                 controller: postController.contentController,
                 maxLines: 6,
                 inputFormatters: [
-                  LengthLimitingTextInputFormatter(180), // LIMIT 180
+                  LengthLimitingTextInputFormatter(179), // LIMIT 180
                 ],
                 onChanged: (value) => postController.updateFormValidity(),
                 decoration: InputDecoration(

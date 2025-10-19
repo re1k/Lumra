@@ -189,12 +189,19 @@ class AdhdChatController extends BaseChatController {
       if (next.isNotEmpty) picked.add(next as Map<String, String>);
     }
 
-    // 6️ Mark selected ones as used
+    /*      put it as a comment (sometimes gimini ignore the activity)
     for (final a in picked) {
       used.add(_activityKey(a));
-    }
+    } */
 
     return picked;
+  }
+
+  void _markUsed(String state, List<Map<String, String>> shown) {
+    final used = _usedActivitiesByState.putIfAbsent(state, () => <String>{});
+    for (final a in shown) {
+      used.add(_activityKey(a));
+    }
   }
 
   // Ask Gemini to classify the user message into one of the mental states
@@ -297,7 +304,7 @@ You are Lumra, a personal assistant that supports individuals with ADHD.
 You are not a medical professional and must never provide diagnostic or clinical information.
 Your role is to offer warm emotional support and simple guidance related only to ADHD, self-care, focus, organization, and emotional well-being.
 
-If the user talks about topics outside ADHD, mental health, or personal improvement, reply politely:
+If the user talks or asks  about topics outside ADHD, mental health, or personal improvement, reply politely:
 - "I'm sorry, but I’m only your personal assistant and can’t provide help with that."
 
 Your purpose:
@@ -337,6 +344,7 @@ $userMessage
 
       try {
         final resp = await Gemini.instance.text(fullPrompt);
+
         return resp?.output?.trim() ?? "Got it! How’s your day going?";
       } catch (e) {
         return "Sorry, I'm having trouble connecting right now. Please try again in a moment 💫";
@@ -350,9 +358,13 @@ $userMessage
     print(
       " [Lumra Debug] Detected state = $state, checking if user wants activity...",
     );
+
+    final contextMemory = _buildMemory(limit: 4);
     final wantsActivity = await _detectNeedForActivity(
       userMessage,
-    ); // Ask Gemini if the user actually wants help or an activity
+      contextMessage: contextMemory,
+    );
+
     print("wants activit? $wantsActivity");
     if (!wantsActivity) {
       // no need to remeber the full conersation
@@ -430,8 +442,35 @@ Write in English only.
 
     try {
       final resp = await Gemini.instance.text('System:\n$systemPrompt');
-      return resp?.output?.trim() ??
-          "It seems you’re feeling $state. You can check some helpful activities in your Activities section ";
+
+      final output = resp?.output?.trim() ?? '';
+
+      // Debug Gemini output
+      print("🔍 Gemini returned text:\n$output");
+
+      // Find which activity titles appear in Gemini’s message
+      final shown = picked.where((a) {
+        final cleanTitle = a['title']!
+            .replaceAll(RegExp(r'\s+'), ' ')
+            .trim()
+            .toLowerCase();
+        final cleanOutput = output
+            .replaceAll(RegExp(r'\s+'), ' ')
+            .trim()
+            .toLowerCase();
+        return cleanOutput.contains(cleanTitle);
+      }).toList();
+      print("🧩 Titles found:");
+      for (final a in shown) {
+        print("   ✅ ${a['title']}");
+      }
+
+      // Mark as used only what was shown
+      _markUsed(state, shown);
+
+      return output.isNotEmpty
+          ? output
+          : "It seems you’re feeling $state. You can check some helpful activities in your Activities section.";
     } catch (e) {
       return "Sorry, I'm having trouble connecting right now. Please try again in a moment 💫";
     }
@@ -453,46 +492,68 @@ Write in English only.
     return b.toString(); */
   }
 
-  Future<bool> _detectNeedForActivity(String userMessage) async {
+  Future<bool> _detectNeedForActivity(
+    String userMessage, {
+    String? contextMessage,
+  }) async {
     // to check if the user ask for help
     final prompt = """
-You are analyzing a user's message sent to a self-care assistant.
-Decide if the user is *asking for help*, *asking for a solution*, or *wants an activity*.
+You are analyzing a user's message sent to a self-care assistant that focuses ONLY on ADHD-related emotional and behavioral support.
 
-Instructions:
-- You only need to check whether the user is currently asking for help or guidance.
-- The user might say general things like "help me", "please help", or "I need something" without specifying what — these still count as asking for help.
-- The user might also ask questions that imply a need for guidance (e.g., "what should I do", "how can I fix this").
-- If the user is only describing emotions or wondering if something is normal (e.g., "is it normal when I lose focus", "does it happen to others", "why do I feel this way"), they are seeking reassurance, not help — return "NO".
-- If the message includes phrases like "is it normal", "am I the only one", or "does this happen", return "NO".
-- If you are not sure, return "NO". Be conservative.
+Your task:
+Decide if the user is *asking for help*, *asking for a solution*, or *wants an activity*, **and** if the message is relevant to ADHD or self-care.
 
-Return exactly:
-- "YES" → if the user clearly wants help, advice, or an activity.
-- "NO"  → if the user is just expressing feelings, talking casually, or asking for reassurance.
+If the user's message is short or unclear (for example: "help", "I need help", "what should I do?"),
+you MUST use the previous conversation context to understand what they need help with.
 
-Examples:
-user: "Can I dance to release energy?", "Should I try drawing to calm down?", "What if I take a walk?"), return "NO". They are reflecting or seeking confirmation, not asking for new help or activities.
-User: "I feel bored" → NO  
-User: "I feel bored, what should I do?" → YES  
-User: "I'm tired" → NO  
-User: "Can you suggest something to calm me down?" → YES  
-User: "Help me focus please" → YES  
-User: "I'm just chatting" → NO
-User: "Please help" → YES  
-User: "Can you help me?" → YES  
-User: "I need help" → YES  
- 
-User: "Why do I feel anxious?" → NO  
+
+Follow these steps carefully:
+
+1️ Check if the user is asking for help, advice, a suggestion, or an activity.
+for Example :
+ i need help , what should i do , can you help me 
+
+- If there is no request for help or guidance, 
+for Example : 
+i fell sressed , i feel bored , today was stressed 
+return NO.
+
+2️ If the user is asking for help, check whether the thing they need help with is related to ADHD or self-care topics.
+- Relevant topics include: focus, organization, time management, motivation, low energy, procrastination, stress, overthinking, hyperactivity, forgetfulness, frustration, emotions, self-esteem, and relaxation.
+- If the help request involves external media, entertainment, or unrelated platforms
+  (for example: YouTube, TikTok, movies, social media, music, or any specific app or website),
+  you must return NO — even if the message mentions ADHD-related words like "focus" or "time."
+  Only return YES if the user is directly asking for advice, guidance, or self-care ideas
+  that Lumra itself can provide (not suggestions for external videos, apps, or tools).
+
+ Return YES only if BOTH are satisfied:
+- The user is clearly asking for help or a suggestion.
+- The help requested is about something relevant to ADHD or self-care.
+
+Otherwise, return NO.
+
+Answer with exactly:
+YES
+or
+NO
+
+
 
 """;
     try {
-      final resp = await Gemini.instance.text(
-        'System:\n$prompt\n\nUser:\n$userMessage',
-      );
+      final memoryPart =
+          (contextMessage != null && contextMessage.trim().isNotEmpty)
+          ? "Conversation context:\n$contextMessage\n\n"
+          : "";
+
+      final fullInput = 'System:\n$prompt\n\n${memoryPart}User:\n$userMessage';
+
+      final resp = await Gemini.instance.text(fullInput);
       print(" [Lumra Debug] Gemini raw response: ${resp?.output}"); // debug
-      final output = resp?.output?.trim().toUpperCase() ?? 'NO';
-      return output.contains('YES');
+
+      final raw = resp?.output?.trim() ?? '';
+      final norm = raw.toUpperCase().replaceAll(RegExp(r'[^A-Z]'), '');
+      return norm == 'YES' || norm == 'TRUE';
     } catch (e) {
       return false;
     }
