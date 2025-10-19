@@ -152,7 +152,7 @@ class PostControllerX extends GetxController {
   }
 
   void updateFormValidity() {
-    var text = contentController.text.trim();
+    var text = contentController.text;
     currentLength.value = text.length; // update length reactively
 
     if (text.isEmpty) {

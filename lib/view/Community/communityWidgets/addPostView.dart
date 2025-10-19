@@ -65,9 +65,11 @@ class AddPostView extends StatelessWidget {
                 controller: postController.contentController,
                 maxLines: 6,
                 inputFormatters: [
-                  LengthLimitingTextInputFormatter(179), // LIMIT 180
+                  LengthLimitingTextInputFormatter(180), // LIMIT 180
                 ],
-                onChanged: (value) => postController.updateFormValidity(),
+                onChanged: (value) { 
+                  postController.currentLength.value = value.length;// counts spaces too
+                  postController.updateFormValidity();},
                 decoration: InputDecoration(
                   hintText: "What's on your mind?",
                   border: OutlineInputBorder(
