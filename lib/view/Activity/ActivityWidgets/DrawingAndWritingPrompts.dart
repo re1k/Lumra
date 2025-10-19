@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/theme/base_themes/sizes.dart';
-import 'package:lumra_project/view/Activity/ActivityWidgets/Timer.dart';
 import 'package:get/get.dart';
 
 class ActivityPrompts extends StatelessWidget {
@@ -82,7 +81,7 @@ class ActivityPrompts extends StatelessWidget {
               ),
             ),
             onPressed: () {
-              Get.to(() => LiquidTimer(duration: Duration(minutes: minutes)));
+              Get.to(null);
             },
             child: const Text(
               "Let's Start!",

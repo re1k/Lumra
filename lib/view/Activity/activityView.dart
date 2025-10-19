@@ -38,7 +38,6 @@ class _ActivityViewState extends State<ActivityView> {
 
   @override
   Widget build(BuildContext context) {
-    final t = Theme.of(context).textTheme;
     return Scaffold(
       backgroundColor: BColors.lightGrey,
       body: Obx(() {
@@ -252,9 +251,7 @@ class _ActivityTileState extends State<_ActivityTile> {
       child: Container(
         // Each activity card container
         decoration: BoxDecoration(
-          color: isDone
-              ? BColors.darkGrey.withOpacity(0.01)
-              : BColors.white,
+          color: isDone ? BColors.darkGrey.withOpacity(0.01) : BColors.white,
           borderRadius: BorderRadius.circular(BSizes.cardRadiusLg),
           border: Border.all(color: BColors.borderSecondary),
           boxShadow: const [
@@ -389,7 +386,7 @@ class _ActivityTileState extends State<_ActivityTile> {
                     padding: EdgeInsets.only(left: BSizes.xs + 2, top: 2),
                     child: Checkbox.adaptive(
                       value: isDone, // Use the reactive value
-                      onChanged: (_) => widget.onToggle(),
+                      onChanged: null,
                       activeColor: BColors.primary, // checkmark color
                       checkColor: BColors.textwhite, // inside check color
                       side: BorderSide(
