@@ -72,6 +72,7 @@ class _ChatBotWidgetState extends State<ChatBotWidget> {
       isDismissible: true, // keep this
       enableDrag: true, // swipe down still works
       backgroundColor: Colors.transparent,
+      showDragHandle: false, //  disables the small rounded rectangle
       barrierColor: Colors.transparent,
       builder: (ctx) {
         return Stack(
@@ -96,8 +97,8 @@ class _ChatBotWidgetState extends State<ChatBotWidget> {
                   borderRadius: BorderRadius.circular(20),
                   color: Colors.transparent,
                   child: Container(
-                    width: 340,
-                    height: 620, //  height (AVOID OVERLAP)
+                    width: 380,
+                    height: 680, //  height (AVOID OVERLAP)
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
@@ -130,7 +131,6 @@ class _ChatBotWidgetState extends State<ChatBotWidget> {
     return Stack(
       alignment: Alignment.bottomRight,
       children: [
-        // Hint bubble (auto-fades after 5s, doesn't block taps when hidden)
         Positioned(
           bottom: 170,
           right: 35,

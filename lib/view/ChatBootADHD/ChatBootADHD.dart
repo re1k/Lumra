@@ -9,6 +9,7 @@ import 'package:lumra_project/controller/ChatBoot/AdhdChatBootController.dart';
 import 'package:lumra_project/model/Activity/ActivityModel.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/controller/ChatBoot/baseController.dart';
+import 'package:lumra_project/theme/base_themes/sizes.dart';
 
 class ChatView extends StatefulWidget {
   final BaseChatController controller;
@@ -245,8 +246,8 @@ class _ChatViewState extends State<ChatView>
         backgroundColor: Colors.transparent,
         body: Center(
           child: Container(
-            width: 360,
-            height: 520,
+            width: 380,
+            height: 680,
             margin: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -261,7 +262,7 @@ class _ChatViewState extends State<ChatView>
             ),
             child: Column(
               children: [
-                // Animated wave header
+                //Animated wave header
                 ClipRRect(
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(20),
@@ -274,7 +275,7 @@ class _ChatViewState extends State<ChatView>
                         clipper: _AnimatedWaveClipper(phase: _waveCtrl.value),
                         clipBehavior: Clip.antiAlias,
                         child: Container(
-                          height: 76,
+                          height: 56,
                           width: double.infinity,
                           decoration: const BoxDecoration(
                             gradient: LinearGradient(
@@ -295,6 +296,50 @@ class _ChatViewState extends State<ChatView>
                         ),
                       );
                     },
+                  ),
+                ),
+                // 2) encouragement message just below the header
+                // Padding(
+                //   padding: const EdgeInsets.only(top: 8),
+                //   child: const _EncouragementCard(
+                //     // text: 'Remember, I am here for your in-the-moment feelings',
+                //     text: 'Here for your moment feelings',
+                //     maxWidth: 320, //  set width here
+                //     backgroundColor: BColors.white,
+                //   ),
+                // ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 0,
+                  ),
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: SizedBox(
+                      width: 300,
+                      height: 30,
+                      child: const _EncouragementCard(
+                        text: 'Here for your moment feelings.',
+                        maxWidth: 340,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // ──  Add this divider or gradient line
+                Container(
+                  height: 3,
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 4,
+                  ),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [BColors.primary, BColors.secondry],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
                   ),
                 ),
 
@@ -321,14 +366,39 @@ class _ChatViewState extends State<ChatView>
                           messages: _messages,
                           onSendPressed: _handleSend,
                           user: _user,
+                          typingIndicatorOptions: TypingIndicatorOptions(
+                            typingUsers: _showDots
+                                ? const [
+                                    types.User(id: 'lumra', firstName: 'Lumra'),
+                                  ]
+                                : const [],
+                          ),
+
                           theme: DefaultChatTheme(
                             backgroundColor: Colors.white,
                             primaryColor: BColors.primary,
+
                             messageBorderRadius: 14,
                             sentMessageBodyTextStyle: const TextStyle(
                               fontSize: 15,
                               color: Colors.white,
                             ),
+                            //DO NOT DELETE ANYTHING UNTIL WE DECIDE
+                            // typingIndicatorTheme: TypingIndicatorTheme(
+                            //   // REQUIRED in your version:
+                            //   animatedCirclesColor:
+                            //       BColors.primary, // dots color
+                            //   animatedCircleSize: 3, // dots size (px)
+                            //   bubbleBorder: BorderRadius.circular(
+                            //     14,
+                            //   ), // bubble radius
+                            //   bubbleColor: const Color(0xFFF1F2F4),
+                            //   countAvatarColor: const Color(0xFFF1F2F4),
+                            //   countTextColor: const Color(0xFFF1F2F4),
+                            //   multipleUserTextStyle: TextStyle(), // bubble bg
+                            //   // Optional in many versions, but add to hide the text:
+                            //   // textStyle: const TextStyle(color: Colors.white),// makes “Lumra is typing…” invisible on white
+                            // ),
                             receivedMessageBodyTextStyle: const TextStyle(
                               fontSize: 15,
                               color: Colors.black87,
@@ -401,12 +471,12 @@ class _ChatViewState extends State<ChatView>
                         ),
 
                         ///here is the 3 dots
-                        if (_showDots)
-                          const Positioned(
-                            left: 16,
-                            bottom: 65, // adjust to sit above the input
-                            child: _TypingDotsBubble(),
-                          ),
+                        // if (_showDots)
+                        //   const Positioned(
+                        //     left: 16,
+                        //     bottom: 65, // adjust to sit above the input
+                        //     child: _TypingDotsBubble(),
+                        //   ),
                       ],
                     ),
                     // DO NOT REMOVE THIS COMMENT/////////////////////////////
@@ -642,7 +712,7 @@ class _ChatViewState extends State<ChatView>
   }
 }
 
-// --- typing dots bubble (private to this file) ---
+// --- typing dots bubble
 class _TypingDotsBubble extends StatefulWidget {
   const _TypingDotsBubble({super.key});
 
@@ -698,6 +768,56 @@ class DelayTween extends Tween<double> {
   DelayTween(this.delay) : super(begin: 0, end: 1);
   @override
   double transform(double t) => ((t + (1 - delay)) % 1);
+}
+
+// ── Inline encouragement card
+class _EncouragementCard extends StatelessWidget {
+  final String text;
+  final double maxWidth;
+  final Color backgroundColor; // new
+  const _EncouragementCard({
+    super.key,
+    this.text = 'Remember, I am here for your in-the-moment-feelings',
+    this.maxWidth = 340,
+    this.backgroundColor = BColors.white,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: Container(
+          color: backgroundColor, //  background control
+          padding: const EdgeInsets.fromLTRB(9, 0, 9, 3), ///////
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.lightbulb_outline,
+                size: 16,
+                color: BColors.primary,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  text,
+                  style: tt.bodyMedium?.copyWith(
+                    color: const Color.fromARGB(255, 91, 91, 91),
+                    fontWeight: FontWeight.normal, //normal
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 // Wave clipper
