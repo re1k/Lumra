@@ -185,7 +185,7 @@ class PostView extends StatelessWidget {
           return GestureDetector(
             onTap: () async {
               if (isSaved) {
-                await controller.unsavePost(post.id);
+               // FOR FUTURE SPRINTS IN HERE ADD THE UNSAVE ACTION
               } else {
                 await controller.savePost(post);
                 controller.showBookmarkCheck(
@@ -194,20 +194,20 @@ class PostView extends StatelessWidget {
               }
             },
             child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 400),
+              duration: const Duration(milliseconds: 245),
               transitionBuilder: (child, anim) =>
                   ScaleTransition(scale: anim, child: child),
               child: isShowingCheck
                   ? Icon(
-                      Icons.check,
+                      Icons.check_rounded,
                       key: ValueKey('check_${post.id}'),
-                      color: BColors.buttonPrimary,
-                      size: BSizes.iconMd + 2,
+                      color: const Color.fromARGB(255, 241, 205, 99) ,
+                      size: BSizes.iconMd ,
                     )
                   : Icon(
                       isSaved ? Icons.bookmark : Icons.bookmark_border,
                       key: ValueKey('bookmark_${post.id}'),
-                      color: isSaved ? BColors.buttonPrimary : BColors.darkGrey,
+                      color: isSaved ? const Color.fromARGB(255, 241, 205, 99) : BColors.darkGrey,
                       size: BSizes.iconMd,
                     ),
             ),

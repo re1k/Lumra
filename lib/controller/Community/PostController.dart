@@ -352,7 +352,10 @@ void updateFormValidity() {
     }
   }
 
-  Future<void> unsavePost(String postId) async {
+
+
+//-----------------FUTURE SPRINTS---------///
+  /*Future<void> unsavePost(String postId) async {
     if (currentUid == null) {
       ToastService.error("You must be logged in to unsave posts");
       return;
@@ -372,7 +375,9 @@ void updateFormValidity() {
     } catch (e) {
       debugPrint('unsavePost error: $e');
     }
-  }
+  }*/
+  //-----------------END-------///
+
 
   void showBookmarkCheck(String postId) {
     showingCheckIds.add(postId);
