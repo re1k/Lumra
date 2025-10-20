@@ -20,8 +20,6 @@ class CalendarController extends GetxController {
   //contains each day with the list of events assigned to that day
   final monthEvents = <DateTime, List<CalendarEvent>>{}.obs;
 
-  final RxnString linkedUid = RxnString(); // discovered from users/{uid}
-  StreamSubscription? _userSub;
   StreamSubscription? _eventsSub;
 
   //track current watch window to avoid redundant resubscribes
@@ -41,8 +39,6 @@ class CalendarController extends GetxController {
       selectedDay.value = today;
     }
 
-    _watchLinkedUser(); // keep linkedUid up to date
-
     // react to month changes
     _workers.add(
       ever<DateTime>(visibleMonth, (m) async {
@@ -50,13 +46,6 @@ class CalendarController extends GetxController {
         // auto-select today when navigating to the current month, otherwise null
         final t = justDate(DateTime.now());
         selectedDay.value = (monthStart(t) == visibleMonth.value) ? t : null;
-      }),
-    );
-
-    // react to link changes (ADHD ↔ caregiver)
-    _workers.add(
-      ever<String?>(linkedUid, (_) async {
-        await _resubscribeFor(visibleMonth.value);
       }),
     );
 
@@ -84,90 +73,6 @@ class CalendarController extends GetxController {
   //returns the list of events in one day or an empty list
   List<CalendarEvent> eventsFor(DateTime day) =>
       monthEvents[DateTime(day.year, day.month, day.day)] ?? const [];
-
-  // 1) Listen to users/{currentUid} to get the partner (caregiver or ADHD)
-  void _watchLinkedUser() {
-    _userSub = db.collection('users').doc(currentUid).snapshots().listen((
-      doc,
-    ) async {
-      final data = doc.data();
-      if (data == null) return;
-
-      final role = (data['role'] as String?)
-          ?.trim(); // check role from user doc
-      final newLinked = (data['linkedUserId'] as String?)?.trim();
-
-      if (newLinked == null || newLinked.isEmpty) {
-        //  has no link yet (only happens in ADHD side)
-        //  NOTE: there is no caregiver without adhd, but there is adhd without caregiver
-        linkedUid.value = null;
-        return; // workers will re-subscribe due to linkedUid change
-      }
-
-      if (linkedUid.value != newLinked) {
-        linkedUid.value = newLinked;
-
-        // CAREGIVER-SIDE ASSUMPTION: (the participant must contain the ADHD not the opposite)
-        // NOTE: there is no caregiver without adhd → if role == caregiver, a link must exist
-        if (role == 'caregiver') {
-          await _backfillAdhdUpcomingFromController(
-            adhdUid: newLinked,
-            caregiverUid: currentUid,
-          );
-        }
-        // re-attach handled by workers
-      }
-    });
-  }
-
-  // One-time helper from controller:
-  // Ensure ADHD's UPCOMING events include the caregiver in `participants`.
-  // If participants is exactly [adhdUid], replace with [adhdUid, caregiverUid].
-  // Else, if caregiver missing, add via arrayUnion (idempotent).
-  Future<void> _backfillAdhdUpcomingFromController({
-    required String adhdUid,
-    required String caregiverUid,
-  }) async {
-    if (adhdUid.isEmpty || caregiverUid.isEmpty || adhdUid == caregiverUid) {
-      return;
-    }
-
-    final today = DateTime.now();
-    final todayMidnight = DateTime(today.year, today.month, today.day);
-
-    final snap = await db
-        .collection('events')
-        .where('participants', arrayContains: adhdUid)
-        .get();
-
-    for (final doc in snap.docs) {
-      final data = doc.data();
-
-      final ts = data['start'];
-      if (ts is! Timestamp) continue;
-      final start = ts.toDate();
-
-      if (start.isBefore(todayMidnight)) continue; // only upcoming
-
-      final raw = (data['participants'] ?? const []) as List<dynamic>;
-      final list = raw
-          .map((e) => e?.toString() ?? '')
-          .where((s) => s.trim().isNotEmpty)
-          .toList();
-
-      if (list.contains(caregiverUid)) continue;
-
-      if (list.length == 1 && list.first == adhdUid) {
-        await doc.reference.update({
-          'participants': <String>[adhdUid, caregiverUid],
-        });
-      } else {
-        await doc.reference.update({
-          'participants': FieldValue.arrayUnion([caregiverUid]),
-        });
-      }
-    }
-  }
 
   //this method is used to set up or reset the firestor listener for the month containing m
   //which is why we call it in the int and in goToMonth when we move to another month
@@ -225,7 +130,6 @@ class CalendarController extends GetxController {
 
   @override
   void onClose() {
-    _userSub?.cancel();
     _eventsSub?.cancel();
     for (final w in _workers) {
       w.dispose();

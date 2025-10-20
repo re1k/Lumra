@@ -398,7 +398,10 @@ class CaregiverController extends ChangeNotifier {
 
     // Set the scanned QR code for future reference
     setScannedQRCode(scannedUID);
-
+    await _backfillAdhdUpcomingFromController(
+      adhdUid: scannedUID,
+      caregiverUid: FirebaseAuth.instance.currentUser!.uid,
+    );
     isProcessing = false;
     notifyListeners();
   }
@@ -705,6 +708,56 @@ class CaregiverController extends ChangeNotifier {
         'message': 'Failed to request camera permission. Please try again.',
         'showSettingsButton': false,
       };
+    }
+  }
+
+  // One-time helper from controller:
+  // Ensure ADHD's UPCOMING events include the caregiver in `participants`.
+  // If participants is exactly [adhdUid], replace with [adhdUid, caregiverUid].
+  // Else, if caregiver missing, add via arrayUnion (idempotent).
+  Future<void> _backfillAdhdUpcomingFromController({
+    required String adhdUid,
+    required String caregiverUid,
+  }) async {
+    if (adhdUid.isEmpty || caregiverUid.isEmpty || adhdUid == caregiverUid) {
+      return;
+    }
+
+    final now = DateTime.now();
+    final db = FirebaseFirestore.instance;
+    final snap = await db
+        .collection('events')
+        .where('participants', arrayContains: adhdUid)
+        .get();
+
+    for (final doc in snap.docs) {
+      final data = doc.data();
+
+      final startTs = data['start'];
+      final endTs = data['end'];
+      if (startTs is! Timestamp || endTs is! Timestamp) continue;
+
+      final end = endTs.toDate();
+
+      if (end.isBefore(now)) continue; // only upcoming
+
+      final raw = (data['participants'] ?? const []) as List<dynamic>;
+      final list = raw
+          .map((e) => e?.toString() ?? '')
+          .where((s) => s.trim().isNotEmpty)
+          .toList();
+
+      if (list.contains(caregiverUid)) continue;
+
+      if (list.length == 1 && list.first == adhdUid) {
+        await doc.reference.update({
+          'participants': <String>[adhdUid, caregiverUid],
+        });
+      } else {
+        await doc.reference.update({
+          'participants': FieldValue.arrayUnion([caregiverUid]),
+        });
+      }
     }
   }
 }
