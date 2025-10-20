@@ -401,7 +401,7 @@ class Activitycontroller {
     return count;
   }
 
-  //added this for timer:
+  //added this:
   void onActivityTimeTap(Activitymodel item, BuildContext context) {
     final time = item.time.trim();
     if (time.isEmpty) return;
