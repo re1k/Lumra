@@ -24,6 +24,9 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
   bool _titleTouched = false;
 
   String? _priority;
+  String? _originalTitle; // Store original title for comparison when editing
+  String?
+  _originalPriority; // Store original priority for comparison when editing
 
   @override
   void initState() {
@@ -32,7 +35,10 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
     // Pre-fill form if editing
     if (widget.taskToEdit != null) {
       _titleCtrl.text = widget.taskToEdit!.tasksTitle;
+      _originalTitle = widget.taskToEdit!.tasksTitle; // Store original title
       _priority = widget.taskToEdit!.priority;
+      _originalPriority =
+          widget.taskToEdit!.priority; // Store original priority
     }
 
     _titleCtrl.addListener(() => setState(() {}));
@@ -52,7 +58,18 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
     super.dispose();
   }
 
-  bool get _canSubmit => _titleCtrl.text.trim().isNotEmpty && _priority != null;
+  bool get _canSubmit {
+    if (widget.taskToEdit != null) {
+      // When editing, enable if either title or priority has been modified and title is not empty
+      return _titleCtrl.text.trim().isNotEmpty &&
+          _priority != null &&
+          (_titleCtrl.text.trim() != _originalTitle ||
+              _priority != _originalPriority);
+    } else {
+      // When adding new task, use original logic
+      return _titleCtrl.text.trim().isNotEmpty && _priority != null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
