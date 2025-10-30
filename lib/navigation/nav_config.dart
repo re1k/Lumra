@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lumra_project/view/Activity/activityView.dart';
 import 'package:lumra_project/view/Community/CommunityPage.dart';
+import 'package:lumra_project/view/FocusRoom/focusPage.dart';
 import 'package:lumra_project/view/homepage/adhdHomePage.dart';
 import 'package:lumra_project/view/homepage/careGiverHomePage.dart';
 import 'package:lumra_project/view/Account/AccountPage.dart';
@@ -22,6 +23,7 @@ final Map<UserRole, List<NavItem>> navConfig = {
       icon: Icons.local_activity_rounded,
       page: ActivityView(),
     ),
+   NavItem(label: 'Focus', icon: Icons.timer, page:FocuspPage() ),
     NavItem(
       label: 'Community',
       icon: Icons.people_alt_rounded,
