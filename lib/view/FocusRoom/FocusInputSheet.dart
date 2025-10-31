@@ -1,127 +1,156 @@
+// lib/view/FocusRoom/FocusInputSheet.dart
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/theme/base_themes/sizes.dart';
-import 'package:lumra_project/theme/custom_themes/text_field_theme.dart';
 import 'package:lumra_project/theme/custom_themes/text_theme.dart';
+import 'package:lumra_project/controller/FocusRoom/FocusRoomController.dart';
+import 'package:lumra_project/view/FocusRoom/FocusRoomWidget.dart';
 
-class DurationAndBreakSheet extends StatefulWidget {
-  const DurationAndBreakSheet({super.key});
+class DurationAndBreakSheet extends StatelessWidget {
+  const DurationAndBreakSheet({super.key, this.scrollController});
 
-  @override
-  State<DurationAndBreakSheet> createState() => _DurationAndBreakSheetState();
-}
-
-class _DurationAndBreakSheetState extends State<DurationAndBreakSheet> {
-  int? selectedDuration;
-  int? selectedBreaks;
-
-  final durations = [15, 25, 45, 60];
-  final breaks = [1, 2, 3, 4, 5];
+  final ScrollController? scrollController;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(BSizes.lg),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Focus duration
-          Text(
-            "Choose the focus duration in minutes",
-            style: BTextTheme.lightTextTheme.headlineSmall
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 10,
-            runSpacing: 8,
-            children: durations.map((d) {
-              final isSelected = selectedDuration == d;
-              return ChoiceChip(
-                label: Text(
-                  "$d",
-                  style: TextStyle(
-                    fontFamily: 'K2D',
-                    color: isSelected
-                        ? Colors.white
-                        : Colors.black, // change color when selected
-                    fontWeight: FontWeight.w600,
+    final c = Get.find<FocusController>();
+    final durations = const [15, 25, 45, 60, 90, 120, 180, 240];
+
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          BSizes.lg,
+          BSizes.lg,
+          BSizes.lg,
+          BSizes.lg + MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Obx(() {
+          final selectedDuration = c.selectedDurationMin.value;
+          final selectedBreaks = c.selectedBreaks.value;
+          final breakOptions = c.validBreakOptions;
+
+          return ListView(
+            controller: scrollController, // enables drag/scroll
+            shrinkWrap: true,
+            children: [
+              Text(
+                "Choose the focus duration (minutes)",
+                style: BTextTheme.lightTextTheme.headlineSmall,
+              ),
+              const SizedBox(height: 12),
+
+              Wrap(
+                spacing: 10,
+                runSpacing: 8,
+                children: durations.map((d) {
+                  final isSelected = selectedDuration == d;
+                  return ChoiceChip(
+                    label: Text(
+                      "$d",
+                      style: TextStyle(
+                        fontFamily: 'K2D',
+                        color: isSelected ? Colors.white : Colors.black,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    selected: isSelected,
+                    onSelected: (_) => c.setDuration(d), // triggers recompute
+                    backgroundColor: BColors.white,
+                    selectedColor: BColors.primary.withOpacity(0.9),
+                    checkmarkColor: BColors.white,
+                  );
+                }).toList(),
+              ),
+
+              const SizedBox(height: BSizes.SpaceBtwSections),
+
+              Text(
+                "Number of 5-minute breaks",
+                style: BTextTheme.lightTextTheme.headlineSmall,
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                "Swipe or tap to select. Breaks are spaced ≥ 15 minutes apart.",
+                style: TextStyle(fontSize: 12, color: Colors.black54),
+              ),
+              const SizedBox(height: 12),
+
+              if (selectedDuration == null)
+                const Text(
+                  "Pick a duration first.",
+                  style: TextStyle(color: Colors.black54),
+                )
+              else if (breakOptions.isEmpty)
+                const Text(
+                  "No valid breaks for this duration.",
+                  style: TextStyle(color: Colors.black54),
+                )
+              else
+                // Fix height so ListView can layout everything without overflow
+                SizedBox(
+                  height: 220,
+                  child: BreaksWheel(
+                    options: breakOptions.toList(),
+                    initialValue:
+                        selectedBreaks ??
+                        (breakOptions.isNotEmpty ? breakOptions.first : null),
+                    onChanged: (v) => c.setBreaks(v),
+                    height: 220,
+                    itemExtent: 48,
+                    pillRadius: 28,
                   ),
                 ),
-                selected: isSelected,
-                onSelected: (_) => setState(() => selectedDuration = d),
-                backgroundColor: BColors.white,
-                selectedColor: BColors.primary.withOpacity(0.9),
-                checkmarkColor: BColors.white,
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: BSizes.SpaceBtwSections),
 
-          // Breaks
-          Text(
-            "Number of 5-minutes Breaks",
-            style: BTextTheme.lightTextTheme.headlineSmall
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 10,
-            runSpacing: 8,
-            children: breaks.map((b) {
-              final isSelected = selectedBreaks == b;
-              return ChoiceChip(
-                label: Text(
-                  "$b",
-                  style: TextStyle(
-                    fontFamily: 'K2D',
-                    color: isSelected
-                        ? Colors.white
-                        : Colors.black, // change color when selected
-                    fontWeight: FontWeight.w600,
+              const SizedBox(height: BSizes.SpaceBtwSections),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed:
+                      (selectedDuration != null && selectedBreaks != null)
+                      ? () {
+                          if (c.confirmPlan()) {
+                            Navigator.pop(context, {
+                              'duration': selectedDuration,
+                              'breaks': selectedBreaks,
+                            });
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Please select valid options.'),
+                              ),
+                            );
+                          }
+                        }
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: BColors.primary,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 14,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        BSizes.borderRadiusLg,
+                      ),
+                    ),
+                  ),
+                  child: const Text(
+                    "Start Focusing",
+                    style: TextStyle(
+                      fontFamily: 'K2D',
+                      fontSize: BSizes.fontSizeSm,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-                selected: isSelected,
-                onSelected: (_) => setState(() => selectedBreaks = b),
-                labelStyle: const TextStyle(fontFamily: 'K2D'),
-                backgroundColor: BColors.white,
-                selectedColor: BColors.primary.withOpacity(0.9),
-                checkmarkColor: BColors.white,
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: BSizes.SpaceBtwSections),
-
-          // Start button
-        SizedBox(
-  width: double.infinity, // full width
-  child: ElevatedButton(
-    onPressed: (selectedDuration != null && selectedBreaks != null)
-        ? () => Navigator.pop(context, {
-              'duration': selectedDuration!,
-              'breaks': selectedBreaks!,
-            })
-        : null,
-    style: ElevatedButton.styleFrom(
-      backgroundColor: BColors.primary,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(BSizes.borderRadiusLg),
-      ),
-    ),
-    child: const Text(
-      "Start Focusing",
-      style: TextStyle(
-        fontFamily: 'K2D',
-        fontSize: BSizes.fontSizeSm,
-        fontWeight: FontWeight.w600,
-        color: Colors.white,
-      ),
-    ),
-  ),
-),
-
-          const SizedBox(height: BSizes.SpaceBtwSections),
-        ],
+              ),
+            ],
+          );
+        }),
       ),
     );
   }
