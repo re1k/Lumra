@@ -552,12 +552,7 @@ class Activitycontroller {
         title.contains('brain games')) {
       Get.to(() => const NumberPuzzle());
       //for now nothing until the rest is added
-    } else if (title.contains('writing') ||
-        title.contains('write') ||
-        title.contains('art') ||
-        title.contains('drawing') ||
-        title.contains('draw') ||
-        title.contains('journaling')) {
+    } else if (title.contains('small art') || title.contains('journaling')) {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(

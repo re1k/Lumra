@@ -33,8 +33,7 @@ class ActivityPrompts extends StatelessWidget {
       "What does success look like for someone with your unique ADHD profile?",
     ];
 
-    if (activityTitle.toLowerCase().contains('draw') ||
-        activityTitle.toLowerCase().contains('art')) {
+    if (activityTitle.toLowerCase().contains('art')) {
       return drawingList[random.nextInt(drawingList.length)];
     } else {
       return writingList[random.nextInt(writingList.length)];

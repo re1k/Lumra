@@ -9,12 +9,6 @@
           "time": "10"
         },
         {
-          "category": "Learning",
-          "title": "Timer Focus Session",
-          "description": "Use a timer to work in focused bursts and track your progress.",
-          "time": "15"
-        },
-        {
           "category": "Sport",
           "title": "Morning Stretch Routine",
           "description": "Do a short stretch series to activate your body and prepare for the day.",
@@ -57,12 +51,6 @@
         },
         {
           "category": "Relaxation",
-          "title": "Listen to Nature Sounds",
-          "description": "Play rain or forest sounds to reduce tension and restore calm.",
-          "time": "10"
-        },
-        {
-          "category": "Relaxation",
           "title": "Warm Tea Break",
           "description": "Prepare a warm tea and enjoy it slowly with mindful breathing.",
           "time": "6"
@@ -72,12 +60,6 @@
     {
       "mental_state": "Difficulty Focusing",
       "activities": [
-        {
-          "category": "Learning",
-          "title": "Pomodoro Practice",
-          "description": "Work for 25 minutes, then rest for 5 minutes to train focus.",
-          "time": "30"
-        },
         {
           "category": "Learning",
           "title": "Flash Memory Challenge",
@@ -121,7 +103,7 @@
         },
         {
           "category": "Creative",
-          "title": "Beat-Making or Rhythm Tapping",
+          "title": "Rhythm Tapping",
           "description": "Tap or create beats to express energy through sound and rhythm.",
           "time": "8"
         },
@@ -137,10 +119,10 @@
       "mental_state": "Low Motivation",
       "activities": [
         {
-          "category": "Learning",
-          "title": "Watch a Success Story Clip",
-          "description": "Watch a short video of someone achieving a goal to boost motivation.",
-          "time": "10"
+          "category": "Motivation",
+          "title": "Visualize Your Next Win",
+          "description": "Close your eyes and imagine yourself achieving a goal step by step. Picture the environment, emotions, and reward vividly.",
+          "time": "8"
         },
         {
           "category": "Creative",
@@ -167,7 +149,7 @@
         },
         {
           "category": "Mindfulness",
-          "title": "Write → Tear Exercise",
+          "title": "Tear Exercise",
           "description": "Write down your worries, then tear the paper as a symbolic release.",
           "time": "5"
         },
@@ -189,22 +171,22 @@
       "mental_state": "Loneliness",
       "activities": [
         {
-          "category": "Social / Community",
-          "title": "Send a Voice Note to a Friend",
-          "description": "Record a quick message to check in with someone you care about.",
-          "time": "4"
-        },
-        {
-          "category": "Social / Community",
-          "title": "Join Online Support Group",
-          "description": "Chat or listen to others who share similar ADHD experiences.",
-          "time": "15"
-        },
-        {
           "category": "Creative",
           "title": "Make a Thank You Card",
           "description": "Create or write a thank you note for someone supportive.",
           "time": "7"
+        },
+        {
+          "category": "Mindfulness",
+          "title": "Grateful Connection Reflection",
+          "description": "During the timer, recall people or moments that made you feel loved or appreciated, and focus on that warmth.",
+          "time": "6"
+        },
+        {
+          "category": "Creative",
+          "title": "Memory Collage",
+          "description": "Arrange old photos or draw memories that made you feel connected.",
+          "time": "15"
         }
       ]
     },
@@ -212,13 +194,13 @@
       "mental_state": "Procrastination",
       "activities": [
         {
-          "category": "Motivation / Goal Setting",
+          "category": "Motivation",
           "title": "2-Minute Start Habit",
           "description": "Commit to doing a task for just two minutes to overcome hesitation.",
           "time": "2"
         },
         {
-          "category": "Motivation / Goal Setting",
+          "category": "Motivation",
           "title": "Reward Jar",
           "description": "Write small rewards on slips of paper for each task you finish.",
           "time": "10"
@@ -226,7 +208,7 @@
         {
           "category": "Learning",
           "title": "Schedule Audit",
-          "description": "Review your daily routine and identify the best times you feel most    focused.",
+          "description": "Review your daily routine and identify the best times you feel most focused.",
           "time": "15"
         },
         {
@@ -264,11 +246,11 @@
       "mental_state": "Forgetfulness",
       "activities": [
         {
-          "category": "Learning",
-          "title": "Create Daily Reminder Alarm",
-          "description": "Set recurring alarms for important tasks during your day.",
-          "time": "3"
-        },
+        "category": "Learning",
+        "title": "Memory Chain Game",
+        "description": "Think of one random object, then link another related one, and continue the chain as long as the timer runs to train memory flow.",
+        "time": "3"
+      },
         {
           "category": "Creative",
           "title": "Design Visual Habit Chart",
@@ -276,7 +258,7 @@
           "time": "12"
         },
         {
-          "category": "Motivation / Goal Setting",
+          "category": "Motivation",
           "title": "End-of-Day Recap Note",
           "description": "Before bed, jot down three things you accomplished today.",
           "time": "5"
@@ -316,13 +298,13 @@
           "time": "4"
         },
         {
-          "category": "Motivation / Goal Setting",
+          "category": "Motivation",
           "title": "Mirror Affirmations",
           "description": "Look in the mirror and repeat one positive statement about yourself.",
           "time": "3"
         },
         {
-          "category": "Social / Community",
+          "category": "Social",
           "title": "Share a Positive Memory",
           "description": "Tell someone about a happy or funny moment from your past.",
           "time": "5"

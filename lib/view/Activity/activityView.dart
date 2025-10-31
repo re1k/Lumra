@@ -322,7 +322,6 @@ class _ActivityTileState extends State<_ActivityTile> {
                         // Activity Title
                         Text(
                           item.title,
-                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: widget.textTheme.titleMedium?.copyWith(
                             fontFamily: 'K2D',
@@ -354,25 +353,31 @@ class _ActivityTileState extends State<_ActivityTile> {
                         if (item.time.trim().isNotEmpty)
                           Row(
                             children: [
-                              Text(
-                                "Required time: ",
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 2,
-                                style: widget.textTheme.bodyMedium?.copyWith(
-                                  fontFamily: 'K2D',
-                                  fontSize: BSizes.fontSizeSm,
-                                  color: BColors.darkGrey,
-                                  fontWeight: FontWeight.bold,
+                              Padding(
+                                padding: const EdgeInsets.only(top: 15),
+                                child: Text(
+                                  "Required time: ",
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 2,
+                                  style: widget.textTheme.bodyMedium?.copyWith(
+                                    fontFamily: 'K2D',
+                                    fontSize: BSizes.fontSizeSm,
+                                    color: BColors.darkGrey,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
-                              Text(
-                                "${item.time} minutes",
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 2,
-                                style: widget.textTheme.bodyMedium?.copyWith(
-                                  fontFamily: 'K2D',
-                                  fontSize: BSizes.fontSizeSm,
-                                  color: BColors.darkGrey,
+                              Padding(
+                                padding: const EdgeInsets.only(top: 15),
+                                child: Text(
+                                  "${item.time} minutes",
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 2,
+                                  style: widget.textTheme.bodyMedium?.copyWith(
+                                    fontFamily: 'K2D',
+                                    fontSize: BSizes.fontSizeSm,
+                                    color: BColors.darkGrey,
+                                  ),
                                 ),
                               ),
                             ],
