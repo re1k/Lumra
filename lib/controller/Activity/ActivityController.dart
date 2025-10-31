@@ -3,10 +3,12 @@ import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:lumra_project/view/Activity/ActivityWidgets/DrawingAndWritingPrompts.dart';
+import 'package:lumra_project/view/Activity/ActivityWidgets/SportTimer.dart';
 import 'package:lumra_project/view/Activity/ActivityWidgets/cooking.dart';
 import '../../model/Activity/ActivityModel.dart';
 import 'package:lumra_project/controller/auth/auth_controller.dart';
 import 'package:lumra_project/view/Activity/ActivityWidgets/PuzzleGame.dart';
+import 'package:lumra_project/view/Activity/ActivityWidgets/Timer.dart';
 
 // ---------------------------------------------------------------------------
 // ActivityController Goal:
@@ -34,6 +36,11 @@ class Activitycontroller {
 
   int? _lastBand; // 1..4 or 0 (default)
   bool _bandChanged = false;
+  bool _suppressInitials =
+      false; //when I have initial + chatbot activities displayed and the points have changed remove the initial.
+  bool _pendingInitialReset = false; // do we need to reset initial statuses?
+  //bool _emitting = false; //make sure emitCombined runs one at a time (no overlap)
+  bool _initialsCycleDone = false;
 
   void init() {
     titleController = TextEditingController();
@@ -59,12 +66,40 @@ class Activitycontroller {
     }
 
     final controller = StreamController<List<Activitymodel>>();
+    StreamSubscription? subActivities;
     StreamSubscription? subStatus;
     StreamSubscription? subUser; //listen to user doc for totalPoints
 
     // This function recomputes the full merged list each time anything changes.
     Future<void> emitCombined() async {
+      //if (_emitting) return; // already running; skip to avoid overlap
+      // _emitting = true; // lock: run this function alone
       final now = DateTime.now();
+      final toDeleteChatbot = <DocumentReference>[];
+
+      // A. Process CHATBOT items
+      final q = await db
+          .collection('users')
+          .doc(uid)
+          .collection('activities')
+          .orderBy('title')
+          .get();
+
+      final userItems = <Activitymodel>[];
+
+      for (final d in q.docs) {
+        final m = Activitymodel.fromUserActivityDoc(d);
+
+        // Delete CHATBOT docs AFTER 24h passes (based on expireAt)
+        final isExpired =
+            m.expireAt != null && m.expireAt!.toDate().isBefore(now);
+        if (isExpired) {
+          toDeleteChatbot.add(d.reference); // Will be deleted below
+          continue;
+        }
+
+        userItems.add(m);
+      }
 
       // B. Process INITIAL Status docs
       // Instead of deleting expired status docs, we soft-reset them: clear their checked/expiry fields but keep `wasCompleted:true`
@@ -92,10 +127,74 @@ class Activitycontroller {
       // If points band changed, start suppression and delete all initial statuses now (async)
       if (_bandChanged) {
         _bandChanged = false;
+        //points changed
+        _suppressInitials = true;
+        //mark that we need to reset the initial activities becuase the points changed.
+        _pendingInitialReset = true;
       }
-      final initialItems = await getinitialActivity();
-      controller.add(initialItems);
+
+      //D- Decide what to show
+      if (_suppressInitials) {
+        if (userItems.isNotEmpty) {
+          //points changed and there is chatbot items -> only display chatbot items
+          controller.add(userItems);
+
+          //ADDED!!!!!!!!!!!!!!!
+          _initialsCycleDone = false;
+        } else {
+          //points changed and no chatbot items -> reset the initial activities and display them
+          if (_pendingInitialReset) {
+            await _removeAllInitialStatus(uid); // clear old statuses first
+            _pendingInitialReset = false;
+
+            //ADDED!!!!!!!!!!!!!!!
+            _initialsCycleDone = false;
+          }
+
+          final initialItemsFresh = await getinitialActivity();
+          _suppressInitials = false;
+          controller.add(initialItemsFresh); // show initials only
+        }
+        if (toDeleteChatbot.isNotEmpty) {
+          final b = db.batch();
+          for (final ref in toDeleteChatbot) b.delete(ref);
+          await b.commit();
+        }
+        //_emitting = false;
+        return;
+      }
+
+      // E) Merge chatbot + initial
+      var toEmit = <Activitymodel>[];
+      final hasChatbot = userItems.isNotEmpty;
+      //ADDED THIS !!!!!!!!!
+      if (hasChatbot && _initialsCycleDone) {
+        // cycle finished -> show chatbot only
+        toEmit = userItems;
+      } else if (hasChatbot) {
+        // cycle not finished -> include only incomplete initials
+        final initialItems = await getinitialActivity();
+        toEmit = [...userItems, ...initialItems];
+      } else {
+        // no chatbot -> always show initials (even if cycle done)
+        toEmit = await getinitialActivity();
+      }
+      controller.add(toEmit);
+
+      //Delete chatbot expired activities
+      if (toDeleteChatbot.isNotEmpty) {
+        final batch = db.batch();
+        for (final ref in toDeleteChatbot) batch.delete(ref);
+        await batch.commit();
+      }
     }
+
+    subActivities = db
+        .collection('users')
+        .doc(uid)
+        .collection('activities')
+        .snapshots()
+        .listen((_) => emitCombined());
 
     subStatus = db
         .collection('users')
@@ -119,6 +218,7 @@ class Activitycontroller {
     emitCombined();
 
     controller.onCancel = () async {
+      await subActivities?.cancel();
       await subStatus?.cancel();
       await subUser?.cancel();
       await controller.close();
@@ -195,6 +295,8 @@ class Activitycontroller {
     final snap = await statusCol.get(); // fetch all
     if (snap.docs.isEmpty) return;
 
+    //ADDED!!!!!!!!!!!!!!!!!!!!!!!!
+    _initialsCycleDone = true;
     final batch = db.batch();
     for (final d in snap.docs) {
       batch.delete(d.reference); // delete all in a single batch
@@ -304,6 +406,27 @@ class Activitycontroller {
           'wasCompleted': false,
         }, SetOptions(merge: true));
       }
+    } else {
+      // CHATBOT per-user doc → set a 24h expiry time
+      final ref = db
+          .collection('users')
+          .doc(uid)
+          .collection('activities')
+          .doc(item.id);
+
+      if (nextChecked) {
+        await ref.update({
+          'isChecked': true,
+          'checkedAt': Timestamp.fromDate(now),
+          'expireAt': Timestamp.fromDate(expire),
+        });
+      } else {
+        await ref.update({
+          'isChecked': false,
+          'checkedAt': null,
+          'expireAt': null,
+        });
+      }
     }
   }
 
@@ -401,7 +524,7 @@ class Activitycontroller {
     return count;
   }
 
-  //added this:
+  //added this for timer:
   void onActivityTimeTap(Activitymodel item, BuildContext context) {
     final time = item.time.trim();
     if (time.isEmpty) return;
@@ -418,9 +541,13 @@ class Activitycontroller {
     }
 
     // Action differs by category
+    final category = item.category.toLowerCase().trim();
     final title = item.title.toLowerCase().trim();
 
-    if (title.contains('large puzzle') ||
+    if (category.contains('sport')) {
+      // Open sport timer
+      Get.to(() => SportTimer(duration: Duration(minutes: minutes)));
+    } else if (title.contains('large puzzle') ||
         title.contains('flash memory challenge') ||
         title.contains('brain games')) {
       Get.to(() => const NumberPuzzle());
@@ -446,6 +573,8 @@ class Activitycontroller {
       getUserAge().then((age) {
         Get.to(() => Cooking(userAge: age));
       });
+    } else {
+      Get.to(() => LiquidTimer(duration: Duration(minutes: minutes)));
     }
   }
 }

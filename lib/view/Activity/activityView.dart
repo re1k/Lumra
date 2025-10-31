@@ -386,7 +386,7 @@ class _ActivityTileState extends State<_ActivityTile> {
                     padding: EdgeInsets.only(left: BSizes.xs + 2, top: 2),
                     child: Checkbox.adaptive(
                       value: isDone, // Use the reactive value
-                      onChanged: null,
+                      onChanged: (_) => widget.onToggle(),
                       activeColor: BColors.primary, // checkmark color
                       checkColor: BColors.textwhite, // inside check color
                       side: BorderSide(
@@ -426,6 +426,11 @@ class _ActivityTileState extends State<_ActivityTile> {
                           ),
                         ),
 
+                        // const Icon( BColors.primary
+                        //   Icons.timer_outlined,
+                        //   size: BSizes.iconSm + 2,
+                        //   color: BColors.primary,
+                        // ),
                         alignment: Alignment.center,
                         child: Text(
                           'Start',
