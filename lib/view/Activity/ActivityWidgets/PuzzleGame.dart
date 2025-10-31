@@ -13,6 +13,7 @@ class NumberPuzzle extends StatefulWidget {
 class _NumberPuzzleState extends State<NumberPuzzle> {
   int _gridSize = 4;
   List<String> _iteams = [];
+  String _selectedDifficulty = 'Medium';
 
   void _generateItems() {
     int total = _gridSize * _gridSize;
@@ -56,82 +57,80 @@ class _NumberPuzzleState extends State<NumberPuzzle> {
 
     setState(() {});
 
-  
-   if (_isPuzzleComplete()) {
-  _showPuzzleCompleteAlert();
-}  
+    if (_isPuzzleComplete()) {
+      _showPuzzleCompleteAlert();
+    }
   }
 
-    void _showPuzzleCompleteAlert() {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (context) => Dialog(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              spreadRadius: 2,
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "Congratulations! ",
-              textAlign: TextAlign.left,
-              style: const TextStyle(
-                fontFamily: 'K2D',
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: BColors.primary,
+  void _showPuzzleCompleteAlert() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                spreadRadius: 2,
+                blurRadius: 10,
+                offset: const Offset(0, 5),
               ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              "You completed the puzzle!",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: BSizes.fontSizeMd,
-                color: Colors.black87,
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Congratulations! ",
+                textAlign: TextAlign.left,
+                style: const TextStyle(
+                  fontFamily: 'K2D',
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: BColors.primary,
+                ),
               ),
-            ),
-            const SizedBox(height: 25),
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: BColors.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 16),
+              const Text(
+                "You completed the puzzle!",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: BSizes.fontSizeMd,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 25),
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: BColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _generateItems();
+                  },
+                  child: const Text(
+                    "OK",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
-                onPressed: () {
-                  Navigator.pop(context);
-                  _generateItems();  
-                },
-                child: const Text(
-                  "OK",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   Color _getNumberHintColor(String value) {
     if (value.isEmpty) return Colors.white;
@@ -167,6 +166,40 @@ class _NumberPuzzleState extends State<NumberPuzzle> {
     return BColors.primary;
   }
 
+  void _setDifficulty(String difficulty, int size) {
+    setState(() {
+      _selectedDifficulty = difficulty;
+      _gridSize = size;
+      _generateItems();
+    });
+  }
+
+  Widget _difficultyButton(String label, int size) {
+    final bool isSelected = _selectedDifficulty == label;
+
+    return ElevatedButton(
+      onPressed: () => _setDifficulty(label, size),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: isSelected ? BColors.secondry : BColors.primary,
+        foregroundColor: Colors.white,
+        elevation: isSelected ? 0 : 6,
+        shadowColor: Colors.black.withOpacity(0.25),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide.none,
+        ),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: isSelected ? BColors.primary : Colors.white,
+        ),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -189,7 +222,9 @@ class _NumberPuzzleState extends State<NumberPuzzle> {
           const SizedBox(height: 10),
 
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: BSizes.defaultSpace),
+            padding: const EdgeInsets.symmetric(
+              horizontal: BSizes.defaultSpace,
+            ),
             child: Container(
               padding: const EdgeInsets.all(BSizes.md),
               decoration: BoxDecoration(
@@ -205,8 +240,8 @@ class _NumberPuzzleState extends State<NumberPuzzle> {
                 ],
               ),
               child: const Text(
-                "Your game is to arrange the numbers in order from 1 to the empty square.\n"
-                "Choose the level that suits you to start the challenge!",
+                "Click the numbered tiles to rearrange them in the correct order, leaving the empty space at the end. \n"
+                "Select a difficulty level to begin your puzzle challenge!",
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
@@ -221,44 +256,11 @@ class _NumberPuzzleState extends State<NumberPuzzle> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ElevatedButton(
-                onPressed: () {
-                  _gridSize = 3;
-                  _generateItems();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: BColors.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: const Text("Easy"),
-              ),
-              const SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: () {
-                  _gridSize = 4;
-                  _generateItems();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: BColors.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-                child: const Text("Medium"),
-              ),
-              const SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: () {
-                  _gridSize = 5;
-                  _generateItems();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: BColors.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-                child: const Text("Hard"),
-              ),
+              _difficultyButton('Easy', 3),
+              const SizedBox(width: 20),
+              _difficultyButton('Medium', 4),
+              const SizedBox(width: 20),
+              _difficultyButton('Hard', 5),
             ],
           ),
 

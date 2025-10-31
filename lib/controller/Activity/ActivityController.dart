@@ -8,6 +8,7 @@ import 'package:lumra_project/view/Activity/ActivityWidgets/cooking.dart';
 import '../../model/Activity/ActivityModel.dart';
 import 'package:lumra_project/controller/auth/auth_controller.dart';
 import 'package:lumra_project/view/Activity/ActivityWidgets/PuzzleGame.dart';
+import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/view/Activity/ActivityWidgets/Timer.dart';
 
 // ---------------------------------------------------------------------------
