@@ -35,13 +35,13 @@ Future<void> requestNotificationPermission() async {
     await requestNotificationPermission();
     _initialized = true;
 
-    // استمع مباشرة لتغير dailyMood
+    //  real time dailyMood
     _moodSubscription?.cancel();
     _moodSubscription = _db.collection('users').doc(uid).snapshots().listen((doc) async {
       if (doc.exists) {
         final data = doc.data() as Map<String, dynamic>;
         final dailyMood = data['dailyMood'] ?? 3;
-        // جدولة الإشعار حسب المود الجديد
+        //    if rhe mood updated
         await scheduleDailyNotification(dailyMood: dailyMood);
       }
     });
