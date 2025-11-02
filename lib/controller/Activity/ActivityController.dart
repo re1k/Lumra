@@ -320,21 +320,44 @@ class Activitycontroller {
     final candidates = await _loadInitialTemplates(uid);
 
     // 2) Merge with per-user status
-    final statusDocs = await db
+    final statusCol = db
         .collection('users')
         .doc(uid)
-        .collection('activityStatus')
-        .get();
+        .collection('activityStatus');
+    final statusDocs = await statusCol.get();
 
     final Map<String, Map<String, dynamic>> statusMap = {
       for (final d in statusDocs.docs) d.id: d.data(),
     };
 
+    final candidateIds = candidates
+        .map((a) => a.id)
+        .whereType<String>()
+        .toSet();
+    final existingIds = statusMap.keys.toSet();
+    final missingIds = candidateIds.difference(existingIds);
+    if (missingIds.isNotEmpty) {
+      final batch = db.batch();
+      for (final id in missingIds) {
+        batch.set(statusCol.doc(id), {
+          'isChecked': false,
+          'wasCompleted': false,
+          'checkedAt': null,
+          'expireAt': null,
+          'hidden': false, // add hidden default
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      }
+      await batch.commit();
+    }
     final primary = <Activitymodel>[]; // fresh initials to show
     final reserve = <Activitymodel>[]; // completed initials
 
     for (final a in candidates) {
       final status = statusMap[a.id];
+      final bool hidden = status?['hidden'] == true;
+      if (hidden) continue;
 
       final bool checked = status?['isChecked'] == true;
 
@@ -373,7 +396,6 @@ class Activitycontroller {
   }
 
   // Keep both names so old calls still compile
-  Future<void> setNotIntreseted(Activitymodel item) => setNotInterested(item);
 
   // Hide initial or delete chatbot activity
   Future<void> setNotInterested(Activitymodel item) async {
