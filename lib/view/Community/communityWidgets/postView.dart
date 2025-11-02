@@ -7,7 +7,6 @@ import 'package:lumra_project/theme/base_themes/sizes.dart';
 import 'package:lumra_project/theme/custom_themes/text_theme.dart';
 
 /// PostView
-/// ----------------
 /// This widget displays the community posts feed.
 /// Uses a single PostControllerX for all posts & comments
 class PostView extends StatelessWidget {
@@ -177,13 +176,9 @@ class PostView extends StatelessWidget {
   Widget _postActionButtons(Post post) {
     return Row(
       children: [
-        IconButton(
-          icon: const Icon(Icons.favorite_border, size: BSizes.iconMd),
-          onPressed: () {},
-          color: BColors.darkGrey,
-          tooltip: 'Like',
-        ),
-
+        SizedBox(width: BSizes.md),
+        _LikeButton(post: post, controller: controller),
+        SizedBox(width: BSizes.xs),
         Obx(() {
           final isSaved = controller.isPostSaved(post.id);
           final isShowingCheck = controller.isShowingCheck(post.id);
@@ -191,7 +186,6 @@ class PostView extends StatelessWidget {
           return GestureDetector(
             onTap: () async {
               if (isSaved) {
-                // Restored unsave functionality - removes post from saved posts
                 await controller.unsavePost(post.id);
               } else {
                 await controller.savePost(post);
@@ -222,6 +216,7 @@ class PostView extends StatelessWidget {
             ),
           );
         }),
+        SizedBox(width: BSizes.sm),
         IconButton(
           icon: const Icon(Icons.comment_outlined, size: BSizes.iconMd - 1.5),
           onPressed: () {},
@@ -230,5 +225,80 @@ class PostView extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class _LikeButton extends StatefulWidget {
+  final Post post;
+  final PostControllerX controller;
+  const _LikeButton({required this.post, required this.controller});
+  @override
+  State<_LikeButton> createState() => _LikeButtonState();
+}
+
+class _LikeButtonState extends State<_LikeButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  void _handleTap() {
+    _animController.reset();
+    _animController.forward().then((_) => _animController.reverse());
+    widget.controller.toggleLike(widget.post.id);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final isLiked = widget.controller.isPostLiked(widget.post.id);
+      final likeCount = widget.controller.getLikeCount(widget.post.id);
+      return GestureDetector(
+        onTap: _handleTap,
+        child: AnimatedBuilder(
+          animation: _animController,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: 1.0 + (_animController.value * 0.15),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    isLiked ? Icons.favorite : Icons.favorite_border,
+                    size: BSizes.iconMd,
+                    color: isLiked ? Colors.red : BColors.darkGrey,
+                  ),
+                  SizedBox(
+                    width: 24,
+                    child: likeCount > 0
+                        ? Padding(
+                            padding: const EdgeInsets.only(left: 4),
+                            child: Text(
+                              '$likeCount',
+                              style: BTextTheme.lightTextTheme.labelMedium
+                                  ?.copyWith(color: BColors.darkGrey),
+                            ),
+                          )
+                        : null,
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+    });
   }
 }

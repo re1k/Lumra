@@ -27,6 +27,8 @@ class PostControllerX extends GetxController {
   late String communityCollection;
   var savedPostIds = <String>[].obs;
   var showingCheckIds = <String>[].obs;
+  var likedPostIds = <String>[].obs;
+  var likeCounts = <String, int>{}.obs;
 
   var isInit = false;
   var isInitialized = false.obs;
@@ -36,6 +38,9 @@ class PostControllerX extends GetxController {
   StreamSubscription<QuerySnapshot>? _postsSubscription;
   StreamSubscription<QuerySnapshot>? _savedPostsSubscription;
   StreamSubscription<QuerySnapshot>? _userPostsSubscription;
+  // Each like is stored once at /{postId}/likes/{userId}
+  final Map<String, StreamSubscription<QuerySnapshot>> _likesSubscriptions = {};
+  final Set<String> _likeOpsInFlight = {};
 
   @override
   void onInit() {
@@ -48,6 +53,14 @@ class PostControllerX extends GetxController {
   void onClose() {
     _postsSubscription?.cancel();
     _savedPostsSubscription?.cancel();
+    _userPostsSubscription?.cancel();
+    _clearLikesSubscriptions();
+    likedPostIds.clear();
+    likeCounts.clear();
+    savedPostIds.clear();
+    savedPosts.clear();
+    userPosts.clear();
+    posts.clear();
     contentController.dispose();
     communityCollection = '';
     super.onClose();
@@ -87,6 +100,7 @@ class PostControllerX extends GetxController {
         .listen((snapshot) {
           print('Real-time listener received ${snapshot.docs.length} posts');
           posts.value = snapshot.docs.map(Post.fromFirestore).toList();
+          _setupLikesSubscriptions(snapshot.docs);
         }, onError: (e) => print('Error fetching posts: $e'));
 
     listenToSavedPosts();
@@ -136,6 +150,7 @@ class PostControllerX extends GetxController {
 
       // Refresh saved posts listener to ensure it's listening to current user
       refreshSavedPostsListener();
+      _setupLikesSubscriptions(snapshot.docs);
     } catch (e) {
       ToastService.error("Failed to fetch posts. Try again!");
       debugPrint('fetchPosts error: $e');
@@ -389,5 +404,91 @@ class PostControllerX extends GetxController {
     Future.delayed(const Duration(milliseconds: 400), () {
       showingCheckIds.remove(postId);
     });
+  }
+
+  bool isPostLiked(String postId) => likedPostIds.contains(postId);
+  int getLikeCount(String postId) => likeCounts[postId] ?? 0;
+
+  Future<void> toggleLike(String postId) async {
+    if (currentUid == null) {
+      ToastService.error("You must be logged in to like posts");
+      return;
+    }
+    try {
+      if (_likeOpsInFlight.contains(postId)) return;
+      _likeOpsInFlight.add(postId);
+
+      final isLiked = isPostLiked(postId);
+      final likesDocRef = db
+          .collection(communityCollection)
+          .doc(postId)
+          .collection('likes')
+          .doc(currentUid);
+
+      if (isLiked) {
+        await likesDocRef.delete();
+        likedPostIds.remove(postId);
+      } else {
+        await likesDocRef.set({'createdAt': FieldValue.serverTimestamp()});
+        likedPostIds.add(postId); //
+      }
+    } catch (e) {
+      debugPrint('toggleLike error: $e');
+    } finally {
+      _likeOpsInFlight.remove(postId);
+    }
+  }
+
+  void _setupLikesSubscriptions(List<QueryDocumentSnapshot> postDocs) {
+    final currentIds = postDocs.map((d) => d.id).toSet();
+
+    final toRemove = _likesSubscriptions.keys
+        .where((id) => !currentIds.contains(id))
+        .toList(growable: false);
+    for (final id in toRemove) {
+      _likesSubscriptions[id]?.cancel();
+      _likesSubscriptions.remove(id);
+      likeCounts.remove(id);
+      likedPostIds.remove(id);
+    }
+
+    for (final doc in postDocs) {
+      final postId = doc.id;
+      if (_likesSubscriptions.containsKey(postId)) continue;
+
+      final sub = db
+          .collection(communityCollection)
+          .doc(postId)
+          .collection('likes')
+          .snapshots()
+          .listen(
+            (likeSnap) {
+              likeCounts[postId] = likeSnap.size;
+              final uid = currentUid;
+              if (uid != null) {
+                final hasLiked = likeSnap.docs.any((d) => d.id == uid);
+                if (hasLiked) {
+                  if (!likedPostIds.contains(postId)) likedPostIds.add(postId);
+                } else {
+                  likedPostIds.remove(postId);
+                }
+              } else {
+                likedPostIds.remove(postId);
+              }
+            },
+            onError: (e) {
+              debugPrint('likes listener error for post $postId: $e');
+            },
+          );
+
+      _likesSubscriptions[postId] = sub;
+    }
+  }
+
+  void _clearLikesSubscriptions() {
+    for (final sub in _likesSubscriptions.values) {
+      sub.cancel();
+    }
+    _likesSubscriptions.clear();
   }
 }

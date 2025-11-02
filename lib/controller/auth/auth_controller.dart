@@ -111,7 +111,7 @@ class AuthController extends GetxController {
 
       // Clear PostControllerX to ensure fresh state on next login
       if (Get.isRegistered<PostControllerX>()) {
-        Get.delete<PostControllerX>();
+        Get.delete<PostControllerX>(force: true);
       }
 
       // If user is ADHD, clear the chat controller
