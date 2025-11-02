@@ -165,7 +165,6 @@ Future.microtask(() async {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 12),
               // Phase badge
               Container(
                 padding: const EdgeInsets.symmetric(
@@ -187,7 +186,7 @@ Future.microtask(() async {
                   title,
                   style: TextStyle(
                     fontFamily: 'K2D',
-                    fontSize: 14,
+                    fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: _isFocus ? BColors.primary : Colors.black54,
                   ),
@@ -204,30 +203,30 @@ Future.microtask(() async {
                   color: Colors.black54,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: BSizes.defaultSpace),
 
-              // Plant growth
+              //circular Progress Bar only
               PlantGrower(progress: _overallProgress, isFocus: _isFocus),
 
-              const SizedBox(height: 8),
 
-              const Spacer(),
-
-              // Big time
+ const SizedBox(height: BSizes.defaultSpace + 42),
+              //Small time now
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
                   _mmss(rem),
                   style: const TextStyle(
                     fontFamily: 'K2D',
-                    fontSize: 96,
+                    fontSize: 24,
                     fontWeight: FontWeight.w600,
-                    letterSpacing: 1.5,
+                    letterSpacing: 6,
+                    color: BColors.darkGrey,
                   ),
                 ),
               ),
 
-              const Spacer(),
+              
+              const SizedBox(height: BSizes.defaultSpace),
 
               // Progress dots for segments
               Wrap(
@@ -237,8 +236,8 @@ Future.microtask(() async {
                   final focus = s.phase == 'focus';
                   final active = i == _segIndex;
                   return Container(
-                    width: active ? 16 : 10,
-                    height: 10,
+                    width: active ? 23 : 13,
+                    height: 8,
                     decoration: BoxDecoration(
                       color: active
                           ? (focus ? BColors.primary : Colors.black54)
@@ -249,7 +248,7 @@ Future.microtask(() async {
                 }),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: BSizes.defaultSpace + 100),
 
               // End session
               SizedBox(
@@ -260,8 +259,8 @@ Future.microtask(() async {
                       context: Get.context!,
                       barrierDismissible: false,
                       builder: (ctx) => AlertDialog(
-                        title: const Text('End session?'),
-                        content: const Text('You can resume later anytime.'),
+                        title: const Text('Quit the session?'),
+                        content: const Text('You can start another one later, at your convenience!.'),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(
@@ -272,7 +271,7 @@ Future.microtask(() async {
                           TextButton(
                             onPressed: () =>
                                 Navigator.of(ctx).pop(true), // ctx, not context
-                            child: const Text('End'),
+                            child: const Text('Quit'),
                           ),
                         ],
                       ),
@@ -287,7 +286,7 @@ Future.microtask(() async {
                     side: BorderSide(color: BColors.error),
                   ),
                   child: Text(
-                    'End Session',
+                    'Quit',
                     style: TextStyle(
                       fontFamily: 'K2D',
                       fontWeight: FontWeight.w600,
