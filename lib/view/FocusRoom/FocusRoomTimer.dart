@@ -65,6 +65,7 @@ class _FocusTimerViewState extends State<FocusTimerView> {
     if (_haptics) HapticFeedback.selectionClick();
     setState(() {}); // update labels
   }
+
   void _onTick(Timer _) {
     final now = DateTime.now();
     if (now.isBefore(_segmentEndsAt)) {
@@ -76,48 +77,47 @@ class _FocusTimerViewState extends State<FocusTimerView> {
     if (_segIndex + 1 < widget.plan.segments.length) {
       _startSegment(_segIndex + 1);
     } else {
-     // All done
-_ticker?.cancel();
-if (!mounted) return;
+      // All done
+      _ticker?.cancel();
+      if (!mounted) return;
 
-Future.microtask(() async {
-  if (!mounted) return;
+      Future.microtask(() async {
+        if (!mounted) return;
 
-  // Wait a frame to ensure dialog is safe to show
-  await Future.delayed(const Duration(milliseconds: 50));
+        // Wait a frame to ensure dialog is safe to show
+        await Future.delayed(const Duration(milliseconds: 50));
 
-  if (!mounted) return;
+        if (!mounted) return;
 
-  // Use dialogContext instead of widget context
-  await showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (dialogContext) => AlertDialog(
-      title: const Text('Great job!'),
-      content: Text(
-        'You completed ${widget.plan.config.durationMin} minutes '
-        'with ${widget.plan.config.breaksCount} break(s).',
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(dialogContext).pop();
-            if (mounted) _endSession(reset: true);
-          },
-          child: const Text('Done'),
-        ),
-      ],
-    ),
-  );
-});
-
+        // Use dialogContext instead of widget context
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Great job!'),
+            content: Text(
+              'You completed ${widget.plan.config.durationMin} minutes '
+              'with ${widget.plan.config.breaksCount} break(s).',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  if (mounted) _endSession(reset: true);
+                },
+                child: const Text('Done'),
+              ),
+            ],
+          ),
+        );
+      });
     }
   }
 
   void _endSession({bool reset = false}) {
     _ticker?.cancel();
-    c.endSession(showToast: !reset);
-    widget.onEnd?.call(); // 🔔 tell parent to reset its state
+    //c.endSession(showToast: !reset);
+    widget.onEnd?.call(); // telling parent to reset its state
     Navigator.of(context).pop();
   }
 
@@ -208,8 +208,7 @@ Future.microtask(() async {
               //circular Progress Bar only
               PlantGrower(progress: _overallProgress, isFocus: _isFocus),
 
-
- const SizedBox(height: BSizes.defaultSpace + 42),
+              const SizedBox(height: BSizes.defaultSpace + 42),
               //Small time now
               FittedBox(
                 fit: BoxFit.scaleDown,
@@ -225,7 +224,6 @@ Future.microtask(() async {
                 ),
               ),
 
-              
               const SizedBox(height: BSizes.defaultSpace),
 
               // Progress dots for segments
@@ -248,7 +246,7 @@ Future.microtask(() async {
                 }),
               ),
 
-              const SizedBox(height: BSizes.defaultSpace + 100),
+              const SizedBox(height: BSizes.defaultSpace + 150),
 
               // End session
               SizedBox(
@@ -259,20 +257,73 @@ Future.microtask(() async {
                       context: Get.context!,
                       barrierDismissible: false,
                       builder: (ctx) => AlertDialog(
-                        title: const Text('Quit the session?'),
-                        content: const Text('You can start another one later, at your convenience!.'),
+                        backgroundColor: Colors.white,
+
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        insetPadding: const EdgeInsets.symmetric(
+                          horizontal: 40,
+                          vertical: 24,
+                        ),
+                        title: const Text(
+                          'Quit the session?',
+                          style: TextStyle(
+                            fontFamily: 'K2D',
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        content: const Text(
+                          'You can start another one later, at your convenience!.',
+                          style: TextStyle(
+                            fontFamily: 'K2D',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
+                        ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(
                               ctx,
                             ).pop(false), // ctx, not context
-                            child: const Text('Continue'),
+                            child: const Text(
+                              'Continue',
+                              style: TextStyle(
+                                fontFamily: 'K2D',
+                                color: Colors.black87,
+                              ),
+                            ),
                           ),
-                          TextButton(
+                          //TextButton(
+                          //onPressed: () =>
+                          // Navigator.of(ctx).pop(true), // ctx, not context
+                          // child:
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: BColors.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
+                              ),
+                              minimumSize: const Size(90, 40),
+                            ),
                             onPressed: () =>
                                 Navigator.of(ctx).pop(true), // ctx, not context
-                            child: const Text('Quit'),
+                            child: const Text(
+                              "Quit",
+                              style: TextStyle(
+                                fontFamily: 'K2D',
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
+                          //  const Text('Quit',style: TextStyle(fontFamily: 'K2D', color: Colors.black87)),
+                          //),
                         ],
                       ),
                     );
