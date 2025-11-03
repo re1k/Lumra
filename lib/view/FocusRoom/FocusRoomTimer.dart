@@ -7,6 +7,8 @@ import 'package:lumra_project/model/FocusRoom/FocusRoomModel.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/theme/base_themes/sizes.dart';
 import 'package:lumra_project/view/FocusRoom/FocusRoomPlant.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FocusTimerView extends StatefulWidget {
   const FocusTimerView({super.key, required this.plan, this.onEnd});
@@ -66,7 +68,7 @@ class _FocusTimerViewState extends State<FocusTimerView> {
     setState(() {}); // update labels
   }
 
-  void _onTick(Timer _) {
+  Future<void> _onTick(Timer _) async {
     final now = DateTime.now();
     if (now.isBefore(_segmentEndsAt)) {
       // just repaint remaining time
@@ -80,7 +82,7 @@ class _FocusTimerViewState extends State<FocusTimerView> {
       // All done
       _ticker?.cancel();
       if (!mounted) return;
-
+      await _saveOnce(completed: true);
       Future.microtask(() async {
         if (!mounted) return;
 
@@ -329,6 +331,7 @@ class _FocusTimerViewState extends State<FocusTimerView> {
                     );
 
                     if (ok == true) {
+                      await _saveOnce(completed: false);
                       _endSession();
                     }
                   },
@@ -350,6 +353,24 @@ class _FocusTimerViewState extends State<FocusTimerView> {
           ),
         ),
       ),
+    );
+  }
+
+  bool _saved = false; // prevents double writes
+
+  Future<void> _saveOnce({required bool completed}) async {
+    if (_saved) return;
+    _saved = true;
+
+    final endedAt = DateTime.now();
+    final stoppedIndex = completed ? null : _segIndex;
+
+    await c.recordSession(
+      plan: widget.plan,
+      startedAt: _planStartedAt,
+      endedAt: endedAt,
+      completed: completed,
+      stoppedAtSegmentIndex: stoppedIndex,
     );
   }
 }

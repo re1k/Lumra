@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:lumra_project/model/FocusRoom/FocusRoomModel.dart';
 import 'package:lumra_project/utils/customWidgets/toastservice.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // 5 MIN TEST CASE ADDED BY JANA
 class FocusController extends GetxController {
@@ -163,5 +165,77 @@ class FocusController extends GetxController {
     if (showToast) {
       ToastService.info("Session ended", "Nice work, come back anytime!");
     }
+  }
+
+  /////////////////////////////DASHBOARD///////////////////////////////////////////////////////////////////////////
+  Future<void> recordSession({
+    required FocusSessionPlan plan,
+    required DateTime startedAt,
+    required DateTime endedAt,
+    required bool completed, // true = finished all segments
+    int? stoppedAtSegmentIndex, // null if completed
+  }) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    // Planned totals
+    final plannedMinutes = plan.segments.fold<int>(
+      0,
+      (s, seg) => s + seg.minutes,
+    );
+    final plannedSeconds = plannedMinutes * 60;
+
+    // Actual totals
+    final actualSeconds = endedAt
+        .difference(startedAt)
+        .inSeconds
+        .clamp(0, plannedSeconds);
+
+    // Optional: how many focus vs break minutes planned (handy for charts)
+    final plannedFocusMin = plan.segments
+        .where((s) => s.phase == 'focus')
+        .fold<int>(0, (s, seg) => s + seg.minutes);
+    final plannedBreakMin = plannedMinutes - plannedFocusMin;
+
+    // Flatten segments for analytics later
+    final segmentsJson = plan.segments
+        .map(
+          (s) => {
+            'phase': s.phase, // 'focus' | 'break'
+            'minutes': s.minutes,
+          },
+        )
+        .toList();
+
+    final now = DateTime.now();
+
+    final doc = FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('focus_sessions')
+        .doc(); // auto-id
+
+    await doc.set({
+      // identity
+      'userId': uid,
+      'createdAt':
+          now, // server timestamp alternative: FieldValue.serverTimestamp()
+      // plan info
+      'durationMin': plan.config.durationMin,
+      'breaksCount': plan.config.breaksCount,
+      'segments': segmentsJson, // planned layout
+      // timing
+      'startedAt': startedAt,
+      'endedAt': endedAt,
+      'plannedSeconds': plannedSeconds,
+      'actualSeconds': actualSeconds,
+
+      // status
+      'completed': completed, // finished all segments?
+      'stoppedAtSegmentIndex': stoppedAtSegmentIndex, // for quits
+      // quick aggregates for dashboard
+      'plannedFocusMin': plannedFocusMin,
+      'plannedBreakMin': plannedBreakMin,
+    });
   }
 }
