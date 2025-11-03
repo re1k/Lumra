@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lumra_project/controller/ChatBoot/AdhdChatBootController.dart';
 import "package:lumra_project/controller/ChatBoot/careGiverController.dart";
 import 'package:lumra_project/controller/Community/PostController.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class AuthController extends GetxController {
   final AuthService _authService = AuthService();
@@ -68,6 +69,8 @@ class AuthController extends GetxController {
         caregiverCtrl.setUserName(name);
       } */
 
+      await saveUserFcmTokenIfNeeded();
+
       // Route once cuz AppShell decides tabs based on role
       Get.offAllNamed('/app');
 
@@ -102,6 +105,15 @@ class AuthController extends GetxController {
             .doc(user.uid)
             .get();
         role = doc.data()?['role']; // assumes you have a 'role' field
+
+        final token = await FirebaseMessaging.instance.getToken();
+        if (token != null) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .update({'fcmToken': FieldValue.delete()});
+          print(' FCM token deleted on logout.');
+        }
       }
 
       role = role?.toLowerCase();
@@ -165,5 +177,19 @@ class AuthController extends GetxController {
     } catch (e) {
       return "Something went wrong. Please try again.";
     }
+  }
+
+  Future<void> saveUserFcmTokenIfNeeded() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    await FirebaseMessaging.instance.requestPermission();
+
+    final token = await FirebaseMessaging.instance.getToken();
+    if (token == null) return;
+
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+      'fcmToken': token, // قيمة وحدة فقط
+    }, SetOptions(merge: true));
   }
 }
