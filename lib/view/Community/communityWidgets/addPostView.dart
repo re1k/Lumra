@@ -43,9 +43,15 @@ class AddPostView extends StatelessWidget {
               Text(promptMessage, style: BTextTheme.lightTextTheme.labelSmall),
 
               const SizedBox(height: BSizes.SpaceBtwSections - 15),
+
               /// Warning note
               Padding(
-                padding: const EdgeInsets.only(left: 4,right: 4,bottom: 4,top: 10),
+                padding: const EdgeInsets.only(
+                  left: 4,
+                  right: 4,
+                  bottom: 4,
+                  top: 10,
+                ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -123,8 +129,10 @@ class AddPostView extends StatelessWidget {
                         postController.isFormValid.value &&
                             !postController.isLoading.value
                         ? () async {
-                            await postController.addPost();
-                            if (!postController.isLoading.value) {
+                            final posted = await postController.addPost(
+                              context,
+                            );
+                            if (posted) {
                               Navigator.pop(context);
                             }
                           }

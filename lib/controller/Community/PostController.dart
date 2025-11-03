@@ -1,14 +1,17 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lumra_project/model/community/communityModel.dart';
 import 'package:lumra_project/utils/customWidgets/toastservice.dart';
+import 'package:lumra_project/utils/customWidgets/custom_dialog.dart';
+import 'package:profanity_filter/profanity_filter.dart';
 
 class PostControllerX extends GetxController {
   final FirebaseFirestore db;
   final contentController = TextEditingController();
+  final _profanityFilter = ProfanityFilter();
 
   PostControllerX(this.db);
 
@@ -188,8 +191,8 @@ class PostControllerX extends GetxController {
     }
   }
 
-  Future<void> addPost() async {
-    if (!isFormValid.value) return;
+  Future<bool> addPost(BuildContext context) async {
+    if (!isFormValid.value) return false;
 
     var text = contentController.text.trim();
     //Remove leading/trailing spaces and collapse multiple spaces between words
@@ -197,12 +200,21 @@ class PostControllerX extends GetxController {
 
     if (text.isEmpty) {
       ToastService.error("Post cannot be empty");
-      return;
+      return false;
     }
 
     if (currentUid == null) {
       ToastService.error("You must be logged in to create a post");
-      return;
+      return false;
+    }
+
+    if (_profanityFilter.hasProfanity(text)) {
+      await CustomDialog.showError(
+        context,
+        title: 'Restricted Content',
+        message: "Your post contains restricted content and can't be posted.",
+      );
+      return false;
     }
 
     try {
@@ -239,8 +251,10 @@ class PostControllerX extends GetxController {
       print('Post added successfully with ID: ${docRef.id}');
       contentController.clear();
       // No need to fetchPosts(), the listener will update automatically
+      return true;
     } catch (e) {
       ToastService.error("Could not add post. Try again!");
+      return false;
     } finally {
       isLoading.value = false;
     }

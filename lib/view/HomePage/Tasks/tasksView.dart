@@ -61,7 +61,6 @@ class _TasksListState extends State<TasksList> {
     return true;
   }
 
-
   Future<void> _deleteTaskWithConfirmation(Task task) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -77,10 +76,7 @@ class _TasksListState extends State<TasksList> {
           ),
           title: const Text(
             "Delete",
-            style: TextStyle(
-              fontFamily: 'K2D',
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontFamily: 'K2D', fontWeight: FontWeight.bold),
           ),
           content: const Text(
             "Are you sure you want to delete this task?",
