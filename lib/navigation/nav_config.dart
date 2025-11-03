@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:lumra_project/controller/Activity/ActivityController.dart';
 import 'package:lumra_project/view/Activity/activityView.dart';
 import 'package:lumra_project/view/Community/CommunityPage.dart';
 import 'package:lumra_project/view/FocusRoom/focusPage.dart';
@@ -12,7 +15,19 @@ class NavItem {
   final String label;
   final IconData icon;
   final Widget page;
-  const NavItem({required this.label, required this.icon, required this.page});
+  final VoidCallback? onTap;
+  const NavItem({
+    required this.label,
+    required this.icon,
+    required this.page,
+    this.onTap,
+  });
+}
+
+void _notifyActivitiesTab() {
+  if (Get.isRegistered<Activitycontroller>()) {
+    Get.find<Activitycontroller>().onActivitiesTabTapped();
+  }
 }
 
 final Map<UserRole, List<NavItem>> navConfig = {
@@ -22,14 +37,19 @@ final Map<UserRole, List<NavItem>> navConfig = {
       label: 'Activities',
       icon: Icons.local_activity_rounded,
       page: ActivityView(),
+      onTap: _notifyActivitiesTab,
     ),
-   NavItem(label: 'Focus', icon: Icons.timer, page:FocuspPage() ),
+    NavItem(label: 'Focus', icon: Icons.timer, page: FocuspPage()),
     NavItem(
       label: 'Community',
       icon: Icons.people_alt_rounded,
       page: CommunityPage(),
     ),
-    NavItem(label: 'Account', icon: Icons.account_circle_rounded, page: AccountPage()),
+    NavItem(
+      label: 'Account',
+      icon: Icons.account_circle_rounded,
+      page: AccountPage(),
+    ),
   ],
 
   UserRole.caregiver: [
@@ -41,8 +61,16 @@ final Map<UserRole, List<NavItem>> navConfig = {
         feature: 'Dashboard',
       ), //  Later: replace with DashboardPage()
     ),
-    NavItem(label: 'Community', icon: Icons.people_alt_rounded, page: CommunityPage()),
-    NavItem(label: 'Account', icon: Icons.account_circle_rounded, page: AccountPage()),
+    NavItem(
+      label: 'Community',
+      icon: Icons.people_alt_rounded,
+      page: CommunityPage(),
+    ),
+    NavItem(
+      label: 'Account',
+      icon: Icons.account_circle_rounded,
+      page: AccountPage(),
+    ),
   ],
 };
 
