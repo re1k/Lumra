@@ -155,7 +155,7 @@ class DurationAndBreakSheet extends StatelessWidget {
                     ),
                   ),
                   child: const Text(
-                    "Start Focusing",
+                    "Start Focus Plan",
                     style: TextStyle(
                       fontFamily: 'K2D',
                       fontSize: BSizes.fontSizeSm,

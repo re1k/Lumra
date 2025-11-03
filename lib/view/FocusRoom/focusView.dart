@@ -150,7 +150,7 @@ class _FocusViewState extends State<FocusView>
                           const SizedBox(height: 8),
                           Text(
                             'Total duration: ${plan!.config.durationMin} min'
-                            ' • Breaks: ${plan!.config.breaksCount} × 5 min',
+                            ' • Breaks: ${plan!.config.breaksCount}',
                             style: const TextStyle(
                               fontFamily: 'K2D',
                               fontSize: BSizes.fontSizeSm,
@@ -228,7 +228,7 @@ class _FocusViewState extends State<FocusView>
                 Positioned(
                   left: 0,
                   right: 0,
-                  bottom: 90,
+                  bottom: 120,
                   child: SafeArea(
                     top: false,
                     child: Container(
@@ -250,7 +250,7 @@ class _FocusViewState extends State<FocusView>
                               ),
 
                               child: Text(
-                                'End Session',
+                                'End Plan',
                                 style: TextStyle(
                                   fontFamily: 'K2D',
                                   fontSize: BSizes.fontSizeSm,
