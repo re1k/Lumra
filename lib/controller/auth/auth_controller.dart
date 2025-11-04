@@ -189,7 +189,7 @@ class AuthController extends GetxController {
     if (token == null) return;
 
     await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-      'fcmToken': token, // قيمة وحدة فقط
+      'fcmToken': token, 
     }, SetOptions(merge: true));
   }
 }
