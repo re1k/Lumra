@@ -2,29 +2,36 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart'; // for date formatting (yyyy-MM-dd)
 import 'package:lumra_project/controller/auth/auth_controller.dart';
+import 'dart:async';
 
 class MoodTrackingController extends GetxController {
   final _firestore = FirebaseFirestore.instance;
   final AuthController _authController = Get.find<AuthController>();
   String get getCurrentUserId => _userId;
+  Timer? _periodicTimer;
 
-  // inside MoodTrackingController
+  void startPeriodicCheck() {
+    _periodicTimer?.cancel();
+
+    _periodicTimer = Timer.periodic(const Duration(minutes: 1), (timer) async {
+      print(" Checking periodically if 24 hours passed...");
+      await checkAndResetIfNeeded();
+    });
+  }
+
   Stream<DocumentSnapshot<Map<String, dynamic>>> userMoodStream() {
     return _userDoc.snapshots();
   }
 
-  /// Get current user ID
   String get _userId {
     final user = _authController.currentUser;
     if (user == null) throw Exception("No user is logged in.");
     return user.uid;
   }
 
-  ///  Reference to the current user document
   DocumentReference<Map<String, dynamic>> get _userDoc =>
       _firestore.collection('users').doc(_userId);
 
-  /// Helper → format DateTime to "yyyy-MM-dd"
   String _todayString([DateTime? date]) {
     final formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
     return formatter.format(date ?? DateTime.now());
@@ -34,8 +41,7 @@ class MoodTrackingController extends GetxController {
   //  INITIALIZATION LOGIC
   // -------------------------------------------------------------
 
-  /// Load today's mood.
-  /// If none found, set default dailyMood=3 and MoodChosenToday=false
+  // to get the daily mood
   Future<int> getTodayMood() async {
     final doc = await _userDoc.get();
 
@@ -48,34 +54,53 @@ class MoodTrackingController extends GetxController {
       }
     }
 
-    // If no mood data exists → initialize
     await _userDoc.set({
       'dailyMood': 3,
       'MoodChosenToday': false,
     }, SetOptions(merge: true));
 
-    return 3;
+    return 3; // no choice
   }
 
   // -------------------------------------------------------------
   //  USER INTERACTION
   // -------------------------------------------------------------
 
-  /// When the user chooses a mood emoji manually
+  // user click the mood
   Future<void> setTodayMood(int moodValue) async {
     await checkAndResetIfNeeded();
+
+    final doc = await _userDoc.get();
+    final data = doc.data() ?? {};
+
+    if (!data.containsKey(
+          'firstMoodBaseline',
+        ) && //  store the base line in case the user does not have a weekly storge to compare
+        !data.containsKey('weeklyMood')) {
+      await _userDoc.set({
+        'firstMoodBaseline': _todayString(),
+      }, SetOptions(merge: true));
+    }
+
+    // set the user mood
 
     await _userDoc.set({
       'dailyMood': moodValue,
       'MoodChosenToday': true,
     }, SetOptions(merge: true));
+
+    // delete the base line (no need if there is a weekly value )
+    final updatedDoc = await _userDoc.get();
+    if (updatedDoc.data()?['weeklyMood'] != null &&
+        updatedDoc.data()?['firstMoodBaseline'] != null) {
+      await _userDoc.update({'firstMoodBaseline': FieldValue.delete()});
+    }
   }
 
   // -------------------------------------------------------------
   //  DAILY RESET LOGIC
   // -------------------------------------------------------------
 
-  /// Reset at midnight → mood=3, not chosen
   Future<void> resetDailyMood() async {
     await _userDoc.set({
       'dailyMood': 3,
@@ -115,7 +140,7 @@ class MoodTrackingController extends GetxController {
     }, SetOptions(merge: true));
   }
 
-  /// Return current weekly array
+  // for the dashboard
   Future<List<int>> getWeeklyArray() async {
     final doc = await _userDoc.get();
     if (!doc.exists) return [];
@@ -124,7 +149,6 @@ class MoodTrackingController extends GetxController {
     final weekly = data['weeklyMood'] ?? {'days': []};
     final days = List<int>.from(weekly['days'] ?? []);
 
-    // If a week is complete, reset
     if (days.length >= 7) {
       await _userDoc.set({
         'weeklyMood': {'days': [], 'lastAdded': _todayString()},
@@ -138,15 +162,31 @@ class MoodTrackingController extends GetxController {
   // DAILY CHECK — RUN ON APP OPEN
   // -------------------------------------------------------------
 
+  // run every 1 min (contain the cases that will store the weekly value)
   Future<void> checkAndResetIfNeeded() async {
     final doc = await _userDoc.get();
     if (!doc.exists) return;
 
     final data = doc.data()!;
-    final weeklyData =
-        data['weeklyMood'] ?? {'days': [], 'lastAdded': _todayString()};
-    final List<int> days = List<int>.from(weeklyData['days'] ?? []);
-    final lastAddedStr = weeklyData['lastAdded'] as String? ?? _todayString();
+
+    final hasWeekly = data.containsKey('weeklyMood');
+    final hasBaseline = data.containsKey('firstMoodBaseline');
+
+    List<int> days = [];
+    String lastAddedStr;
+
+    // choose the varible that we will use it for the comparision
+
+    if (!hasWeekly && hasBaseline) {
+      lastAddedStr = (data['firstMoodBaseline'] as String);
+      days = <int>[];
+    } else {
+      final weeklyData =
+          data['weeklyMood'] ?? {'days': [], 'lastAdded': _todayString()};
+      days = List<int>.from(weeklyData['days'] ?? []);
+      lastAddedStr = weeklyData['lastAdded'] as String? ?? _todayString();
+    }
+
     final now = DateTime.now();
 
     DateTime? lastAddedDate;
@@ -157,54 +197,73 @@ class MoodTrackingController extends GetxController {
       lastAddedDate = now;
     }
 
-    // Compare by calendar day (ignores hour) but keep time for storage
-    final DateTime lastAddedDay = DateTime(
+    final lastDay = DateTime(
       lastAddedDate.year,
       lastAddedDate.month,
       lastAddedDate.day,
     );
-    final DateTime todayDay = DateTime(now.year, now.month, now.day);
+    final todayDay = DateTime(now.year, now.month, now.day);
 
-    final diffDays = todayDay.difference(lastAddedDay).inDays;
-    print(
-      ' checkAndResetIfNeeded → lastAdded=$lastAddedStr | now=${_todayString()} | diffDays=$diffDays',
-    );
+    final diffDays = todayDay.difference(lastDay).inDays;
 
-    // Same calendar day → no action
-    if (diffDays <= 0) return;
-
-    if (diffDays == 1) {
-      // ✅ Before resetting, add yesterday's final mood to weekly list
+    // the same day there is no change
+    if (diffDays <= 0) {
+      return;
+    }
+    // one day (store the previous day)
+    else if (diffDays == 1) {
       final yesterdayDoc = await _userDoc.get();
       final yesterdayData = yesterdayDoc.data() ?? {};
       final yesterdayMood = yesterdayData['dailyMood'] ?? 3;
-      await _addToWeekly(yesterdayMood);
 
-      // ✅ Then reset daily for the new day
-      await _userDoc.set({
+      await _addToWeekly(yesterdayMood);
+      // reseat the mood
+      await _userDoc.update({
+        'weeklyMood.lastAdded': _todayString(now),
         'dailyMood': 3,
         'MoodChosenToday': false,
-      }, SetOptions(merge: true));
+      });
 
-      print("🕛 New day — yesterday's mood added to weekly and daily reset.");
+      // more than one day
     } else if (diffDays > 1) {
-      //  Missed multiple days → fill missed days with 3
-      final missed = (diffDays - 1).clamp(0, 365);
-      for (int i = 0; i < missed; i++) {
-        days.add(3);
+      final lastDoc = await _userDoc.get();
+      final lastMood = lastDoc.data()?['dailyMood'] ?? 3;
+      final now = DateTime.now();
+
+      final isMidnight = now.hour == 0 && now.minute < 5;
+
+      final missed = (diffDays).clamp(0, 365);
+
+      days.add(lastMood);
+
+      if (missed > 1) {
+        for (int i = 1; i < missed; i++) {
+          days.add(3);
+        }
       }
 
-      await _userDoc.set({
-        'dailyMood': 3,
-        'MoodChosenToday': false,
-        'weeklyMood': {
-          'days': days,
-          //  Keep full date + time string
-          'lastAdded': _todayString(now),
-        },
-      }, SetOptions(merge: true));
-
-      print(" Missed $missed day(s) — filled with 3s and updated lastAdded.");
+      if (isMidnight) {
+        days.add(3);
+        await _userDoc.update({
+          'weeklyMood.days': days,
+          'weeklyMood.lastAdded': _todayString(now),
+          'dailyMood': 3,
+          'MoodChosenToday': false,
+        });
+      } else {
+        await _userDoc.update({
+          'weeklyMood.days': days,
+          'weeklyMood.lastAdded': _todayString(now),
+          'dailyMood': 3,
+          'MoodChosenToday': false,
+        });
+      }
     }
+  }
+
+  @override
+  void onClose() {
+    _periodicTimer?.cancel();
+    super.onClose();
   }
 }

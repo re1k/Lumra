@@ -30,13 +30,14 @@ class _MoodRowState extends State<MoodRow> {
     //  Create a brand-new one for this user
     _moodController = Get.put(MoodTrackingController());
 
+    _moodController.startPeriodicCheck();
+
     //  Run a check immediately on app open
     _moodController.checkAndResetIfNeeded();
 
     //  Schedule automatic check at midnight
     _scheduleMidnightReset();
 
-    //  Listen for Firestore changes ONCE (not every build)
     _moodSub = _moodController.userMoodStream().listen((snapshot) {
       if (!snapshot.exists) return;
       final data = snapshot.data() ?? {};
@@ -47,6 +48,14 @@ class _MoodRowState extends State<MoodRow> {
 
       if (lastAdded != null || dailyMood != null) {
         _moodController.checkAndResetIfNeeded();
+      }
+
+      if (mounted) {
+        setState(() {
+          if (data['MoodChosenToday'] == false) {
+            selectedMood = null;
+          }
+        });
       }
     });
 
@@ -72,11 +81,11 @@ class _MoodRowState extends State<MoodRow> {
 
   //  Mood messages for each emoji
   final List<String> moodMessages = [
-    "Oh no! Rough day, huh? 😞",
-    "Hope things get better soon! 💙",
-    "Neutral day — balance is good 😌",
-    "Nice! Glad you’re feeling okay 😊",
-    "Awesome! Keep that smile going 😄",
+    "Oh no! Rough day, huh? ",
+    "Hope things get better soon! ",
+    "Neutral day — balance is good ",
+    "Nice! Glad you’re feeling okay ",
+    "Awesome! Keep that smile going ",
   ];
 
   void _onMoodSelected(int mood) async {
@@ -182,7 +191,7 @@ class _MoodRowState extends State<MoodRow> {
 
             //  Fading message below emojis
             AnimatedOpacity(
-              duration: const Duration(milliseconds: 400),
+              duration: const Duration(milliseconds: 1000),
               opacity: showMessage ? 1.0 : 0.0,
               child: Padding(
                 padding: const EdgeInsets.only(top: 1.0),
