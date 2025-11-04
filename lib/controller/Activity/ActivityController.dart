@@ -441,7 +441,7 @@ class Activitycontroller {
     _initialsCycleDone = true;
     final batch = db.batch();
     for (final d in snap.docs) {
-      if (d.data()['hidden'] == true) continue;
+      // if (d.data()['hidden'] == true) continue;
       batch.delete(d.reference); // delete all in a single batch
     }
     await batch.commit();
