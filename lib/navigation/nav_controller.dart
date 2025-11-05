@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:lumra_project/controller/Activity/ActivityController.dart';
 import 'nav_config.dart';
 
 class NavController extends GetxController {
@@ -10,5 +11,7 @@ class NavController extends GetxController {
     currentIndex.value = 0; // always start on Home for a (new) role
   }
 
-  void setTab(int i) => currentIndex.value = i;
+  void setTab(int i) {
+    currentIndex.value = i;
+  }
 }

@@ -16,10 +16,52 @@ import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lumra_project/controller/Activity/ActivityController.dart';
 import "package:lumra_project/view/ChatBootADHD/ChatBootADHD.dart";
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print(" Notification in background: ${message.notification?.title}");
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  await FirebaseMessaging.instance.requestPermission();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const initSettings = InitializationSettings(android: androidInit);
+  await flutterLocalNotificationsPlugin.initialize(initSettings);
+
+  FirebaseMessaging.onMessage.listen((message) {
+    print(" Cloud Message: ${message.notification?.title}");
+    flutterLocalNotificationsPlugin.show(
+      0,
+      message.notification?.title ?? "New notification",
+      message.notification?.body ?? "",
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          'cloud_channel',
+          'Cloud Notifications',
+          channelDescription: 'Used for Lumra event reminders',
+          importance: Importance.max,
+          priority: Priority.high,
+          playSound: true,
+          enableVibration: true,
+          ticker: 'Lumra Reminder',
+          styleInformation: BigTextStyleInformation(
+            message.notification?.body ?? "",
+            htmlFormatBigText: true,
+            contentTitle: message.notification?.title ?? "Reminder",
+            htmlFormatContentTitle: true,
+          ),
+          visibility: NotificationVisibility.public,
+        ),
+      ),
+    );
+  });
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

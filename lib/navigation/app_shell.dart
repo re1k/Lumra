@@ -109,7 +109,10 @@ class _CompactNavBar extends StatelessWidget {
             return Expanded(
               child: GestureDetector(
                 behavior: HitTestBehavior.translucent,
-                onTap: () => onTap(i),
+                onTap: () {
+                  //fire item-specific tap hook (Activities will use this)
+                  onTap(i);
+                },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeOutCubic,

@@ -30,13 +30,14 @@ class _MoodRowState extends State<MoodRow> {
     //  Create a brand-new one for this user
     _moodController = Get.put(MoodTrackingController());
 
+    _moodController.startPeriodicCheck();
+
     //  Run a check immediately on app open
     _moodController.checkAndResetIfNeeded();
 
     //  Schedule automatic check at midnight
     _scheduleMidnightReset();
 
-    //  Listen for Firestore changes ONCE (not every build)
     _moodSub = _moodController.userMoodStream().listen((snapshot) {
       if (!snapshot.exists) return;
       final data = snapshot.data() ?? {};
@@ -47,6 +48,14 @@ class _MoodRowState extends State<MoodRow> {
 
       if (lastAdded != null || dailyMood != null) {
         _moodController.checkAndResetIfNeeded();
+      }
+
+      if (mounted) {
+        setState(() {
+          if (data['MoodChosenToday'] == false) {
+            selectedMood = null;
+          }
+        });
       }
     });
 
@@ -72,11 +81,11 @@ class _MoodRowState extends State<MoodRow> {
 
   //  Mood messages for each emoji
   final List<String> moodMessages = [
-    "Oh no! Rough day, huh? 😞",
-    "Hope things get better soon! 💙",
-    "Neutral day — balance is good 😌",
-    "Nice! Glad you’re feeling okay 😊",
-    "Awesome! Keep that smile going 😄",
+    "Oh no! Rough day, huh? ",
+    "Hope things get better soon! ",
+    "Neutral day — balance is good ",
+    "Nice! Glad you’re feeling okay ",
+    "Awesome! Keep that smile going ",
   ];
 
   void _onMoodSelected(int mood) async {
@@ -93,6 +102,7 @@ class _MoodRowState extends State<MoodRow> {
       await _moodController.setTodayMood(mood + 1);
     } finally {
       // After Firestore confirms, ensure UI stays stable
+      _isLocallyChosen = false;
       if (mounted) {
         await Future.delayed(const Duration(milliseconds: 1500));
         setState(() {
@@ -144,35 +154,35 @@ class _MoodRowState extends State<MoodRow> {
                     icon: Icons.sentiment_very_dissatisfied,
                     color: const Color(0xFFE57373),
                     isSelected: selectedMood == 0,
-                    onTap: chosen ? null : () => _onMoodSelected(0),
+                    onTap: () => _onMoodSelected(0),
                     size: iconSize,
                   ),
                   _MoodIcon(
                     icon: Icons.sentiment_dissatisfied,
                     color: const Color(0xFFFFB74D),
                     isSelected: selectedMood == 1,
-                    onTap: chosen ? null : () => _onMoodSelected(1),
+                    onTap: () => _onMoodSelected(1),
                     size: iconSize,
                   ),
                   _MoodIcon(
                     icon: Icons.sentiment_neutral,
                     color: const Color(0xFFFFF59D),
                     isSelected: selectedMood == 2,
-                    onTap: chosen ? null : () => _onMoodSelected(2),
+                    onTap: () => _onMoodSelected(2),
                     size: iconSize,
                   ),
                   _MoodIcon(
                     icon: Icons.sentiment_satisfied,
                     color: const Color(0xFF81C784),
                     isSelected: selectedMood == 3,
-                    onTap: chosen ? null : () => _onMoodSelected(3),
+                    onTap: () => _onMoodSelected(3),
                     size: iconSize,
                   ),
                   _MoodIcon(
                     icon: Icons.sentiment_very_satisfied,
                     color: const Color(0xFF4CAF50),
                     isSelected: selectedMood == 4,
-                    onTap: chosen ? null : () => _onMoodSelected(4),
+                    onTap: () => _onMoodSelected(4),
                     size: iconSize,
                   ),
                 ],
@@ -181,7 +191,7 @@ class _MoodRowState extends State<MoodRow> {
 
             //  Fading message below emojis
             AnimatedOpacity(
-              duration: const Duration(milliseconds: 400),
+              duration: const Duration(milliseconds: 1000),
               opacity: showMessage ? 1.0 : 0.0,
               child: Padding(
                 padding: const EdgeInsets.only(top: 1.0),

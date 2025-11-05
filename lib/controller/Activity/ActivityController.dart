@@ -20,9 +20,9 @@ import 'package:lumra_project/view/Activity/ActivityWidgets/Timer.dart';
 // 3. Fallback: INITIAL activities that were completed reappear ONLY when all initials are completed.
 // 4. Realtime: React to changes in BOTH 'activities' and 'activityStatus'.
 // 5. Enforce a hard cap of 10 total displayed items (initial + chatbot).
-//        If chatbot suggests more than 10, keep the existing 10, prune the extras immediately, and show a one-time Toast when the tab opens.
+//        If chatbot suggests more than 10, keep the existing 10, prune the extras immediately, and show message to the user
 // ---------------------------------------------------------------------------
-
+//NEW
 class Activitycontroller {
   final FirebaseFirestore db;
   final AuthController authController = Get.find<AuthController>();
@@ -45,16 +45,57 @@ class Activitycontroller {
   //bool _emitting = false; //make sure emitCombined runs one at a time (no overlap)
   bool _initialsCycleDone = false;
 
+  int _overflowEpoch = 0; // increment whenever we prune overflow
+  int _lastToastEpochShown = 0;
+
   static const int _kMaxVisible = 10;
-  bool _capacityToastShown =
-      false; //show one-time toast per controller lifecycle
+  DateTime? _lastToastAt; // debounce against bursty snapshots
+  static const int _toastDebounceMs = 2000; // min 2s between toasts
+
+  // Prevent overlapping emitCombined bodies from racing
+  // near your other flags:
+  bool _emitting = false; // re-entrancy guard
+  bool _emitQueued = false; // run once more if calls arrived while emitting
+
+  Timer? _expiryTicker;
+  static const _expiryTick = Duration(seconds: 30);
+
+  StreamController<List<Activitymodel>>? controller;
+  StreamSubscription? subActivities;
+  StreamSubscription? subStatus;
+  StreamSubscription? subUser;
+
+  // Centralized, safe toast (epoch + debounce)
+  void _maybeShowOverflowToast() {
+    // Only once per epoch
+    if (_overflowEpoch <= _lastToastEpochShown) return;
+
+    // Debounce rapid snapshot bursts
+    final now = DateTime.now();
+    if (_lastToastAt != null &&
+        now.difference(_lastToastAt!).inMilliseconds < _toastDebounceMs) {
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ToastService.info(
+        "Finish some first to add new ones.",
+        "Your AI assistant have suggested more activities, but your list has 10 activities. ",
+      );
+    });
+
+    _lastToastEpochShown = _overflowEpoch; //mark this epoch as shown
+    _lastToastAt = now; // update debounce clock
+  }
 
   void init() {
     titleController = TextEditingController();
     descriptionController = TextEditingController();
     categoryController = TextEditingController();
     timeController = TextEditingController();
-    _capacityToastShown = false;
+    _overflowEpoch = 0;
+    _lastToastEpochShown = 0;
+    _lastToastAt = null;
   }
 
   //this is a helper to know if I do not have any chatbot activities, do I show same old initial or did the points change?
@@ -66,8 +107,6 @@ class Activitycontroller {
     return 0;
   }
 
-  final RxBool capacityNotice = false.obs; // public flag for the UI listener
-
   // MAIN Stream: Merges CHATBOT (realtime) with INITIAL (non-completed, sync fetch)
   Stream<List<Activitymodel>> activities$() {
     final uid = authController.currentUser?.uid;
@@ -75,193 +114,28 @@ class Activitycontroller {
       return Stream<List<Activitymodel>>.value(const <Activitymodel>[]);
     }
 
-    final controller = StreamController<List<Activitymodel>>();
-    StreamSubscription? subActivities;
-    StreamSubscription? subStatus;
-    StreamSubscription? subUser; //listen to user doc for totalPoints
+    // clean/re-init a class-level controller so emitCombined() can add to it
+    controller?.close();
+    controller = StreamController<List<Activitymodel>>();
 
-    // This function recomputes the full merged list each time anything changes.
-    Future<void> emitCombined() async {
-      //if (_emitting) return; // already running; skip to avoid overlap
-      // _emitting = true; // lock: run this function alone
-      final now = DateTime.now();
-      final toDeleteChatbot = <DocumentReference>[];
-
-      // A. Process CHATBOT items
-      final q = await db
-          .collection('users')
-          .doc(uid)
-          .collection('activities')
-          .orderBy('createdAt', descending: false) // keep oldest first
-          .get();
-
-      final userItems = <Activitymodel>[];
-
-      //Keep a parallel list of doc refs to identify overflow for deletion
-      final userDocs = <QueryDocumentSnapshot>[];
-
-      for (final d in q.docs) {
-        final m = Activitymodel.fromUserActivityDoc(d);
-
-        // Delete CHATBOT docs AFTER 24h passes (based on expireAt)
-        final isExpired =
-            m.expireAt != null && m.expireAt!.toDate().isBefore(now);
-        if (isExpired) {
-          toDeleteChatbot.add(d.reference); // Will be deleted below
-          continue;
-        }
-
-        userItems.add(m);
-        userDocs.add(d);
-      }
-      if (userItems.isEmpty) {
-        await _unhideAllHiddenInitials(uid);
-      }
-
-      final initialItems =
-          await getinitialActivity(); //now returns full primary, no cap here
-
-      //NEW: compute allowed chatbot slots based on how many initials are visible
-      final int initialsCount = initialItems.length;
-      final int allowedChatbots = (_kMaxVisible - initialsCount).clamp(
-        0,
-        _kMaxVisible,
-      );
-
-      //NEW: Enforce capacity at the DB level for chatbot docs:
-      //If chatbot count exceeds its allowed slots, prune the *newest* overflow immediately
-      if (userItems.length > allowedChatbots) {
-        final overflow = userItems.length - allowedChatbots;
-        final toPruneDocs = userDocs.sublist(
-          userDocs.length - overflow,
-        ); //newest at end
-        for (final d in toPruneDocs) {
-          toDeleteChatbot.add(d.reference); //not kept in DB
-        }
-        if (!_capacityToastShown) {
-          capacityNotice.value = true;
-          _capacityToastShown = true;
-        }
-        // Trim in-memory list too
-        userItems.removeRange(userItems.length - overflow, userItems.length);
-      }
-
-      // B. Process INITIAL Status docs
-      // Instead of deleting expired status docs, we soft-reset them: clear their checked/expiry fields but keep `wasCompleted:true`
-      final statusSnap = await db
-          .collection('users')
-          .doc(uid)
-          .collection('activityStatus')
-          .where('expireAt', isLessThan: Timestamp.fromDate(now))
-          .get();
-
-      if (statusSnap.docs.isNotEmpty) {
-        final batch = db.batch();
-        for (final doc in statusSnap.docs) {
-          batch.update(doc.reference, {
-            'isChecked': false,
-            'checkedAt': null,
-            'expireAt': null,
-            // keep 'wasCompleted:true'
-          });
-        }
-        await batch.commit();
-      }
-
-      // C. Band (range of points) change handeling:
-      // If points band changed, start suppression and delete all initial statuses now (async)
-      if (_bandChanged) {
-        _bandChanged = false;
-        //points changed
-        _suppressInitials = true;
-        //mark that we need to reset the initial activities becuase the points changed.
-        _pendingInitialReset = true;
-      }
-
-      //D- Decide what to show
-      List<Activitymodel> toEmit;
-
-      if (_suppressInitials) {
-        if (userItems.isNotEmpty) {
-          //points changed and there is chatbot items -> only display chatbot items
-          final capped = userItems.take(_kMaxVisible).toList();
-          controller.add(capped);
-
-          //ADDED!!!!!!!!!!!!!!!
-          _initialsCycleDone = false;
-
-          // RESET GUARD when below capacity so future overflows can toast again
-          if (capped.length < _kMaxVisible && _capacityToastShown) {
-            _capacityToastShown = false;
-          }
-        } else {
-          //points changed and no chatbot items -> reset the initial activities and display them
-          if (_pendingInitialReset) {
-            await _removeAllInitialStatus(uid); // clear old statuses first
-            _pendingInitialReset = false;
-
-            //ADDED!!!!!!!!!!!!!!!
-            _initialsCycleDone = false;
-          }
-
-          final initialItemsFresh = await getinitialActivity();
-          _suppressInitials = false;
-          controller.add(
-            initialItemsFresh.take(_kMaxVisible).toList(),
-          ); // show initials only
-
-          // RESET GUARD when below capacity
-          if (initialItemsFresh.length < _kMaxVisible && _capacityToastShown) {
-            _capacityToastShown = false;
-          }
-        }
-        if (toDeleteChatbot.isNotEmpty) {
-          final b = db.batch();
-          for (final ref in toDeleteChatbot) b.delete(ref);
-          await b.commit();
-        }
-        //_emitting = false;
-        return;
-      }
-
-      // E) Normal merge — PRIORITIZE INITIALS, then fill with chatbot up to the remaining slots
-      final List<Activitymodel> initialsFirst = initialItems
-          .take(_kMaxVisible)
-          .toList();
-      final remaining = _kMaxVisible - initialsFirst.length;
-      final List<Activitymodel> chatbotFill = remaining > 0
-          ? userItems.take(remaining).toList()
-          : <Activitymodel>[];
-      toEmit = [...initialsFirst, ...chatbotFill];
-
-      controller.add(toEmit);
-
-      //RESET GUARD when total drops below capacity
-      if (toEmit.length < _kMaxVisible && _capacityToastShown) {
-        _capacityToastShown = false;
-      }
-
-      // F) Commit deletes (expired + overflow pruned)
-      if (toDeleteChatbot.isNotEmpty) {
-        final batch = db.batch();
-        for (final ref in toDeleteChatbot) batch.delete(ref);
-        await batch.commit();
-      }
-    }
+    // cancel any previous listeners (no await inside non-async function)
+    subActivities?.cancel(); // removed await
+    subStatus?.cancel();
+    subUser?.cancel();
 
     subActivities = db
         .collection('users')
         .doc(uid)
         .collection('activities')
         .snapshots()
-        .listen((_) => emitCombined());
+        .listen((_) => _scheduleEmit());
 
     subStatus = db
         .collection('users')
         .doc(uid)
         .collection('activityStatus')
         .snapshots()
-        .listen((_) => emitCombined());
+        .listen((_) => _scheduleEmit());
 
     subUser = db.collection('users').doc(uid).snapshots().listen((snap) {
       final data = snap.data();
@@ -271,20 +145,206 @@ class Activitycontroller {
         _bandChanged = true; //flag that band changed
       }
       _lastBand = band; // remember current band
-      emitCombined(); // update list now
+      _scheduleEmit(); // update list now
+    });
+
+    // START heartbeat so expiry is handled "live" even without writes
+    _expiryTicker?.cancel();
+    _expiryTicker = Timer.periodic(_expiryTick, (_) {
+      _scheduleEmit(); //re-evaluate expireAt + soft resets
     });
 
     // first run
-    emitCombined();
-
-    controller.onCancel = () async {
+    _scheduleEmit();
+    controller!.onCancel = () async {
       await subActivities?.cancel();
       await subStatus?.cancel();
       await subUser?.cancel();
-      await controller.close();
+      await controller?.close();
+      controller = null;
+      _expiryTicker?.cancel();
+      _expiryTicker = null;
     };
 
-    return controller.stream;
+    return controller!.stream;
+  }
+
+  Future<void> _scheduleEmit() async {
+    if (_emitting) {
+      // someone is running -> queue one rerun
+      _emitQueued = true;
+      return;
+    }
+    _emitting = true;
+    try {
+      await emitCombined(); // first pass
+      while (_emitQueued) {
+        _emitQueued = false;
+        await emitCombined(); //second pass sees the latest snapshot state
+      }
+    } finally {
+      _emitting = false;
+    }
+  }
+
+  // This function recomputes the full merged list each time anything changes.
+  Future<void> emitCombined() async {
+    final uid = authController.currentUser!.uid;
+
+    final now = DateTime.now();
+    final toDeleteChatbot = <DocumentReference>[];
+
+    // A. Process CHATBOT items
+    final q = await db
+        .collection('users')
+        .doc(uid)
+        .collection('activities')
+        .orderBy('createdAt', descending: false) // keep oldest first
+        .get();
+
+    final userItems = <Activitymodel>[];
+
+    //Keep a parallel list of doc refs to identify overflow for deletion
+    final userDocs = <QueryDocumentSnapshot>[];
+
+    for (final d in q.docs) {
+      final m = Activitymodel.fromUserActivityDoc(d);
+
+      // Delete CHATBOT docs AFTER 24h passes (based on expireAt)
+      final isExpired =
+          m.expireAt != null && m.expireAt!.toDate().isBefore(now);
+      if (isExpired) {
+        toDeleteChatbot.add(d.reference); // Will be deleted below
+        continue;
+      }
+
+      userItems.add(m);
+      userDocs.add(d);
+    }
+    // if (userItems.isEmpty) {
+    //   await _unhideAllHiddenInitials(uid);
+    // }
+
+    var initialItems =
+        await getinitialActivity(); //now returns full primary, no cap here
+
+    // If nothing to show from initials (likely all hidden), unhide once and reload
+    if (initialItems.isEmpty && userItems.isEmpty) {
+      initialItems = await getinitialActivity();
+      if (initialItems.isEmpty) {
+        await _unhideAllHiddenInitials(uid); // unhide any hidden initials
+        await _removeAllInitialStatus(uid);
+        initialItems = await getinitialActivity();
+      }
+    }
+
+    //NEW: compute allowed chatbot slots based on how many initials are visible
+    final int initialsCount = initialItems.length;
+    final int allowedChatbots = (_kMaxVisible - initialsCount).clamp(
+      0,
+      _kMaxVisible,
+    );
+
+    //NEW: Enforce capacity at the DB level for chatbot docs:
+    //If chatbot count exceeds its allowed slots, prune the *newest* overflow immediately
+    if (userItems.length > allowedChatbots) {
+      final overflow = userItems.length - allowedChatbots;
+      final toPruneDocs = userDocs.sublist(
+        userDocs.length - overflow,
+      ); //newest at end
+      for (final d in toPruneDocs) {
+        toDeleteChatbot.add(d.reference); //not kept in DB
+      }
+      userItems.removeRange(userItems.length - overflow, userItems.length);
+      _overflowEpoch++;
+      _maybeShowOverflowToast();
+    }
+
+    // B. Process INITIAL Status docs
+    // Instead of deleting expired status docs, we soft-reset them: clear their checked/expiry fields but keep `wasCompleted:true`
+    final statusSnap = await db
+        .collection('users')
+        .doc(uid)
+        .collection('activityStatus')
+        .where('expireAt', isLessThan: Timestamp.fromDate(now))
+        .get();
+
+    if (statusSnap.docs.isNotEmpty) {
+      final batch = db.batch();
+      for (final doc in statusSnap.docs) {
+        batch.update(doc.reference, {
+          'isChecked': false,
+          'checkedAt': null,
+          'expireAt': null,
+          // keep 'wasCompleted:true'
+        });
+      }
+      await batch.commit();
+    }
+
+    // C. Band (range of points) change handeling:
+    // If points band changed, start suppression and delete all initial statuses now (async)
+    if (_bandChanged) {
+      _bandChanged = false;
+      //points changed
+      _suppressInitials = true;
+      //mark that we need to reset the initial activities becuase the points changed.
+      _pendingInitialReset = true;
+    }
+
+    //D- Decide what to show
+    List<Activitymodel> toEmit;
+
+    if (_suppressInitials) {
+      if (userItems.isNotEmpty) {
+        //points changed and there is chatbot items -> only display chatbot items
+        final capped = userItems.take(_kMaxVisible).toList();
+        controller?.add(capped);
+
+        //ADDED!!!!!!!!!!!!!!!
+        _initialsCycleDone = false;
+      } else {
+        //points changed and no chatbot items -> reset the initial activities and display them
+        if (_pendingInitialReset) {
+          await _removeAllInitialStatus(uid); // clear old statuses first
+          _pendingInitialReset = false;
+
+          //ADDED!!!!!!!!!!!!!!!
+          _initialsCycleDone = false;
+        }
+
+        final initialItemsFresh = await getinitialActivity();
+        _suppressInitials = false;
+        final onlyInitials = initialItemsFresh.take(_kMaxVisible).toList();
+        controller?.add(onlyInitials); // show initials only
+      }
+      if (toDeleteChatbot.isNotEmpty) {
+        final b = db.batch();
+        for (final ref in toDeleteChatbot) b.delete(ref);
+        await b.commit();
+      }
+      //_emitting = false;
+      return;
+    }
+
+    // E) Normal merge — PRIORITIZE INITIALS, then fill with chatbot up to the remaining slots
+    final List<Activitymodel> initialsFirst = initialItems
+        .take(_kMaxVisible)
+        .toList();
+    final remaining = _kMaxVisible - initialsFirst.length;
+    final List<Activitymodel> chatbotFill = remaining > 0
+        ? userItems.take(remaining).toList()
+        : <Activitymodel>[];
+    toEmit = [...initialsFirst, ...chatbotFill];
+
+    controller?.add(toEmit);
+
+    // F) Commit deletes (expired + overflow pruned)
+    if (toDeleteChatbot.isNotEmpty) {
+      final batch = db.batch();
+      for (final ref in toDeleteChatbot) batch.delete(ref);
+      await batch.commit();
+    }
   }
 
   // Loads initial templates once, filtered by the user's points band.
@@ -359,7 +419,7 @@ class Activitycontroller {
     _initialsCycleDone = true;
     final batch = db.batch();
     for (final d in snap.docs) {
-      if (d.data()['hidden'] == true) continue;
+      // if (d.data()['hidden'] == true) continue;
       batch.delete(d.reference); // delete all in a single batch
     }
     await batch.commit();
@@ -453,7 +513,7 @@ class Activitycontroller {
 
     if (primary.isNotEmpty) return primary; // return full list (no cap here)
 
-    await _removeAllInitialStatus(uid);
+    //await _removeAllInitialStatus(uid);
     return [];
   }
 

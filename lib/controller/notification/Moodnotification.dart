@@ -118,7 +118,7 @@ Future<void> requestNotificationPermission() async {
       } else {
         final now = tz.TZDateTime.now(tz.local);
         scheduledDate =
-            tz.TZDateTime(tz.local, now.year, now.month, now.day, 11, 30);
+            tz.TZDateTime(tz.local, now.year, now.month, now.day, 10, 40);
         if (scheduledDate.isBefore(now)) {
           scheduledDate = scheduledDate.add(const Duration(days: 1));
         }
@@ -137,7 +137,7 @@ Future<void> requestNotificationPermission() async {
       // Schedule notification
       await _notificationsPlugin.zonedSchedule(
         1,
-        "Daily Mood ", // change the title
+        "Daily Supportive ", // change the title
         selectedMessage,
         scheduledDate,
         notificationDetails,

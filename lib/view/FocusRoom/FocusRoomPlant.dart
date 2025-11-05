@@ -130,7 +130,7 @@ Positioned(
         children: [
           CircularProgressIndicator(
             value: p,
-            strokeWidth: 5, // original stroke
+            strokeWidth: 4, // original stroke
             backgroundColor: Colors.black12,
             color: BColors.primary,
           ),

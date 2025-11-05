@@ -7,17 +7,32 @@ import 'package:lumra_project/theme/base_themes/colors.dart';
 /// Usage: ToastService.info('the title','Your message');
 
 class ToastService {
+  static DateTime? _lastShownAt;
+  static const _debounceMs = 600;
   static void show(
     String title,
     String message, {
     bool isError = false,
     bool isSuccess = false,
     bool isInfo = false,
+    SnackPosition position = SnackPosition.TOP,
   }) {
+    final now = DateTime.now();
+    if (_lastShownAt != null &&
+        now.difference(_lastShownAt!).inMilliseconds < _debounceMs) {
+      return;
+    }
+    _lastShownAt = now;
+
+    //Don’t stack—replace current snackbar
+    if (Get.isSnackbarOpen) {
+      Get.closeCurrentSnackbar();
+    }
+
     Get.snackbar(
       title,
       message,
-      snackPosition: SnackPosition.TOP,
+      snackPosition: position,
       backgroundColor: Colors.white,
       icon: isError
           ? const Icon(Icons.error, color: BColors.error)
@@ -56,15 +71,25 @@ class ToastService {
     );
   }
 
-  static void success(String message) {
-    show('Success', message, isSuccess: true);
+  static void success(
+    String message, {
+    SnackPosition position = SnackPosition.TOP,
+  }) {
+    show('Success', message, isSuccess: true, position: position);
   }
 
-  static void error(String message) {
-    show('Error', message, isError: true);
+  static void error(
+    String message, {
+    SnackPosition position = SnackPosition.TOP,
+  }) {
+    show('Error', message, isError: true, position: position);
   }
 
-  static void info(String title, String message) {
-    show(title, message, isInfo: true);
+  static void info(
+    String title,
+    String message, {
+    SnackPosition position = SnackPosition.TOP,
+  }) {
+    show(title, message, isInfo: true, position: position);
   }
 }

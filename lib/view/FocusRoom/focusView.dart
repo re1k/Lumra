@@ -149,15 +149,15 @@ class _FocusViewState extends State<FocusView>
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Total duration: ${plan!.config.durationMin} min'
-                            ' • Breaks: ${plan!.config.breaksCount}',
+                            'Here is a summary of your ${plan!.config.durationMin} minutes focus session, whenever your ready!'
+                    ,
                             style: const TextStyle(
                               fontFamily: 'K2D',
                               fontSize: BSizes.fontSizeSm,
                               color: Colors.black87,
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 32),
 
                           // Segments list (Focus/Break cycle)
                           Expanded(
@@ -189,8 +189,8 @@ class _FocusViewState extends State<FocusView>
                                     ),
                                     border: Border.all(
                                       color: isFocus
-                                          ? BColors.primary.withOpacity(0.25)
-                                          : BColors.lightGrey,
+                                          ? BColors.primary.withOpacity(0.07)
+                                          : const Color.fromARGB(255, 232, 231, 231),
                                     ),
                                   ),
                                   child: Row(
@@ -238,24 +238,102 @@ class _FocusViewState extends State<FocusView>
                         children: [
                           Expanded(
                             child: OutlinedButton(
-                              onPressed: _endSession,
+                              onPressed: 
+                              
+                              //SHOW DO U WANT TO QUIT THE PLAN?
+                              () async {
+    final ok = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        insetPadding: const EdgeInsets.symmetric(
+          horizontal: 40,
+          vertical: 24,
+        ),
+        title: const Text(
+          'Quit the Plan?',
+          style: TextStyle(
+            fontFamily: 'K2D',
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+        content: const Text(
+          'You can start planning another one later, at your convenience!.',
+          style: TextStyle(
+            fontFamily: 'K2D',
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.black,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text(
+              'Continue',
+              style: TextStyle(
+                fontFamily: 'K2D',
+                color: Colors.black87,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: BColors.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 12,
+              ),
+              minimumSize: const Size(90, 40),
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text(
+              "Quit",
+              style: TextStyle(
+                fontFamily: 'K2D',
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (ok == true) {
+      //await _saveOnce(completed: false);  ???
+      _endSession();
+    }
+  }
+                              //no confirm just go
+                            
+                               //_endSession
+                               ,
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 14,
                                 ),
-                                side: BorderSide(color: Colors.red.shade400),
+                                side: BorderSide(color: BColors.error),
                                 backgroundColor: Colors.transparent,
                                 shadowColor: Colors.transparent,
                                 elevation: 0,
                               ),
 
                               child: Text(
-                                'End Plan',
+                                'Quit Plan',
                                 style: TextStyle(
                                   fontFamily: 'K2D',
                                   fontSize: BSizes.fontSizeSm,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.red.shade600,
+                                  color: BColors.error,
                                 ),
                               ),
                             ),
@@ -290,7 +368,7 @@ class _FocusViewState extends State<FocusView>
                                 ),
                               ),
                               child: const Text(
-                                'Start Now',
+                                'Start focusing',
                                 style: TextStyle(
                                   fontFamily: 'K2D',
                                   fontSize: BSizes.fontSizeSm,

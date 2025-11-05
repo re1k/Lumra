@@ -422,10 +422,12 @@ class _ActivityTileState extends State<_ActivityTile> {
                       if (item.time.trim().isNotEmpty)
                         GestureDetector(
                           onTap: () {
-                            widget.activityController.onActivityTimeTap(
-                              widget.item,
-                              context,
-                            );
+                            if (!item.isChecked) {
+                              widget.activityController.onActivityTimeTap(
+                                widget.item,
+                                context,
+                              );
+                            }
                           },
                           child: Container(
                             padding: EdgeInsets.symmetric(

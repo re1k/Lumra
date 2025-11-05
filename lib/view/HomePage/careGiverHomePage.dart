@@ -13,6 +13,7 @@ import 'package:lumra_project/view/HomePage/Tasks/tasksView.dart';
 import 'package:lumra_project/view/HomePage/Reminders/upcomingReminders.dart';
 import 'package:lumra_project/controller/Homepage/Reminders/reminderController.dart';
 import "package:lumra_project/view/ChatBootADHD/ChatBotWidget.dart";
+import 'package:lumra_project/view/Homepage/EncouragemenMessage/caregiverMessage.dart';
 
 class CareGiverHomePage extends StatefulWidget {
   const CareGiverHomePage({super.key});
@@ -133,10 +134,7 @@ class _CareGiverHomePageState extends State<CareGiverHomePage> {
                     }),
 
                     // Encouragement banner
-                    const EncouragementMessage(
-                      text:
-                          'Write a message you would like you\'re linked Adhd user to read!',
-                    ),
+                    const RealStickerEnvelope(),
 
                     SizedBox(height: BSizes.lg),
 

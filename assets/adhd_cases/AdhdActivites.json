@@ -1,315 +1,314 @@
 [
-    {
-      "mental_state": "Inability to Organize Time",
-      "activities": [
-        {
-          "category": "Learning",
-          "title": "Plan Tomorrow Tonight",
-          "description": "Write a quick outline of tomorrow’s top 3 tasks before sleeping.",
-          "time": "10"
-        },
-        {
-          "category": "Sport",
-          "title": "Morning Stretch Routine",
-          "description": "Do a short stretch series to activate your body and prepare for the day.",
-          "time": "8"
-        },
-        {
-          "category": "Creative",
-          "title": "Desk Setup Makeover",
-          "description": "Reorganize your workspace to make it motivating and distraction-free.",
-          "time": "12"
-        },
-        {
-          "category": "Creative",
-          "title": "Productivity Vision Collage",
-          "description": "Cut or draw images that represent your daily goals and arrange them visually.",
-          "time": "15"
-        }
-      ]
-    },
-    {
-      "mental_state": "Anxiety",
-      "activities": [
-        {
-          "category": "Creative",
-          "title": "Mandala Coloring",
-         "description": "A mandala is a circular design with repeating patterns that represent balance, unity, and harmony.",
-          "time": "7"
-        },
-        {
-          "category": "Mindfulness",
-          "title": "Guided Meditation",
-          "description": "Follow a short guided meditation to regulate your breathing and thoughts.",
-          "time": "5"
-        },
-        {
-          "category": "Mindfulness",
-          "title": "Gratitude Breathing",
-          "description": "Take deep breaths while naming three things you are grateful for.",
-          "time": "3"
-        },
-        {
-          "category": "Relaxation",
-          "title": "Warm Tea Break",
-          "description": "Prepare a warm tea and enjoy it slowly with mindful breathing.",
-          "time": "6"
-        }
-      ]
-    },
-    {
-      "mental_state": "Difficulty Focusing",
-      "activities": [
-        {
-          "category": "Learning",
-          "title": "Flash Memory Challenge",
-          "description": "Practice recalling short facts or numbers for memory training.",
-          "time": "10"
-        },
-        {
-          "category": "Mindfulness",
-          "title": "Focus on One Object",
-          "description": "Gaze at a single object for five minutes to strengthen attention control.",
-          "time": "5"
-        },
-        {
-          "category": "Mindfulness",
-          "title": "Breathing + Counting Sync",
-          "description": "Count your breaths slowly to bring your mind back to the present moment.",
-          "time": "4"
-        },
-        {
-          "category": "Sport",
-          "title": "Balance Board Challenge",
-          "description": "Stand on one leg or balance board for short intervals to improve body awareness.",
-          "time": "6"
-        }
-      ]
-    },
-    {
-      "mental_state": "Hyperactivity",
-      "activities": [
-        {
-          "category": "Sport",
-          "title": "Jump Rope Session",
-          "description": "Do fast-paced jump rope intervals to release built-up energy.",
-          "time": "10"
-        },
-        {
-          "category": "Sport",
-          "title": "Step Counter Goal",
-          "description": "Challenge yourself to reach 500 quick steps indoors or outside.",
-          "time": "7"
-        },
-        {
-          "category": "Creative",
-          "title": "Rhythm Tapping",
-          "description": "Tap or create beats to express energy through sound and rhythm.",
-          "time": "8"
-        },
-        {
-          "category": "Mindfulness",
-          "title": "Slow Movement Meditation",
-          "description": "Move your body slowly with awareness to balance high energy levels.",
-          "time": "6"
-        }
-      ]
-    },
-    {
-      "mental_state": "Low Motivation",
-      "activities": [
-        {
-          "category": "Motivation",
-          "title": "Visualize Your Next Win",
-          "description": "Close your eyes and imagine yourself achieving a goal step by step. Picture the environment, emotions, and reward vividly.",
-          "time": "8"
-        },
-        {
-          "category": "Creative",
-          "title": "Draw Your Future Self",
-          "description": "Sketch yourself achieving one goal you want to reach this month.",
-          "time": "12"
-        },
-        {
-          "category": "Sport",
-          "title": "Stretch & Smile",
-          "description": "Do light stretching while smiling to release happy hormones.",
-          "time": "5"
-        }
-      ]
-    },
-    {
-      "mental_state": "Overthinking",
-      "activities": [
-        {
-          "category": "Mindfulness",
-          "title": "5-Senses Reset",
-          "description": "Notice one thing you can see, touch, hear, smell, and taste to ground your mind.",
-          "time": "4"
-        },
-        {
-          "category": "Mindfulness",
-          "title": "Tear Exercise",
-          "description": "Write down your worries, then tear the paper as a symbolic release.",
-          "time": "5"
-        },
-        {
-          "category": "Relaxation",
-          "title": "Candlelight Focus",
-          "description": "Watch the gentle flicker of a candle to calm racing thoughts.",
-          "time": "8"
-        },
-        {
-          "category": "Learning",
-          "title": "Thought Sorting Worksheet",
-          "description": "List your thoughts under ‘Can Control’ and ‘Can’t Control’.",
-          "time": "10"
-        }
-      ]
-    },
-    {
-      "mental_state": "Loneliness",
-      "activities": [
-        {
-          "category": "Creative",
-          "title": "Make a Thank You Card",
-          "description": "Create or write a thank you note for someone supportive.",
-          "time": "7"
-        },
-        {
-          "category": "Mindfulness",
-          "title": "Grateful Connection Reflection",
-          "description": "During the timer, recall people or moments that made you feel loved or appreciated, and focus on that warmth.",
-          "time": "6"
-        },
-        {
-          "category": "Creative",
-          "title": "Memory Collage",
-          "description": "Arrange old photos or draw memories that made you feel connected.",
-          "time": "15"
-        }
-      ]
-    },
-    {
-      "mental_state": "Procrastination",
-      "activities": [
-        {
-          "category": "Motivation",
-          "title": "2-Minute Start Habit",
-          "description": "Commit to doing a task for just two minutes to overcome hesitation.",
-          "time": "2"
-        },
-        {
-          "category": "Motivation",
-          "title": "Reward Jar",
-          "description": "Write small rewards on slips of paper for each task you finish.",
-          "time": "10"
-        },
-        {
-          "category": "Learning",
-          "title": "Schedule Audit",
-          "description": "Review your daily routine and identify the best times you feel most focused.",
-          "time": "15"
-        },
-        {
-          "category": "Mindfulness",
-          "title": "Self-Talk Reset",
-          "description": "Say one encouraging sentence to yourself out loud before starting a task.",
-          "time": "3"
-        }
-      ]
-    },
-    {
-      "mental_state": "Overstimulation",
-      "activities": [
-        {
-          "category": "Relaxation",
-          "title": "Quiet Space Reset",
-          "description": "Sit in a calm, dimly lit room and rest your senses for a few minutes.",
-          "time": "8"
-        },
-        {
-          "category": "Mindfulness",
-          "title": "Breathing Box",
-          "description": "Inhale 4s, hold 4s, exhale 4s, hold 4s — repeat to stabilize your breath.",
-          "time": "4"
-        },
-        {
-          "category": "Creative",
-          "title": "Soft Color Painting",
-          "description": "Paint or draw using light, relaxing colors to soothe your mind.",
-          "time": "10"
-        }
-      ]
-    },
-    {
-      "mental_state": "Forgetfulness",
-      "activities": [
-        {
+  {
+    "mental_state": "Inability to Organize Time",
+    "activities": [
+      {
+        "category": "Learning",
+        "title": "Plan Tomorrow Tonight",
+        "description": "Write a quick outline of tomorrow’s top 3 tasks before sleeping.",
+        "time": "10"
+      },
+      {
+        "category": "Sport",
+        "title": "Morning Stretch Routine",
+        "description": "Do a short stretch series to activate your body and prepare for the day.",
+        "time": "8"
+      },
+      {
+        "category": "Creative",
+        "title": "Desk Setup Makeover",
+        "description": "Reorganize your workspace to make it motivating and distraction-free.",
+        "time": "12"
+      },
+      {
+        "category": "Creative",
+        "title": "Productivity Vision Collage",
+        "description": "Cut or draw images that represent your daily goals and arrange them visually.",
+        "time": "15"
+      }
+    ]
+  },
+  {
+    "mental_state": "Anxiety",
+    "activities": [
+      {
+        "category": "Creative",
+        "title": "Mandala Coloring",
+        "description": "A mandala is a circular design with repeating patterns that represent balance, unity, and harmony.",
+        "time": "7"
+      },
+      {
+        "category": "Mindfulness",
+        "title": "Guided Meditation",
+        "description": "Follow a short guided meditation to regulate your breathing and thoughts.",
+        "time": "5"
+      },
+      {
+        "category": "Mindfulness",
+        "title": "Gratitude Breathing",
+        "description": "Take deep breaths while naming three things you are grateful for.",
+        "time": "3"
+      },
+      {
+        "category": "Relaxation",
+        "title": "Warm Tea Break",
+        "description": "Prepare a warm tea and enjoy it slowly with mindful breathing.",
+        "time": "6"
+      }
+    ]
+  },
+  {
+    "mental_state": "Difficulty Focusing",
+    "activities": [
+      {
+        "category": "Learning",
+        "title": "Flash Memory Challenge",
+        "description": "Practice recalling short facts or numbers for memory training.",
+        "time": "10"
+      },
+      {
+        "category": "Mindfulness",
+        "title": "Focus on One Object",
+        "description": "Gaze at a single object for five minutes to strengthen attention control.",
+        "time": "5"
+      },
+      {
+        "category": "Mindfulness",
+        "title": "Breathing + Counting Sync",
+        "description": "Count your breaths slowly to bring your mind back to the present moment.",
+        "time": "4"
+      },
+      {
+        "category": "Sport",
+        "title": "Balance Board Challenge",
+        "description": "Stand on one leg or balance board for short intervals to improve body awareness.",
+        "time": "6"
+      }
+    ]
+  },
+  {
+    "mental_state": "Hyperactivity",
+    "activities": [
+      {
+        "category": "Sport",
+        "title": "Jump Rope Session",
+        "description": "Do fast-paced jump rope intervals to release built-up energy.",
+        "time": "10"
+      },
+      {
+        "category": "Sport",
+        "title": "Step Counter Goal",
+        "description": "Challenge yourself to reach 500 quick steps indoors or outside.",
+        "time": "7"
+      },
+      {
+        "category": "Creative",
+        "title": "Rhythm Tapping",
+        "description": "Tap or create beats to express energy through sound and rhythm.",
+        "time": "8"
+      },
+      {
+        "category": "Mindfulness",
+        "title": "Slow Movement Meditation",
+        "description": "Move your body slowly with awareness to balance high energy levels.",
+        "time": "6"
+      }
+    ]
+  },
+  {
+    "mental_state": "Low Motivation",
+    "activities": [
+      {
+        "category": "Motivation",
+        "title": "Visualize Your Next Win",
+        "description": "Close your eyes and imagine yourself achieving a goal step by step. Picture the environment, emotions, and reward vividly.",
+        "time": "8"
+      },
+      {
+        "category": "Creative",
+        "title": "Draw Your Future Self",
+        "description": "Sketch yourself achieving one goal you want to reach this month.",
+        "time": "12"
+      },
+      {
+        "category": "Sport",
+        "title": "Stretch & Smile",
+        "description": "Do light stretching while smiling to release happy hormones.",
+        "time": "5"
+      }
+    ]
+  },
+  {
+    "mental_state": "Overthinking",
+    "activities": [
+      {
+        "category": "Mindfulness",
+        "title": "5-Senses Reset",
+        "description": "Notice one thing you can see, touch, hear, smell, and taste to ground your mind.",
+        "time": "4"
+      },
+      {
+        "category": "Mindfulness",
+        "title": "Tear Exercise",
+        "description": "Write down your worries, then tear the paper as a symbolic release.",
+        "time": "5"
+      },
+      {
+        "category": "Relaxation",
+        "title": "Candlelight Focus",
+        "description": "Watch the gentle flicker of a candle to calm racing thoughts.",
+        "time": "8"
+      },
+      {
+        "category": "Learning",
+        "title": "Thought Sorting Worksheet",
+        "description": "List your thoughts under ‘Can Control’ and ‘Can’t Control’.",
+        "time": "10"
+      }
+    ]
+  },
+  {
+    "mental_state": "Loneliness",
+    "activities": [
+      {
+        "category": "Creative",
+        "title": "Make a Thank You Card",
+        "description": "Create or write a thank you note for someone supportive.",
+        "time": "7"
+      },
+      {
+        "category": "Mindfulness",
+        "title": "Grateful Connection Reflection",
+        "description": "During the timer, recall people or moments that made you feel loved or appreciated, and focus on that warmth.",
+        "time": "6"
+      },
+      {
+        "category": "Creative",
+        "title": "Memory Collage",
+        "description": "Arrange old photos or draw memories that made you feel connected.",
+        "time": "15"
+      }
+    ]
+  },
+  {
+    "mental_state": "Procrastination",
+    "activities": [
+      {
+        "category": "Motivation",
+        "title": "2-Minute Start Habit",
+        "description": "Commit to doing a task for just two minutes to overcome hesitation.",
+        "time": "2"
+      },
+      {
+        "category": "Motivation",
+        "title": "Reward Jar",
+        "description": "Write small rewards on slips of paper for each task you finish.",
+        "time": "10"
+      },
+      {
+        "category": "Learning",
+        "title": "Schedule Audit",
+        "description": "Review your daily routine and identify the best times you feel most focused.",
+        "time": "15"
+      },
+      {
+        "category": "Mindfulness",
+        "title": "Self-Talk Reset",
+        "description": "Say one encouraging sentence to yourself out loud before starting a task.",
+        "time": "3"
+      }
+    ]
+  },
+  {
+    "mental_state": "Overstimulation",
+    "activities": [
+      {
+        "category": "Relaxation",
+        "title": "Quiet Space Reset",
+        "description": "Sit in a calm, dimly lit room and rest your senses for a few minutes.",
+        "time": "8"
+      },
+      {
+        "category": "Mindfulness",
+        "title": "Breathing Box",
+        "description": "Inhale 4s, hold 4s, exhale 4s, hold 4s — repeat to stabilize your breath.",
+        "time": "4"
+      },
+      {
+        "category": "Creative",
+        "title": "Soft Color Painting",
+        "description": "Paint or draw using light, relaxing colors to soothe your mind.",
+        "time": "10"
+      }
+    ]
+  },
+  {
+    "mental_state": "Forgetfulness",
+    "activities": [
+      {
         "category": "Learning",
         "title": "Memory Chain Game",
         "description": "Think of one random object, then link another related one, and continue the chain as long as the timer runs to train memory flow.",
         "time": "3"
       },
-        {
-          "category": "Creative",
-          "title": "Design Visual Habit Chart",
-          "description": "Draw or decorate a chart for your morning and evening routines.",
-          "time": "12"
-        },
-        {
-          "category": "Motivation",
-          "title": "End-of-Day Recap Note",
-          "description": "Before bed, jot down three things you accomplished today.",
-          "time": "5"
-        }
-      ]
-    },
-    {
-      "mental_state": "Frustration",
-      "activities": [
-        {
-          "category": "Mindfulness",
-          "title": "4-7-8 Breathing",
-          "description": "Inhale for 4 seconds, hold for 7, exhale for 8 to release anger.",
-          "time": "3"
-        },
-        {
-          "category": "Sport",
-          "title": "Mini Boxing",
-          "description": "Throw gentle air punches to release frustration safely.",
-          "time": "5"
-        },
-        {
-          "category": "Creative",
-          "title": "Scribble & Release",
-          "description": "Draw quick, random lines on paper to let out anger or tension.",
-          "time": "6"
-        }
-      ]
-    },
-    {
-      "mental_state": "Low Self-Esteem",
-      "activities": [
-        {
-          "category": "Learning",
-          "title": "Write 3 Positive Traits",
-          "description": "List three strengths or achievements you’re proud of.",
-          "time": "4"
-        },
-        {
-          "category": "Motivation",
-          "title": "Mirror Affirmations",
-          "description": "Look in the mirror and repeat one positive statement about yourself.",
-          "time": "3"
-        },
-        {
-          "category": "Social",
-          "title": "Share a Positive Memory",
-          "description": "Tell someone about a happy or funny moment from your past.",
-          "time": "5"
-        }
-      ]
-    }
-  ]
-  
+      {
+        "category": "Creative",
+        "title": "Design Visual Habit Chart",
+        "description": "Draw or decorate a chart for your morning and evening routines.",
+        "time": "12"
+      },
+      {
+        "category": "Motivation",
+        "title": "End-of-Day Recap Note",
+        "description": "Before bed, jot down three things you accomplished today.",
+        "time": "5"
+      }
+    ]
+  },
+  {
+    "mental_state": "Frustration",
+    "activities": [
+      {
+        "category": "Mindfulness",
+        "title": "4-7-8 Breathing",
+        "description": "Inhale for 4 seconds, hold for 7, exhale for 8 to release anger.",
+        "time": "3"
+      },
+      {
+        "category": "Sport",
+        "title": "Mini Boxing",
+        "description": "Throw gentle air punches to release frustration safely.",
+        "time": "5"
+      },
+      {
+        "category": "Creative",
+        "title": "Scribble & Release",
+        "description": "Draw quick, random lines on paper to let out anger or tension.",
+        "time": "6"
+      }
+    ]
+  },
+  {
+    "mental_state": "Low Self-Esteem",
+    "activities": [
+      {
+        "category": "Learning",
+        "title": "Write 3 Positive Traits",
+        "description": "List three strengths or achievements you’re proud of.",
+        "time": "4"
+      },
+      {
+        "category": "Motivation",
+        "title": "Mirror Affirmations",
+        "description": "Look in the mirror and repeat one positive statement about yourself.",
+        "time": "3"
+      },
+      {
+        "category": "Social",
+        "title": "Share a Positive Memory",
+        "description": "Tell someone about a happy or funny moment from your past.",
+        "time": "5"
+      }
+    ]
+  }
+]

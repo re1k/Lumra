@@ -53,6 +53,7 @@ dependencies:
   lottie: ^3.3.2
   flutter_local_notifications: ^19.5.0
   timezone: ^0.10.1
+  firebase_messaging: ^16.0.3 
   profanity_filter: ^2.0.0
   
 
