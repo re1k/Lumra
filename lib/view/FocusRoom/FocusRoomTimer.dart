@@ -96,18 +96,57 @@ class _FocusTimerViewState extends State<FocusTimerView> {
           context: context,
           barrierDismissible: false,
           builder: (dialogContext) => AlertDialog(
-            title: const Text('Great job!'),
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 40,
+              vertical: 24,
+            ),
+            title: const Text(
+              'Great job!',
+              style: TextStyle(
+                fontFamily: 'K2D',
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
             content: Text(
               'You completed ${widget.plan.config.durationMin} minutes '
               'with ${widget.plan.config.breaksCount} break(s).',
+              style: const TextStyle(
+                fontFamily: 'K2D',
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.black,
+              ),
             ),
             actions: [
-              TextButton(
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: BColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  minimumSize: const Size(90, 40),
+                ),
                 onPressed: () {
                   Navigator.of(dialogContext).pop();
                   if (mounted) _endSession(reset: true);
                 },
-                child: const Text('Done'),
+                child: const Text(
+                  'Done',
+                  style: TextStyle(
+                    fontFamily: 'K2D',
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),
@@ -176,12 +215,17 @@ class _FocusTimerViewState extends State<FocusTimerView> {
                 decoration: BoxDecoration(
                   color: _isFocus
                       ? BColors.primary.withOpacity(.08)
-                      : BColors.lightGrey,
+                      : const Color.fromARGB(
+                          255,
+                          236,
+                          227,
+                          153,
+                        ).withOpacity(.25),
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
                     color: _isFocus
                         ? BColors.primary.withOpacity(.25)
-                        : BColors.lightGrey,
+                        : const Color.fromARGB(255, 236, 227, 153),
                   ),
                 ),
                 child: Text(
@@ -240,7 +284,9 @@ class _FocusTimerViewState extends State<FocusTimerView> {
                     height: 8,
                     decoration: BoxDecoration(
                       color: active
-                          ? (focus ? BColors.primary : Colors.black54)
+                          ? (focus
+                                ? BColors.primary
+                                : const Color.fromARGB(255, 236, 227, 153))
                           : Colors.black12,
                       borderRadius: BorderRadius.circular(999),
                     ),

@@ -36,7 +36,7 @@ class DurationAndBreakSheet extends StatelessWidget {
             shrinkWrap: true,
             children: [
               Text(
-                "Choose the focus duration (minutes)",
+                "Choose the focus duration in minutes",
                 style: BTextTheme.lightTextTheme.headlineSmall,
               ),
               const SizedBox(height: 12),
@@ -67,7 +67,7 @@ class DurationAndBreakSheet extends StatelessWidget {
               const SizedBox(height: BSizes.SpaceBtwSections),
 
               Text(
-                "Number of 5-minute breaks",
+                "Number of breaks",
                 style: BTextTheme.lightTextTheme.headlineSmall,
               ),
               const SizedBox(height: 8),
@@ -155,7 +155,7 @@ class DurationAndBreakSheet extends StatelessWidget {
                     ),
                   ),
                   child: const Text(
-                    "Start Focus Plan",
+                    "Set Focus Plan",
                     style: TextStyle(
                       fontFamily: 'K2D',
                       fontSize: BSizes.fontSizeSm,
