@@ -7,17 +7,28 @@ import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/theme/base_themes/sizes.dart';
 import 'package:lumra_project/theme/custom_themes/text_theme.dart';
 
-class AddPostView extends StatelessWidget {
+class AddPostView extends StatefulWidget {
   final String promptMessage; //to differ in the careGiver and at ADHD user
 
-  AddPostView({super.key, required this.promptMessage});
+  const AddPostView({super.key, required this.promptMessage});
 
+  @override
+  State<AddPostView> createState() => _AddPostViewState();
+}
+
+class _AddPostViewState extends State<AddPostView> {
   final authController = Get.find<AuthController>();
   final TextEditingController contentController = TextEditingController();
   final PostControllerX postController = Get.find<PostControllerX>();
 
   // Observing validity of the input field
   final RxBool isValid = false.obs;
+
+  @override
+  void initState() {
+    super.initState();
+    postController.resetFormState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +51,10 @@ class AddPostView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(promptMessage, style: BTextTheme.lightTextTheme.labelSmall),
+              Text(
+                widget.promptMessage,
+                style: BTextTheme.lightTextTheme.labelSmall,
+              ),
 
               const SizedBox(height: BSizes.SpaceBtwSections - 15),
 
@@ -72,33 +86,70 @@ class AddPostView extends StatelessWidget {
               ),
               const SizedBox(height: BSizes.sm),
 
-              TextField(
-                controller: postController.contentController,
-                maxLines: 6,
-                inputFormatters: [
-                  LengthLimitingTextInputFormatter(180), // LIMIT 180
-                ],
-                onChanged: (value) {
-                  postController.currentLength.value =
-                      value.length; // counts spaces too
-                  postController.updateFormValidity();
-                },
-                decoration: InputDecoration(
-                  hintText: "What's on your mind?",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                      BSizes.inputFieldRadius,
+              Obx(() {
+                final shouldShowError = postController.hasInteracted.value;
+                final hasError =
+                    shouldShowError &&
+                    (postController.hasRestrictedContent.value ||
+                        postController.contentError.value != null);
+                final errorText = shouldShowError
+                    ? (postController.hasRestrictedContent.value
+                          ? "Your post contains restricted content."
+                          : postController.contentError.value)
+                    : null;
+
+                return TextField(
+                  controller: postController.contentController,
+                  maxLines: 6,
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatter(180), // LIMIT 180
+                  ],
+                  onChanged: (value) {
+                    postController.currentLength.value =
+                        value.length; // counts spaces too
+                    postController.updateFormValidity();
+                  },
+                  decoration: InputDecoration(
+                    hintText: "What's on your mind?",
+                    errorText: errorText,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        BSizes.inputFieldRadius,
+                      ),
+                      borderSide: BorderSide(
+                        color: hasError ? BColors.error : BColors.secondry,
+                      ),
                     ),
-                    borderSide: BorderSide(color: BColors.secondry),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                      BSizes.inputFieldRadius,
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        BSizes.inputFieldRadius,
+                      ),
+                      borderSide: BorderSide(
+                        color: hasError ? BColors.error : BColors.secondry,
+                        width: hasError ? 2 : 1,
+                      ),
                     ),
-                    borderSide: BorderSide(color: BColors.secondry),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        BSizes.inputFieldRadius,
+                      ),
+                      borderSide: const BorderSide(
+                        color: BColors.error,
+                        width: 1,
+                      ),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        BSizes.inputFieldRadius,
+                      ),
+                      borderSide: const BorderSide(
+                        color: BColors.error,
+                        width: 2,
+                      ),
+                    ),
                   ),
-                ),
-              ),
+                );
+              }),
 
               const SizedBox(height: BSizes.sm),
               // Reactive remaining characters

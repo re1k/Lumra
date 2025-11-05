@@ -7,7 +7,6 @@ import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lumra_project/model/community/communityModel.dart';
 import 'package:lumra_project/utils/customWidgets/toastservice.dart';
-import 'package:lumra_project/utils/customWidgets/custom_dialog.dart';
 import 'package:profanity_filter/profanity_filter.dart';
 
 class PostControllerX extends GetxController {
@@ -23,6 +22,8 @@ class PostControllerX extends GetxController {
   String? get currentUid => FirebaseAuth.instance.currentUser?.uid;
 
   var contentError = RxnString();
+  var hasRestrictedContent = false.obs;
+  var hasInteracted = false.obs;
 
   var isFormValid = false.obs;
   var isLoading = false.obs;
@@ -52,6 +53,10 @@ class PostControllerX extends GetxController {
   @override
   void onInit() {
     super.onInit();
+
+    hasInteracted.value = false;
+    contentError.value = null;
+    hasRestrictedContent.value = false;
     _init();
     contentController.addListener(updateFormValidity);
   }
@@ -224,7 +229,18 @@ class PostControllerX extends GetxController {
     listenToUserPosts();
   }
 
-  void updateFormValidity() {
+  void resetFormState() {
+    hasInteracted.value = false;
+    contentError.value = null;
+    hasRestrictedContent.value = false;
+    isFormValid.value = false;
+  }
+
+  void updateFormValidity({bool markInteracted = true}) {
+    if (markInteracted) {
+      hasInteracted.value = true;
+    }
+
     var text = contentController.text;
     currentLength.value = text.length;
 
@@ -233,17 +249,46 @@ class PostControllerX extends GetxController {
 
     if (text.isEmpty) {
       contentError.value = "Post cannot be empty";
+      hasRestrictedContent.value = false;
       isFormValid.value = false;
     } else if (onlySpecialChars.hasMatch(text)) {
       contentError.value = "Post cannot contain only special characters";
+      hasRestrictedContent.value = false;
+      isFormValid.value = false;
+    } else {
+      _checkRestrictedContent(text);
+    }
+  }
+
+  void _checkRestrictedContent(String text) {
+    if (!_bannedWordsLoaded.value) {
+      _loadBannedWords().then((_) => _performRestrictedContentCheck(text));
+    } else {
+      _performRestrictedContentCheck(text);
+    }
+  }
+
+  void _performRestrictedContentCheck(String text) {
+    final normalizedText = text.trim().replaceAll(RegExp(r'\s+'), ' ');
+    final hasProfanity = _profanityFilter.hasProfanity(normalizedText);
+    final hasBannedWords = _containsBannedWords(normalizedText);
+
+    if (hasProfanity || hasBannedWords) {
+      contentError.value = "Your post contains restricted content.";
+      hasRestrictedContent.value = true;
       isFormValid.value = false;
     } else {
       contentError.value = null;
+      hasRestrictedContent.value = false;
       isFormValid.value = true;
     }
   }
 
   Future<bool> addPost(BuildContext context) async {
+    hasInteracted.value = true;
+
+    updateFormValidity(markInteracted: false);
+
     if (!isFormValid.value) return false;
 
     var text = contentController.text.trim();
@@ -268,11 +313,6 @@ class PostControllerX extends GetxController {
     final hasBannedWords = _containsBannedWords(text);
 
     if (hasProfanity || hasBannedWords) {
-      await CustomDialog.showError(
-        context,
-        title: 'Restricted Content',
-        message: "Your post contains restricted content and can't be posted.",
-      );
       return false;
     }
 
