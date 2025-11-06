@@ -254,7 +254,7 @@ class PostControllerX extends GetxController {
       }
 
       if (onlySpecialChars.hasMatch(text)) {
-        contentError.value = "Post cannot contain only special characters";
+        contentError.value = null;
         hasRestrictedContent.value = false;
         isFormValid.value = false;
       } else {
