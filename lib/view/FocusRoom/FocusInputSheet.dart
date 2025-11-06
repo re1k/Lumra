@@ -15,7 +15,7 @@ class DurationAndBreakSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Get.find<FocusController>();
-    final durations = const [5, 15, 30, 45, 60, 90, 120, 180, 240];
+    final durations = const [3, 15, 30, 45, 60, 90, 120, 180, 240];
 
     return SafeArea(
       top: false,

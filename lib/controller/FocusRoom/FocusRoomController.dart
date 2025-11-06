@@ -24,7 +24,7 @@ class FocusController extends GetxController {
   static bool _isBreakCountValid(int durationMin, int b) {
     // Special-case: allow 30 minutes with 1 break as per product requirement.
     if (durationMin == 30 && b == 1) return true;
-    if (durationMin == 5 && (b == 0 || b == 1)) return true; //////////TEST CASE
+    if (durationMin == 3 && (b == 0 || b == 1)) return true; //////////TEST CASE
 
     final gaps = b + 1;
     final gapMinutes = (durationMin - kBreakLenMin * b) / gaps;
@@ -43,7 +43,7 @@ class FocusController extends GetxController {
 
     // Ensure UI shows 1 break for 30 minutes (even if average-gap math would exclude it)
     if (durationMin == 30 && !out.contains(1)) out.add(1);
-    if (durationMin == 5) {
+    if (durationMin == 3) {
       if (!out.contains(0)) out.add(0);
       if (!out.contains(1)) out.add(1);
     } /////TEST CASE
@@ -73,7 +73,7 @@ class FocusController extends GetxController {
       selectedBreaks.value = 0;
     } else if (clamped == 30) {
       selectedBreaks.value = validBreakOptions.contains(1) ? 1 : null;
-    } else if (clamped == 5) {
+    } else if (clamped == 1) {
       /////////TEST CASE
       selectedBreaks.value = validBreakOptions.contains(1) ? 1 : 0;
     } else {
@@ -105,8 +105,8 @@ class FocusController extends GetxController {
       'Invalid config: spacing rule not satisfied',
     );
     // TEST ONLY EXCEPTION:
-    // For 5 minutes with 1 break : Focus 1, Break 3, Focus 1
-    if (durationMin == 5 && breaksCount == 1) {
+    // For 1 minutes with 1 break : Focus 1, Break 3, Focus 1
+    if (durationMin == 3 && breaksCount == 1) {
       return FocusSessionPlan(
         config: FocusSessionConfig(
           durationMin: durationMin,
@@ -114,7 +114,7 @@ class FocusController extends GetxController {
         ),
         segments: const [
           FocusSegment(phase: 'focus', minutes: 1),
-          FocusSegment(phase: 'break', minutes: 3),
+          FocusSegment(phase: 'break', minutes: 1),
           FocusSegment(phase: 'focus', minutes: 1),
         ],
       );
