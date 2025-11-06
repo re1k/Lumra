@@ -245,7 +245,7 @@ class _FocusTimerViewState extends State<FocusTimerView> {
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontFamily: 'K2D',
-                  fontSize: 13,
+                  fontSize: 17,
                   color: Colors.black54,
                 ),
               ),

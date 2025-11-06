@@ -114,7 +114,7 @@ class _FocusViewState extends State<FocusView>
                                 ),
                               ),
                               child: const Text(
-                                'start a focus session',
+                                'Start A Focus Session',
                                 style: TextStyle(
                                   fontFamily: 'K2D',
                                   fontSize: BSizes.fontSizeMd,
@@ -377,7 +377,7 @@ class _FocusViewState extends State<FocusView>
                                 ),
                               ),
                               child: const Text(
-                                'Start focusing',
+                                'Start Focusing',
                                 style: TextStyle(
                                   fontFamily: 'K2D',
                                   fontSize: BSizes.fontSizeSm,

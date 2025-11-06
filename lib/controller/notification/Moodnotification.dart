@@ -15,16 +15,17 @@ class DailyMoodNotification {
   bool _initialized = false;
   StreamSubscription<DocumentSnapshot>? _moodSubscription;
 
-// Function to request notification permission
-Future<void> requestNotificationPermission() async {
-  // Check if notification permission is denied
-  if (await Permission.notification.isDenied) {
-    // Request the permission
-    await Permission.notification.request();
+  // Function to request notification permission
+  Future<void> requestNotificationPermission() async {
+    // Check if notification permission is denied
+    if (await Permission.notification.isDenied) {
+      // Request the permission
+      await Permission.notification.request();
+    }
   }
-}
+
   /// Initialize notifications and timezone
-    Future<void> init(String uid) async {
+  Future<void> init(String uid) async {
     tzdata.initializeTimeZones();
     tz.setLocalLocation(tz.getLocation('Asia/Riyadh'));
 
@@ -37,7 +38,9 @@ Future<void> requestNotificationPermission() async {
 
     //  real time dailyMood
     _moodSubscription?.cancel();
-    _moodSubscription = _db.collection('users').doc(uid).snapshots().listen((doc) async {
+    _moodSubscription = _db.collection('users').doc(uid).snapshots().listen((
+      doc,
+    ) async {
       if (doc.exists) {
         final data = doc.data() as Map<String, dynamic>;
         final dailyMood = data['dailyMood'] ?? 3;
@@ -48,7 +51,7 @@ Future<void> requestNotificationPermission() async {
   }
 
   /// Schedule daily notification based on user's dailyMode from Firestore
-  Future<void> scheduleDailyNotification({ int? dailyMood}) async {
+  Future<void> scheduleDailyNotification({int? dailyMood}) async {
     if (!_initialized) {
       print("Notifications not initialized yet.");
       return;
@@ -81,7 +84,7 @@ Future<void> requestNotificationPermission() async {
         1: [
           "Sadness doesn’t last forever, Better moments can come soon.",
           "Every sad moment passes and something good can follow.",
-          "Don’t be sad, sunshine always comes back", 
+          "Don’t be sad, sunshine always comes back",
         ],
         2: [
           "Feeling anxious is normal, Be kind to yourself.",
@@ -107,18 +110,25 @@ Future<void> requestNotificationPermission() async {
 
       // Pick a random message based on dailyMode
       final random = Random();
-      final selectedMessage = modeMessages[dailyMode]![
-          random.nextInt(modeMessages[dailyMode]!.length)];
+      final selectedMessage =
+          modeMessages[dailyMode]![random.nextInt(
+            modeMessages[dailyMode]!.length,
+          )];
 
       // Determine the scheduled time
       tz.TZDateTime scheduledDate;
-        final now = tz.TZDateTime.now(tz.local);
-        scheduledDate =
-            tz.TZDateTime(tz.local, now.year, now.month, now.day, 10, 30);
-        if (scheduledDate.isBefore(now)) {
-          scheduledDate = scheduledDate.add(const Duration(days: 1));
-        }
-      
+      final now = tz.TZDateTime.now(tz.local);
+      scheduledDate = tz.TZDateTime(
+        tz.local,
+        now.year,
+        now.month,
+        now.day,
+        13,
+        50,
+      );
+      if (scheduledDate.isBefore(now)) {
+        scheduledDate = scheduledDate.add(const Duration(days: 1));
+      }
 
       // Notification details
       const androidDetails = AndroidNotificationDetails(
@@ -127,14 +137,13 @@ Future<void> requestNotificationPermission() async {
         channelDescription: 'Daily mood-based notifications',
         importance: Importance.max,
         priority: Priority.high,
-       
       );
       final notificationDetails = NotificationDetails(android: androidDetails);
 
       // Schedule notification
       await _notificationsPlugin.zonedSchedule(
         1,
-        "Daily Supportive ", // change the title
+        "Daily Support ", // change the title
         selectedMessage,
         scheduledDate,
         notificationDetails,
@@ -144,19 +153,10 @@ Future<void> requestNotificationPermission() async {
       );
 
       print(
-          " Notification scheduled for ${currentUser.uid}: $selectedMessage at $scheduledDate");
-
-     
-    
+        " Notification scheduled for ${currentUser.uid}: $selectedMessage at $scheduledDate",
+      );
     } catch (e) {
       print(" Error scheduling notification: $e");
     }
   }
-
-
-
-
-  
-
-  
 }
