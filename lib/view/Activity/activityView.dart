@@ -347,7 +347,7 @@ class _ActivityTileState extends State<_ActivityTile> {
                             // Activity Description
                             Text(
                               item.description,
-                              maxLines: 3,
+                              maxLines: 7,
                               overflow: TextOverflow.ellipsis,
                               style: widget.textTheme.bodyMedium?.copyWith(
                                 fontFamily: 'K2D',
