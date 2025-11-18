@@ -124,7 +124,7 @@ class DailyMoodNotification {
         now.month,
         now.day,
         13,
-        20,
+        55,
       );
       if (scheduledDate.isBefore(now)) {
         scheduledDate = scheduledDate.add(const Duration(days: 1));
@@ -143,7 +143,7 @@ class DailyMoodNotification {
       // Schedule notification
       await _notificationsPlugin.zonedSchedule(
         1,
-        "Daily Support ", 
+        "Daily Support ",
         selectedMessage,
         scheduledDate,
         notificationDetails,
