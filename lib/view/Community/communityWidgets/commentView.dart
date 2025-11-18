@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:lumra_project/controller/Community/PostController.dart';
 import 'package:lumra_project/model/community/comments.dart';
@@ -36,12 +37,12 @@ class CommentsListView extends StatelessWidget {
           child: Padding(
             padding: EdgeInsets.only(
               // to make centerd
-              top:  130 ,
+              top:  0 ,
             ),
             child: Image.asset(
               'assets/images/NoComments.png',
-              width: 295,
-              height: 295,
+              width: 260,
+              height: 260,
               fit: BoxFit.contain,
             ),
           ),
@@ -52,7 +53,69 @@ class CommentsListView extends StatelessWidget {
         itemCount: comments.length,
         shrinkWrap: isShrinkWrap,
         separatorBuilder: (_, __) => SizedBox(height: BSizes.SpaceBtwItems),
-        itemBuilder: (context, index) => _commentCard(context,comments[index]),
+  itemBuilder: (context, index) {
+  final comment = comments[index];
+
+  final isOwner = comment.userId == controller.currentUid;
+
+  if (!isOwner) {
+    return _commentCard(context, comment);
+  }
+
+  return Slidable(
+    key: Key(comment.id.toString()),
+    endActionPane: ActionPane(
+      motion: const ScrollMotion(),
+      children: [
+        SlidableAction(
+          onPressed: (context) async {
+            final confirm = await showDialog(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20)),
+                title: const Text(
+                  'Delete'),
+                content: const Text('Are you sure you want to delete this comment?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                    child: const Text('Cancel',style: TextStyle(color: Colors.black),),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: BColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                    child: const Text("Confirm", style: TextStyle(fontFamily: 'K2D',fontSize: 14)),
+                  ),
+                ],
+              ),
+            );
+
+            if (confirm == true) {
+              await controller.deleteComment(postId, comment.id.toString());
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Comment deleted')),
+              );
+            }
+          },
+          backgroundColor: BColors.error.withOpacity(0.2),
+          foregroundColor: BColors.error,
+          icon: Icons.delete_outline,
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ],
+    ),
+    child: _commentCard(context, comment),
+  );
+},
+
       );
     });
   }

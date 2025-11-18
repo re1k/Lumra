@@ -109,7 +109,7 @@ class _CommentsPageState extends State<CommentsPage> {
                 icon: const Icon(
                   Icons.add_comment_outlined,
                   color: BColors.primary,
-                  size: BSizes.iconLg,
+                  size: BSizes.iconMd + 5,
                 ),
                 onPressed: () {
                   showModalBottomSheet(

@@ -8,6 +8,7 @@ import 'package:lumra_project/theme/base_themes/sizes.dart';
 import 'package:lumra_project/theme/custom_themes/text_theme.dart';
 import 'package:lumra_project/view/Community/CommentsPage.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:lumra_project/view/Community/communityWidgets/addPostView.dart';
 
 
 /// PostView
@@ -78,64 +79,106 @@ class PostView extends StatelessWidget {
 
   if (post.userId == controller.currentUid) {
     return Slidable(
-      key: Key(post.id),
-      endActionPane: ActionPane(
-        motion: const ScrollMotion(),
-        children: [
-          // Edit button
-          SlidableAction(
-            onPressed: (_) {
-              // handle edit
-              print("Edit tapped for ${post.id}");
-            },
-            backgroundColor: BColors.info.withOpacity(0.2),
-            foregroundColor: BColors.info,
-            icon: Icons.edit,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          // Delete button
-          SlidableAction(
-            onPressed: (_) async {
-              final confirm = await showDialog(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  backgroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
-                  title: const Text('Delete Post?'),
-                  content: const Text('It will be permanently deleted!'),
-                  actions: [
-                    TextButton(
-                        onPressed: () => Navigator.of(ctx).pop(false),
-                        child: const Text('Cancel')),
-                    ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: BColors.error,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16)),
-                        ),
-                        onPressed: () => Navigator.of(ctx).pop(true),
-                        child: const Text("Delete")),
-                  ],
-                ),
-              );
+  key: Key(post.id),
+  endActionPane: ActionPane(
+    motion: const ScrollMotion(),
+    children: [
+      // Edit button
+      SlidableAction(
+        onPressed: (_) async {
+          // Prefill controller
+          controller.contentController.text = post.content;
 
-              if (confirm == true) {
-                await controller.deletePost(post.id);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Post deleted')),
-                );
-              }
-            },
-            backgroundColor: BColors.error.withOpacity(0.2),
-            foregroundColor: BColors.error,
-            icon: Icons.delete_outline,
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ],
+          // Open bottom sheet for editing
+          final updated = await showModalBottomSheet<bool>(
+            context: context,
+            isScrollControlled: true,
+            useSafeArea: true,
+            backgroundColor: BColors.white,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+            ),
+            builder: (context) => FractionallySizedBox(
+              heightFactor: 0.80,
+              child: AddPostView(
+                promptMessage: "",
+                isEdit: true,
+                postToEdit: post,
+              ),
+            ),
+          );
+
+          controller.contentController.clear();
+          controller.updateFormValidity();
+
+          if (updated != null && updated) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Post updated')),
+            );
+          }
+        },
+        backgroundColor: BColors.info.withOpacity(0.2),
+        foregroundColor: BColors.info,
+        icon: Icons.edit,
+borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(16),
+          bottomLeft: Radius.circular(16),
+        ),        spacing: 0,
+        flex: 1, // <-- full height
       ),
-      child: _postCard(context, post),
-    );
+
+      // Delete button
+      SlidableAction(
+        onPressed: (_) async {
+          final confirm = await showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              title: const Text('Delete'),
+              content: const Text('Are you sure you want to delete this post?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  child: const Text('Cancel',style: TextStyle(color: Colors.black),),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: BColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  child: const Text("Confirm",style: TextStyle(fontFamily: 'K2D',fontSize: 14)),
+                ),
+              ],
+            ),
+          );
+
+          if (confirm == true) {
+            await controller.deletePost(post.id);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Post deleted')),
+            );
+          }
+        },
+        backgroundColor: BColors.error.withOpacity(0.2),
+        foregroundColor: BColors.error,
+        icon: Icons.delete_outline,
+            borderRadius: const BorderRadius.only(
+          topRight: Radius.circular(16),
+          bottomRight: Radius.circular(16),
+        ),
+        spacing: 0,
+        flex: 1,
+      ),
+    ],
+  ),
+  child: _postCard(context, post),
+);
+
   } else {
     return _postCard(context, post);
   }

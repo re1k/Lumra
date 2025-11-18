@@ -3,14 +3,22 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:lumra_project/controller/Community/PostController.dart';
 import 'package:lumra_project/controller/auth/auth_controller.dart';
+import 'package:lumra_project/model/community/communityModel.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/theme/base_themes/sizes.dart';
 import 'package:lumra_project/theme/custom_themes/text_theme.dart';
 
 class AddPostView extends StatefulWidget {
   final String promptMessage; //to differ in the careGiver and at ADHD user
+  final Post? postToEdit; // nullable, only for editing
+  final bool isEdit;
 
-  const AddPostView({super.key, required this.promptMessage});
+  const AddPostView({
+    super.key,
+    required this.promptMessage,
+    this.postToEdit,
+    this.isEdit = false,
+  });
 
   @override
   State<AddPostView> createState() => _AddPostViewState();
@@ -28,6 +36,12 @@ class _AddPostViewState extends State<AddPostView> {
   void initState() {
     super.initState();
     postController.resetFormState();
+    // If editing, prefill content
+    if (widget.isEdit && widget.postToEdit != null) {
+      postController.contentController.text = widget.postToEdit!.content;
+      postController.currentLength.value = widget.postToEdit!.content.length;
+      postController.updateFormValidity();
+    }
   }
 
   @override
@@ -38,7 +52,7 @@ class _AddPostViewState extends State<AddPostView> {
           icon: const Icon(Icons.arrow_back, color: BColors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Create Post"),
+        title: Text(widget.isEdit ? "Edit Post" : "Create Post"),
         titleTextStyle: BTextTheme.lightTextTheme.headlineLarge,
         backgroundColor: Colors.white,
         centerTitle: true,
@@ -56,15 +70,15 @@ class _AddPostViewState extends State<AddPostView> {
                 style: BTextTheme.lightTextTheme.labelSmall,
               ),
 
-              const SizedBox(height: BSizes.SpaceBtwSections - 15),
+               SizedBox(height: widget.isEdit ? 0 : BSizes.SpaceBtwSections - 15),
 
               /// Warning note
               Padding(
-                padding: const EdgeInsets.only(
+                padding: EdgeInsets.only(
                   left: 4,
                   right: 4,
                   bottom: 4,
-                  top: 10,
+                  top: widget.isEdit ? 0 :10,
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,29 +190,35 @@ class _AddPostViewState extends State<AddPostView> {
                 () => SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      disabledForegroundColor: Colors.white70,
+                      backgroundColor: BColors.primary,
+                    ),
                     onPressed:
                         postController.isFormValid.value &&
                             !postController.isLoading.value
                         ? () async {
-                            final posted = await postController.addPost(
-                              context,
-                            );
-                            if (posted) {
-                              Navigator.pop(context);
+                            bool success = false;
+
+                            if (widget.isEdit && widget.postToEdit != null) {
+                              success = await postController.updatePost(
+                                widget.postToEdit!.id,
+                                postController.contentController.text.trim(),
+                              );
+                            } else {
+                              success = await postController.addPost(context);
                             }
+
+                            if (success) Navigator.pop(context);
                           }
                         : null,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      foregroundColor: Colors.white,
-                      disabledForegroundColor: Colors.white.withOpacity(0.6),
-                    ),
                     child: postController.isLoading.value
                         ? Row(
                             mainAxisSize: MainAxisSize.min,
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const SizedBox(
+                            children: const [
+                              SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
@@ -206,23 +226,17 @@ class _AddPostViewState extends State<AddPostView> {
                                   strokeWidth: 2,
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Text(
-                                "Loading...",
-                                style: BTextTheme.darkTextTheme.headlineSmall,
-                              ),
+                              SizedBox(width: 8),
+                              Text("Loading..."),
                             ],
                           )
                         : Row(
                             mainAxisSize: MainAxisSize.min,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.send),
+                              Icon(widget.isEdit ? Icons.edit : Icons.send),
                               const SizedBox(width: 8),
-                              Text(
-                                "Post",
-                                style: BTextTheme.darkTextTheme.headlineSmall,
-                              ),
+                              Text(widget.isEdit ? "Update" : "Post"),
                             ],
                           ),
                   ),

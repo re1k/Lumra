@@ -772,6 +772,42 @@ Future<void> deletePost(String postId) async {
   }
 }
 
+Future<bool> updatePost(String postId, String newContent) async {
+  try {
+    isLoading.value = true; // optional: show loading in UI
+
+    // Update the post in your backend (example: Firestore)
+    await FirebaseFirestore.instance
+        .collection(communityCollection)
+        .doc(postId)
+        .update({
+      'content': newContent,
+      'updatedAt': Timestamp.now(),
+    });
+
+    isLoading.value = false;
+    return true; // success
+  } catch (e) {
+    isLoading.value = false;
+    print("Error updating post: $e");
+    return false; // failed
+  }
+}
+
+Future<void> deleteComment(String postId, String commentId) async {
+  try {
+
+     await FirebaseFirestore.instance
+        .collection(communityCollection)
+        .doc(postId)
+        .collection("comments")
+        .doc(commentId)
+        .delete();
+
+  } catch (e) {
+    print("Error deleting comment: $e");
+  }
+}
 
   void _clearLikesSubscriptions() {
     for (final sub in _likesSubscriptions.values) {
