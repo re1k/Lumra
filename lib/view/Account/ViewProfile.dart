@@ -7,10 +7,11 @@ import '../../theme/base_themes/colors.dart';
 import '../../theme/custom_themes/text_theme.dart';
 import '../../theme/custom_themes/appbar_theme.dart';
 import 'package:lumra_project/theme/base_themes/sizes.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
 class ViewProfile extends StatelessWidget {
   ViewProfile({super.key}) {
-    // Initialize UserController
     if (!Get.isRegistered<UserController>()) {
       userController = Get.put(UserController(FirebaseFirestore.instance));
       userController.init();
@@ -18,16 +19,40 @@ class ViewProfile extends StatelessWidget {
       userController = Get.find<UserController>();
     }
 
-    // Initialize AuthController
     authController = Get.find<AuthController>();
   }
 
   late final UserController userController;
   late final AuthController authController;
+  final isEditing = false.obs;
+  final isenable = false.obs;
+  final firstNameError = ''.obs;
+  final lastNameError = ''.obs;
 
-  final enableName = false.obs;
-  final enableEmail = false.obs;
-  final enableDob = false.obs;
+  Future<void> _selectDateOfBirth(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: userController.dob.value,
+      firstDate: DateTime(1955, 1, 1),
+      lastDate: DateTime(2019, 12, 31),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: BColors.buttonPrimary,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null && picked != userController.dob.value) {
+      userController.dob.value = picked;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,78 +70,124 @@ class ViewProfile extends StatelessWidget {
               showBackButton: true,
               onBackPressed: () => Navigator.pop(context),
             ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: BColors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: IconButton(
+                      tooltip: 'edit profile',
+                      icon: const Icon(
+                        Icons.edit,
+                        color: BColors.primary,
+                        size: BSizes.iconLg,
+                      ),
+                      onPressed: () {
+                        isEditing.value = true;
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
             Expanded(
               child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Profile content
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(
-                        BSizes.lg,
-                        BSizes.lg, // Add top spacing from App Bar
-                        BSizes.lg,
-                        BSizes.lg + 100, // Extra bottom padding for navbar
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    BSizes.lg,
+                    BSizes.lg,
+                    BSizes.lg,
+                    BSizes.lg + 100,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildTextField(
+                        label: "First Name",
+                        controller: userController.firstNameController,
+                        errorText: firstNameError,
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildTextField(
-                            label: "First Name",
-                            controller: userController.firstNameController,
-                            enable: enableName,
-                          ),
-
-                          _buildTextField(
-                            label: "Last Name",
-                            controller: userController.lastNameController,
-                            enable: enableName,
-                          ),
-
-                          _buildTextField(
-                            label: "Email",
-                            controller: userController.emailController,
-                            enable: enableEmail,
-                          ),
-
-                          _buildGenderField(),
-
-                          const SizedBox(height: 10),
-
-                          _buildTextField(
-                            label: "Date of Birth",
-                            controller: TextEditingController(
-                              text: "${userController.dob.value.toLocal()}"
-                                  .split(' ')[0],
-                            ),
-                            enable: enableDob,
-                            icon: Icons.calendar_today,
-                          ),
-                          const SizedBox(height: 20),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: () async {},
-                              label: const Text("save"),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: BColors.primary,
-                                foregroundColor: BColors.textwhite,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 15,
-                                  horizontal: 0,
-                                ),
-                                textStyle:
-                                    BTextTheme.lightTextTheme.headlineSmall,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                      _buildTextField(
+                        label: "Last Name",
+                        controller: userController.lastNameController,
+                          errorText: lastNameError,
                       ),
-                    ),
-                  ],
+
+                      if(!isEditing.value)
+                      _buildEmailField(
+                        label: "Email",
+                        controller: userController.emailController,
+                      )  ,
+                      _buildGenderField(),
+                      const SizedBox(height: 10),
+                      _buildDobField(
+                        context: context,
+                        label: "Date of Birth",
+                        icon: Icons.calendar_today,
+                      ),
+                      const SizedBox(height: 20),
+                      Obx(() {
+                        return isEditing.value
+                            ? SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                     bool valid = true;
+
+                                    if (userController.firstNameController.text.trim().isEmpty) {
+                                    firstNameError.value = "Should not be empty";
+                                    valid = false;
+                                      } else {
+                                       firstNameError.value = '';
+                                       }
+
+                                    if (userController.lastNameController.text.trim().isEmpty) {
+                                     lastNameError.value = "Should not be empty";
+                                     valid = false;
+                                      } else {
+                                        lastNameError.value = '';
+                                        }
+                             
+                                   if (valid) {
+                                    userController.updateUserFromControllers();
+                                    _showConfiramtinMessage(context);
+                                    isEditing.value = false;
+
+                                       }
+                                        },
+
+                                  icon: const Icon(Icons.save),
+                                  label: const Text("Save"),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: BColors.primary,
+                                    foregroundColor: BColors.textwhite,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 15,
+                                      horizontal: 0,
+                                    ),
+                                    textStyle: BTextTheme.lightTextTheme.headlineSmall,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : const SizedBox();
+                      }),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -126,12 +197,160 @@ class ViewProfile extends StatelessWidget {
     });
   }
 
+   void _showConfiramtinMessage(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                spreadRadius: 2,
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+               Text(
+                "Profile Updated",
+                textAlign: TextAlign.left,
+                style: const TextStyle(
+                  fontFamily: 'K2D',
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: BColors.primary,
+                ),
+              ),
+             
+              const SizedBox(height: 16),
+              const Text(
+                "The profile was updated successfully.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: BSizes.fontSizeMd,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 25),
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: BColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text(
+                    "OK",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
+
+
   Widget _buildTextField({
+  required String label,
+  required TextEditingController controller,
+  IconData? icon,
+  RxString? errorText,
+}) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 15),
+    child: Obx(() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: BTextTheme.lightTextTheme.titleSmall),
+          
+         
+          if (errorText != null && errorText.value.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 2, bottom: 4),
+              child: Text(
+                errorText.value,
+                style: const TextStyle(color: Colors.red, fontSize: 12),
+              ),
+            ),
+
+          TextField(
+            controller: controller,
+            readOnly: !isEditing.value,
+            maxLength: 12,
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z]')),
+            ],
+            decoration: InputDecoration(
+              counterText: isEditing.value ? null : '',
+              filled: true,
+              fillColor: BColors.softGrey,
+              prefixIcon: icon != null ? Icon(icon) : null,
+              border: const OutlineInputBorder(),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            ),
+          ),
+        ],
+      );
+    }),
+  );
+}
+
+
+Widget _buildEmailField({
+  required String label,
+  required TextEditingController controller,
+  IconData? icon,
+}) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 15),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: BTextTheme.lightTextTheme.titleSmall),
+        const SizedBox(height: 8),
+        Obx(
+          () => TextField(
+            controller: controller,
+            readOnly: !isenable.value , 
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: BColors.softGrey,
+              
+              border: const OutlineInputBorder(),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+  Widget _buildDobField({
+    required BuildContext context,
     required String label,
-    required TextEditingController controller,
     IconData? icon,
-    required RxBool enable,
-    VoidCallback? onTap,
   }) {
     return Obx(
       () => Padding(
@@ -142,24 +361,19 @@ class ViewProfile extends StatelessWidget {
             Text(label, style: BTextTheme.lightTextTheme.titleSmall),
             const SizedBox(height: 8),
             TextField(
-              controller: controller,
-              readOnly: !enable.value,
-              onTap: onTap,
+              controller: TextEditingController(
+                text: DateFormat('yyyy-MM-dd').format(userController.dob.value),
+              ),
+              readOnly: true,
+              onTap: isEditing.value ? () => _selectDateOfBirth(context) : null,
               decoration: InputDecoration(
                 filled: true,
                 fillColor: BColors.softGrey,
                 prefixIcon: icon != null ? Icon(icon) : null,
-                suffixIcon: IconButton(
-                  icon: Icon(enable.value ? Icons.check : Icons.edit),
-                  onPressed: () {
-                    enable.value = !enable.value;
-                  },
-                ),
-                border: OutlineInputBorder(),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 16,
-                ),
+                
+                hintText: 'YYYY-MM-DD',
+                border: const OutlineInputBorder(),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               ),
             ),
           ],
@@ -168,7 +382,8 @@ class ViewProfile extends StatelessWidget {
     );
   }
 
-  Widget _buildGenderField() {
+
+ Widget _buildGenderField() {
     return Obx(() {
       final gender = userController.gender.value.toLowerCase();
 
@@ -183,7 +398,8 @@ class ViewProfile extends StatelessWidget {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    // userController.gender.value = 'male';
+                    if(isEditing.value)
+                    userController.gender.value = 'male';
                   },
                   icon: const Icon(Icons.boy, size: 25),
                   label: const Text("Male"),
@@ -206,7 +422,8 @@ class ViewProfile extends StatelessWidget {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    //userController.gender.value = 'female';
+                    if(isEditing.value)
+                    userController.gender.value = 'female';
                   },
                   icon: const Icon(Icons.girl, size: 25),
                   label: const Text("Female"),
@@ -231,4 +448,7 @@ class ViewProfile extends StatelessWidget {
       );
     });
   }
+
+
+
 }

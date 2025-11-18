@@ -237,10 +237,6 @@ class PostControllerX extends GetxController {
   }
 
   void updateFormValidity({bool markInteracted = true}) {
-    if (markInteracted) {
-      hasInteracted.value = true;
-    }
-
     var text = contentController.text;
     currentLength.value = text.length;
 
@@ -248,15 +244,22 @@ class PostControllerX extends GetxController {
     final onlySpecialChars = RegExp(r'^[^a-zA-Z0-9]+$');
 
     if (text.isEmpty) {
-      contentError.value = "Post cannot be empty";
-      hasRestrictedContent.value = false;
-      isFormValid.value = false;
-    } else if (onlySpecialChars.hasMatch(text)) {
-      contentError.value = "Post cannot contain only special characters";
+      hasInteracted.value = false;
+      contentError.value = null;
       hasRestrictedContent.value = false;
       isFormValid.value = false;
     } else {
-      _checkRestrictedContent(text);
+      if (markInteracted) {
+        hasInteracted.value = true;
+      }
+
+      if (onlySpecialChars.hasMatch(text)) {
+        contentError.value = null;
+        hasRestrictedContent.value = false;
+        isFormValid.value = false;
+      } else {
+        _checkRestrictedContent(text);
+      }
     }
   }
 

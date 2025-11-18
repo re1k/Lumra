@@ -6,7 +6,7 @@ import 'package:lumra_project/theme/base_themes/sizes.dart';
 import 'package:lumra_project/view/Activity/ActivityWidgets/Timer.dart';
 import 'package:get/get.dart';
 
-class ActivityPrompts extends StatelessWidget {
+class ActivityPrompts extends StatefulWidget {
   final String activityTitle;
   final int minutes;
   const ActivityPrompts({
@@ -14,6 +14,20 @@ class ActivityPrompts extends StatelessWidget {
     required this.activityTitle,
     required this.minutes,
   });
+
+  @override
+  State<ActivityPrompts> createState() => _ActivityPromptsState();
+}
+
+class _ActivityPromptsState extends State<ActivityPrompts> {
+  bool _started = false;
+  late String _prompt;
+
+  @override
+  void initState() {
+    super.initState();
+    _prompt = getRandomPrompt();
+  }
 
   String getRandomPrompt() {
     final random = Random();
@@ -33,7 +47,7 @@ class ActivityPrompts extends StatelessWidget {
       "What does success look like for someone with your unique ADHD profile?",
     ];
 
-    if (activityTitle.toLowerCase().contains('art')) {
+    if (widget.activityTitle.toLowerCase().contains('art')) {
       return drawingList[random.nextInt(drawingList.length)];
     } else {
       return writingList[random.nextInt(writingList.length)];
@@ -42,8 +56,6 @@ class ActivityPrompts extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final prompt = getRandomPrompt();
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -64,7 +76,7 @@ class ActivityPrompts extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            prompt,
+            _prompt,
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 16),
           ),
@@ -82,7 +94,13 @@ class ActivityPrompts extends StatelessWidget {
               ),
             ),
             onPressed: () {
-              Get.to(() => LiquidTimer(duration: Duration(minutes: minutes)));
+              Navigator.of(context, rootNavigator: true).pop();
+              Future.microtask(() {
+                Get.to(
+                  () =>
+                      LiquidTimer(duration: Duration(minutes: widget.minutes)),
+                );
+              });
             },
             child: const Text(
               "Let's Start!",
