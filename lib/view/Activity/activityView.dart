@@ -327,6 +327,7 @@ class _ActivityTileState extends State<_ActivityTile> {
 
                             // Activity Title
                             Text(
+                              maxLines: 3,
                               item.title,
                               overflow: TextOverflow.ellipsis,
                               style: widget.textTheme.titleMedium?.copyWith(
