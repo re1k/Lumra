@@ -7,7 +7,7 @@ import 'package:lumra_project/navigation/role_aware_root.dart';
 import 'package:lumra_project/view/Account/AccountPage.dart';
 //import "package:lumra_project/view/ChatBoot/ChatBootADHD/ChatBootADHD.dart";
 import 'package:lumra_project/view/SplashPage/splashScreen.dart';
-import 'package:lumra_project/view/welcomepage.dart';
+import 'package:lumra_project/view/auth/loginPage.dart';
 import 'package:lumra_project/theme/custom_themes/text_field_theme.dart';
 import 'package:lumra_project/view/homepage/adhdHomePage.dart';
 import 'package:lumra_project/theme/theme.dart';
@@ -99,7 +99,7 @@ class MyApp extends StatelessWidget {
             title: 'Lumra',
             theme: LumraAppTheme.lightTheme,
             home: SplashGifScreen(
-              nextScreen: Welcomepage(),
+              nextScreen: LoginScreen(),
             ), //splash then we start! :)
             getPages: [GetPage(name: '/app', page: () => RoleAwareRoot())],
           ),
