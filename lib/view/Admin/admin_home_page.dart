@@ -5,6 +5,8 @@ import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/theme/base_themes/sizes.dart';
 import 'package:lumra_project/theme/custom_themes/text_theme.dart';
 import 'package:lumra_project/model/community/communityModel.dart';
+import 'package:lumra_project/controller/auth/auth_controller.dart';
+import 'package:lumra_project/view/welcomePage.dart';
 
 class AdminHomePage extends StatefulWidget {
   const AdminHomePage({super.key});
@@ -44,29 +46,131 @@ class _AdminHomePageState extends State<AdminHomePage> {
     );
   }
 
-  // ---------------- HEADER ----------------
+  // ---------------- HEADER ----------------  
   Widget _header(BuildContext context) {
-    return Column(
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Hello Layan",
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: BColors.darkGrey,
-            fontSize: 20,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Hello Layan",
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: BColors.darkGrey,
+                  fontSize: 20,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                "Admin Panel",
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: BColors.black,
+                  fontSize: 28,
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 6),
-        Text(
-          "Admin Panel",
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: BColors.black,
-            fontSize: 28,
-          ),
-        ),
+        _logoutButton(context),
       ],
+    );
+  }
+
+  Widget _logoutButton(BuildContext context) {
+    final authController = Get.find<AuthController>();
+    return Container(
+      decoration: BoxDecoration(
+        color: BColors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: IconButton(
+        tooltip: 'Logout',
+        icon: const Icon(
+          Icons.logout,
+          color: BColors.primary,
+        ),
+        onPressed: () {
+          _showAdminLogoutDialog(context, authController);
+        },
+      ),
+    );
+  }
+
+  void _showAdminLogoutDialog(BuildContext context, AuthController authController) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 40,
+            vertical: 24,
+          ),
+          title: const Text(
+            "Confirm Sign out",
+            style: TextStyle(fontFamily: 'K2D', fontWeight: FontWeight.bold),
+          ),
+          content: const Text(
+            "Are you sure you want to sign out?",
+            style: TextStyle(
+              fontFamily: 'K2D',
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.black,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                "Cancel",
+                style: TextStyle(fontFamily: 'K2D', color: Colors.black87),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: BColors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                minimumSize: const Size(90, 40),
+              ),
+              onPressed: () async {
+                await authController.logout();
+                Navigator.pop(context);
+                Get.offAll(() => const Welcomepage());
+              },
+              child: const Text(
+                "Confirm",
+                style: TextStyle(
+                  fontFamily: 'K2D',
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
