@@ -69,7 +69,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               leading: Padding(
                 padding: const EdgeInsets.only(top: 17),
                 child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: BColors.darkGrey),
+                  icon: const Icon(Icons.arrow_back_ios_new, color: BColors.darkGrey),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
