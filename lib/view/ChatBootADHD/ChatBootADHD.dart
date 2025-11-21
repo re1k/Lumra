@@ -46,11 +46,6 @@ class _ChatViewState extends State<ChatView>
   final _bot = const types.User(id: 'lumra');
   final TextEditingController _inputCtrl = TextEditingController();
 
-  late final AnimationController _waveCtrl = AnimationController(
-    vsync: this,
-    duration: const Duration(seconds: 8),
-  )..repeat();
-
   @override
   void initState() {
     super.initState();
@@ -62,7 +57,6 @@ class _ChatViewState extends State<ChatView>
 
   @override
   void dispose() {
-    _waveCtrl.dispose();
     _inputCtrl.dispose();
     super.dispose();
   }
@@ -242,344 +236,136 @@ class _ChatViewState extends State<ChatView>
     super.build(context);
     return Theme(
       data: Theme.of(context).copyWith(hintColor: Colors.black54),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Center(
-          child: Container(
-            width: 380,
-            height: 680,
-            margin: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: BColors.primary.withOpacity(0.12),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ],
+      child: Container(
+        color: BColors.lightGrey,
+        child: Column(
+          children: [
+            // Encouragement message - positioned directly below the smaller wave
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                BSizes.defaultSpace,
+                BSizes.sm,
+                BSizes.defaultSpace,
+                0,
+              ),
+              child: const _EncouragementCard(
+                text: 'Here for your moment feelings.',
+                maxWidth: 340,
+                backgroundColor: Colors.transparent,
+              ),
             ),
-            child: Column(
-              children: [
-                //Animated wave header
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
-                  child: AnimatedBuilder(
-                    animation: _waveCtrl,
-                    builder: (context, _) {
-                      return ClipPath(
-                        clipper: _AnimatedWaveClipper(phase: _waveCtrl.value),
-                        clipBehavior: Clip.antiAlias,
-                        child: Container(
-                          height: 56,
-                          width: double.infinity,
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [BColors.primary, BColors.secondry],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                          ),
-                          alignment: Alignment.center,
-                          child: const Text(
-                            'Lumra Assistant',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 18,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+
+            // Divider or gradient line
+            Container(
+              height: 3,
+              margin: EdgeInsets.fromLTRB(
+                BSizes.defaultSpace + 4,
+                BSizes.xs,
+                BSizes.defaultSpace + 4,
+                BSizes.xs,
+              ),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [BColors.primary, BColors.secondry],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
                 ),
-                // 2) encouragement message just below the header
-                // Padding(
-                //   padding: const EdgeInsets.only(top: 8),
-                //   child: const _EncouragementCard(
-                //     // text: 'Remember, I am here for your in-the-moment feelings',
-                //     text: 'Here for your moment feelings',
-                //     maxWidth: 320, //  set width here
-                //     backgroundColor: BColors.white,
-                //   ),
-                // ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 0,
+              ),
+            ),
+
+            // Chat area + composer - expands to fill remaining space
+            Expanded(
+              child: Container(
+                color: BColors.lightGrey,
+                child: Chat(
+                  messages: _messages,
+                  onSendPressed: _handleSend,
+                  user: _user,
+                  typingIndicatorOptions: TypingIndicatorOptions(
+                    typingUsers: _showDots
+                        ? const [types.User(id: 'lumra', firstName: 'Lumra')]
+                        : const [],
                   ),
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: SizedBox(
-                      width: 300,
-                      height: 30,
-                      child: const _EncouragementCard(
-                        text: 'Here for your moment feelings.',
-                        maxWidth: 340,
-                        backgroundColor: Colors.white,
+                  theme: DefaultChatTheme(
+                    backgroundColor: BColors.lightGrey,
+                    primaryColor: BColors.primary,
+                    messageBorderRadius: 14,
+                    sentMessageBodyTextStyle: const TextStyle(
+                      fontSize: 15,
+                      color: Colors.white,
+                    ),
+                    receivedMessageBodyTextStyle: const TextStyle(
+                      fontSize: 15,
+                      color: Colors.black87,
+                    ),
+                    secondaryColor: const Color(
+                      0xFFE8E8E8,
+                    ), // Slightly darker gray for received messages
+                    inputBackgroundColor: Colors.transparent,
+                    inputContainerDecoration: const BoxDecoration(),
+                    inputTextColor: Colors.black87,
+                    inputTextStyle: const TextStyle(fontSize: 15, height: 1.4),
+                    inputPadding: EdgeInsets.fromLTRB(
+                      12,
+                      8,
+                      12,
+                      8 +
+                          BSizes
+                              .lg, // Increased bottom padding to raise input box higher
+                    ),
+                    inputTextDecoration: InputDecoration(
+                      hintText: 'Write your message...',
+                      hintStyle: TextStyle(color: Colors.grey.shade500),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      filled: true,
+                      fillColor: BColors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide: BorderSide(
+                          color: Colors.grey.shade300,
+                          width: 1,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide: BorderSide(
+                          color: Colors.grey.shade300,
+                          width: 1,
+                        ),
+                      ),
+                      focusedBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(18)),
+                        borderSide: BorderSide(
+                          color: Color.fromARGB(255, 160, 160, 160),
+                          width: 1.2,
+                        ),
                       ),
                     ),
-                  ),
-                ),
-
-                // ──  Add this divider or gradient line
-                Container(
-                  height: 3,
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 4,
-                  ),
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [BColors.primary, BColors.secondry],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
+                    sendButtonIcon: Icon(
+                      Icons.send_rounded,
+                      color: _inputCtrl.text.trim().isEmpty
+                          ? Colors.grey.shade400
+                          : BColors.buttonPrimary,
+                      size: 24,
                     ),
                   ),
-                ),
-
-                // Chat area + composer
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(20),
-                        bottomRight: Radius.circular(20),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: BColors.primary.withOpacity(0.08),
-                          blurRadius: 8,
-                          offset: const Offset(0, -1),
-                        ),
-                      ],
-                    ),
-
-                    child: Stack(
-                      children: [
-                        Chat(
-                          messages: _messages,
-                          onSendPressed: _handleSend,
-                          user: _user,
-                          typingIndicatorOptions: TypingIndicatorOptions(
-                            typingUsers: _showDots
-                                ? const [
-                                    types.User(id: 'lumra', firstName: 'Lumra'),
-                                  ]
-                                : const [],
-                          ),
-
-                          theme: DefaultChatTheme(
-                            backgroundColor: Colors.white,
-                            primaryColor: BColors.primary,
-
-                            messageBorderRadius: 14,
-                            sentMessageBodyTextStyle: const TextStyle(
-                              fontSize: 15,
-                              color: Colors.white,
-                            ),
-                            //DO NOT DELETE ANYTHING UNTIL WE DECIDE
-                            // typingIndicatorTheme: TypingIndicatorTheme(
-                            //   // REQUIRED in your version:
-                            //   animatedCirclesColor:
-                            //       BColors.primary, // dots color
-                            //   animatedCircleSize: 3, // dots size (px)
-                            //   bubbleBorder: BorderRadius.circular(
-                            //     14,
-                            //   ), // bubble radius
-                            //   bubbleColor: const Color(0xFFF1F2F4),
-                            //   countAvatarColor: const Color(0xFFF1F2F4),
-                            //   countTextColor: const Color(0xFFF1F2F4),
-                            //   multipleUserTextStyle: TextStyle(), // bubble bg
-                            //   // Optional in many versions, but add to hide the text:
-                            //   // textStyle: const TextStyle(color: Colors.white),// makes “Lumra is typing…” invisible on white
-                            // ),
-                            receivedMessageBodyTextStyle: const TextStyle(
-                              fontSize: 15,
-                              color: Colors.black87,
-                            ),
-                            inputBackgroundColor: Colors.transparent,
-                            inputContainerDecoration: const BoxDecoration(),
-                            inputTextColor: Colors.black87,
-                            inputTextStyle: const TextStyle(
-                              fontSize: 15,
-                              height: 1.4,
-                            ),
-                            inputPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            inputTextDecoration: InputDecoration(
-                              hintText: 'Write your message...',
-                              hintStyle: TextStyle(color: Colors.grey.shade500),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 10,
-                              ),
-                              filled: true,
-                              fillColor: Colors.white,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(24),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade300,
-                                  width: 1,
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(24),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade300,
-                                  width: 1,
-                                ),
-                              ),
-                              focusedBorder: const OutlineInputBorder(
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(18),
-                                ),
-                                borderSide: BorderSide(
-                                  color: Color.fromARGB(255, 160, 160, 160),
-                                  width: 1.2,
-                                ),
-                              ),
-                            ),
-                            sendButtonIcon: Icon(
-                              Icons.send_rounded,
-                              color: _inputCtrl.text.trim().isEmpty
-                                  ? Colors
-                                        .grey
-                                        .shade400 // disabled look
-                                  : BColors.buttonPrimary, // active color
-                              size: 24,
-                            ),
-                          ),
-                          onAttachmentPressed: null,
-                          inputOptions: InputOptions(
-                            textEditingController: _inputCtrl,
-                            sendButtonVisibilityMode: SendButtonVisibilityMode
-                                .always, // always visible
-                          ),
-                          l10n: const ChatL10nEn(
-                            emptyChatPlaceholder:
-                                "No chats yet, but I’m here whenever you’re ready.",
-                            inputPlaceholder: "Write your message...",
-                          ),
-                        ),
-
-                        ///here is the 3 dots
-                        // if (_showDots)
-                        //   const Positioned(
-                        //     left: 16,
-                        //     bottom: 65, // adjust to sit above the input
-                        //     child: _TypingDotsBubble(),
-                        //   ),
-                      ],
-                    ),
-                    // DO NOT REMOVE THIS COMMENT/////////////////////////////
-                    // I don’t trust the chatbot anymore 😭
-                    // child: Chat(
-                    //   messages: _messages,
-                    //   onSendPressed: _handleSend,
-                    //   user: _user,
-                    //   theme: DefaultChatTheme(
-                    //     backgroundColor: Colors.white,
-                    //     primaryColor: BColors.primary,
-                    //     messageBorderRadius: 14,
-                    //     sentMessageBodyTextStyle: const TextStyle(
-                    //       fontSize: 15,
-                    //       color: Colors.white,
-                    //     ),
-                    //     receivedMessageBodyTextStyle: const TextStyle(
-                    //       fontSize: 15,
-                    //       color: Colors.black87,
-                    //     ),
-
-                    //     // background
-                    //     inputBackgroundColor: Colors.transparent,
-                    //     inputContainerDecoration:
-                    //         const BoxDecoration(), // remove outer border completely, shall we change it?
-                    //     // Style text input only
-                    //     inputTextColor: Colors.black87,
-                    //     inputTextStyle: const TextStyle(
-                    //       fontSize: 15,
-                    //       height: 1.4,
-                    //     ),
-                    //     inputPadding: const EdgeInsets.symmetric(
-                    //       horizontal: 12,
-                    //       vertical: 8,
-                    //     ),
-
-                    //     // line border
-                    //     inputTextDecoration: InputDecoration(
-                    //       hintText: 'Write your message...',
-                    //       hintStyle: TextStyle(color: Colors.grey.shade500),
-                    //       contentPadding: const EdgeInsets.symmetric(
-                    //         horizontal: 14,
-                    //         vertical: 10,
-                    //       ),
-                    //       filled: true,
-                    //       fillColor: Colors.white,
-                    //       border: OutlineInputBorder(
-                    //         borderRadius: BorderRadius.circular(24),
-                    //         borderSide: BorderSide(
-                    //           color: Colors.grey.shade300,
-                    //           width: 1,
-                    //         ),
-                    //       ),
-                    //       enabledBorder: OutlineInputBorder(
-                    //         borderRadius: BorderRadius.circular(24),
-                    //         borderSide: BorderSide(
-                    //           color: Colors.grey.shade300,
-                    //           width: 1,
-                    //         ),
-                    //       ),
-                    //       //INPUT FIELD BORDER
-                    //       focusedBorder: OutlineInputBorder(
-                    //         borderRadius: BorderRadius.circular(18),
-                    //         borderSide: const BorderSide(
-                    //           color: Color.fromARGB(255, 160, 160, 160),
-                    //           width: 1.2,
-                    //         ),
-                    //       ),
-                    //     ),
-
-                    //     //  send arrow
-                    //     sendButtonIcon: const Icon(
-                    //       Icons.send_rounded,
-                    //       color: BColors.buttonPrimary,
-                    //       size: 24,
-                    //     ),
-                    //   ),
-
-                    //   // Remove upload icon
-                    //   onAttachmentPressed: null,
-
-                    //   // Behavior of input
-                    //   inputOptions: InputOptions(
-                    //     textEditingController:
-                    //         _inputCtrl, // attach our controller
-                    //     sendButtonVisibilityMode:
-                    //         SendButtonVisibilityMode.editing,
-                    //     autocorrect: true,
-                    //     enableSuggestions: true,
-                    //   ),
-
-                    //   //  Empty chat placeholder////////////////////////
-                    //   l10n: const ChatL10nEn(
-                    //     emptyChatPlaceholder:
-                    //         "No chats yet, but I’m here whenever you’re ready.",
-                    //     inputPlaceholder: "Write your message...",
-                    //   ),
-                    // ),
+                  onAttachmentPressed: null,
+                  inputOptions: InputOptions(
+                    textEditingController: _inputCtrl,
+                    sendButtonVisibilityMode: SendButtonVisibilityMode.always,
+                  ),
+                  l10n: const ChatL10nEn(
+                    emptyChatPlaceholder:
+                        "No chats yet, but I'm here whenever you're ready.",
+                    inputPlaceholder: "Write your message...",
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -786,14 +572,14 @@ class _EncouragementCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
 
-    return Align(
-      alignment: Alignment.centerLeft,
+    return Center(
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxWidth),
         child: Container(
-          color: backgroundColor, //  background control
-          padding: const EdgeInsets.fromLTRB(9, 0, 9, 3), ///////
+          color: backgroundColor,
+          padding: const EdgeInsets.fromLTRB(9, 0, 9, 3),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Icon(
@@ -802,14 +588,15 @@ class _EncouragementCard extends StatelessWidget {
                 color: BColors.primary,
               ),
               const SizedBox(width: 8),
-              Expanded(
+              Flexible(
                 child: Text(
                   text,
                   style: tt.bodyMedium?.copyWith(
-                    color: const Color.fromARGB(255, 91, 91, 91),
-                    fontWeight: FontWeight.normal, //normal
+                    color: BColors.darkGrey,
+                    fontWeight: FontWeight.normal,
                     fontSize: 12,
                   ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ],
