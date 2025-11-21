@@ -7,6 +7,9 @@ import 'package:lumra_project/theme/custom_themes/text_theme.dart';
 import 'package:lumra_project/model/community/communityModel.dart';
 import 'package:lumra_project/view/Admin/admin_comments_page.dart';
 import 'package:lumra_project/view/Admin/dialog_helper.dart';
+import 'package:lumra_project/controller/auth/auth_controller.dart';
+import 'package:lumra_project/view/welcomePage.dart';
+import 'package:lumra_project/utils/customWidgets/toastservice.dart';
 
 class AdminHomePage extends StatefulWidget {
   const AdminHomePage({super.key});
@@ -48,27 +51,129 @@ class _AdminHomePageState extends State<AdminHomePage> {
 
   // ---------------- HEADER ----------------
   Widget _header(BuildContext context) {
-    return Column(
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Hello Layan",
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: BColors.darkGrey,
-            fontSize: 20,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Hello Layan",
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: BColors.darkGrey,
+                  fontSize: 20,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                "Admin Panel",
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: BColors.black,
+                  fontSize: 28,
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 6),
-        Text(
-          "Admin Panel",
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: BColors.black,
-            fontSize: 28,
-          ),
-        ),
+        _logoutButton(context),
       ],
+    );
+  }
+
+  Widget _logoutButton(BuildContext context) {
+    final authController = Get.find<AuthController>();
+    return Container(
+      decoration: BoxDecoration(
+        color: BColors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: IconButton(
+        tooltip: 'Logout',
+        icon: const Icon(Icons.logout, color: BColors.primary),
+        onPressed: () {
+          _showAdminLogoutDialog(context, authController);
+        },
+      ),
+    );
+  }
+
+  void _showAdminLogoutDialog(
+    BuildContext context,
+    AuthController authController,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 40,
+            vertical: 24,
+          ),
+          title: const Text(
+            "Confirm Sign out",
+            style: TextStyle(fontFamily: 'K2D', fontWeight: FontWeight.bold),
+          ),
+          content: const Text(
+            "Are you sure you want to sign out?",
+            style: TextStyle(
+              fontFamily: 'K2D',
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.black,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                "Cancel",
+                style: TextStyle(fontFamily: 'K2D', color: Colors.black87),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: BColors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                minimumSize: const Size(90, 40),
+              ),
+              onPressed: () async {
+                await authController.logout();
+                Navigator.pop(context);
+                Get.offAll(() => const Welcomepage());
+              },
+              child: const Text(
+                "Confirm",
+                style: TextStyle(
+                  fontFamily: 'K2D',
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -278,7 +383,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
           ),
         ),
         const Spacer(),
-        // 💬 COMMENT BUTTON (نفس صفحة صديقتك)
+
         IconButton(
           icon: const Icon(Icons.comment_outlined, size: BSizes.iconMd - 1),
           onPressed: () {
@@ -288,7 +393,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 builder: (_) => AdminCommentsPage(
                   postId: postId,
                   postUserName: userName,
-                  collectionName: collection, // ← هذا كان ناقص
+                  collectionName: collection,
                 ),
               ),
             );
@@ -299,13 +404,12 @@ class _AdminHomePageState extends State<AdminHomePage> {
 
         const SizedBox(width: 10),
 
-        // 🚮 DELETE POST → نفس كودك الحالي ما يلمس كود صديقتك
         IconButton(
           icon: Icon(Icons.delete_outline, color: BColors.error),
           tooltip: 'Delete Post',
           onPressed: () async {
             final confirm = await showConfirmDialog(
-              context: context, // هذا مهم جدًا
+              context: context,
               title: "Delete Post?",
               message: "This action is permanent.",
             );
@@ -313,10 +417,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
             if (confirm == true) {
               await adminController.deletePost(postId, collection, userId);
 
-              showFeedback(
-                title: "Deleted",
-                message: "Post has been deleted successfully!",
-              );
+              ToastService.success("Post has been deleted successfully!");
             }
           },
         ),
@@ -349,7 +450,6 @@ class _AdminHomePageState extends State<AdminHomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // HEADER (avatar + username + نوع البلاغ)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -373,7 +473,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                   Text(userName, style: BTextTheme.lightTextTheme.labelLarge),
                 ],
               ),
-              // هنا نوضح نوعه Post أو Comment
+
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
@@ -390,14 +490,12 @@ class _AdminHomePageState extends State<AdminHomePage> {
 
           const SizedBox(height: BSizes.sm),
 
-          // المحتوى
           _postContent(content),
 
           const SizedBox(height: 6),
 
           const SizedBox(height: BSizes.sm),
 
-          // ACTIONS (IGNORE + DELETE) ← نفس البنْية حق all post
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -409,8 +507,6 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 ),
               ),
               const Spacer(),
-
-              // 💬 COMMENT BUTTON ما نحتاجه للـ reported card
 
               // IGNORE
               TextButton(
@@ -435,9 +531,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
                       );
                     }
 
-                    showFeedback(
-                      title: "Ignored",
-                      message: "Report has been ignored successfully!",
+                    ToastService.info(
+                      "Ignored",
+                      "Report has been ignored successfully!",
                     );
                   }
                 },
@@ -476,10 +572,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                         commentDocId: item["docId"],
                       );
                     }
-                    showFeedback(
-                      title: "Deleted",
-                      message: "Removed successfully!",
-                    );
+                    ToastService.success("Removed successfully!");
                   } else {
                     Navigator.of(context).maybePop();
                   }

@@ -49,7 +49,8 @@ class PostControllerX extends GetxController {
   StreamSubscription<QuerySnapshot>? _savedPostsSubscription;
   StreamSubscription<QuerySnapshot>? _userPostsSubscription;
 
-  final Map<String, StreamSubscription<QuerySnapshot>> _commentsSubscriptions ={};
+  final Map<String, StreamSubscription<QuerySnapshot>> _commentsSubscriptions =
+      {};
   final Map<String, RxList<Comment>> _commentsPerPost = {};
 
   // Each like is stored once at /{postId}/likes/{userId}
@@ -171,8 +172,11 @@ class PostControllerX extends GetxController {
       normalizedBanned = normalizedBanned.replaceAll("-", " ");
 
       final escapedBanned = RegExp.escape(normalizedBanned);
-      final wordBoundaryPattern = RegExp(r'\b' + escapedBanned + r'\b', caseSensitive: false);
-      
+      final wordBoundaryPattern = RegExp(
+        r'\b' + escapedBanned + r'\b',
+        caseSensitive: false,
+      );
+
       if (wordBoundaryPattern.hasMatch(normalizedText)) {
         return true;
       }
@@ -297,6 +301,76 @@ class PostControllerX extends GetxController {
       contentError.value = null;
       hasRestrictedContent.value = false;
       isFormValid.value = true;
+    }
+  }
+
+  Future<bool> checkAndResetBanIfNeeded() async {
+    if (currentUid == null) return true;
+
+    try {
+      final userDoc = await db.collection('users').doc(currentUid).get();
+      if (!userDoc.exists) return true;
+
+      final data = userDoc.data() ?? {};
+      final deletedCount = data['deletedPostsCount'] == null
+          ? 0
+          : (data['deletedPostsCount'] is int
+                ? data['deletedPostsCount']
+                : int.tryParse(data['deletedPostsCount'].toString()) ?? 0);
+
+      if (deletedCount < 6) return true;
+
+      final reachedSixAt = data['reachedSixAt'];
+      if (reachedSixAt == null || reachedSixAt is! Timestamp) return true;
+
+      final now = Timestamp.now();
+      final elapsedSeconds = now.seconds - reachedSixAt.seconds;
+      final elapsedDays = elapsedSeconds ~/ 86400;
+
+      if (elapsedDays >= 14) {
+        await db.collection('users').doc(currentUid).update({
+          'deletedPostsCount': 0,
+          'reachedSixAt': FieldValue.delete(),
+        });
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      print('Error checking ban status: $e');
+      return true;
+    }
+  }
+
+  Future<int?> getRemainingBanDays() async {
+    if (currentUid == null) return null;
+
+    try {
+      final userDoc = await db.collection('users').doc(currentUid).get();
+      if (!userDoc.exists) return null;
+
+      final data = userDoc.data() ?? {};
+      final deletedCount = data['deletedPostsCount'] == null
+          ? 0
+          : (data['deletedPostsCount'] is int
+                ? data['deletedPostsCount']
+                : int.tryParse(data['deletedPostsCount'].toString()) ?? 0);
+
+      if (deletedCount < 6) return null;
+
+      final reachedSixAt = data['reachedSixAt'];
+      if (reachedSixAt == null || reachedSixAt is! Timestamp) return null;
+
+      final now = Timestamp.now();
+      final elapsedSeconds = now.seconds - reachedSixAt.seconds;
+      final elapsedDays = elapsedSeconds ~/ 86400;
+
+      if (elapsedDays >= 14) return null;
+
+      return 14 - elapsedDays;
+    } catch (e) {
+      print('Error getting remaining ban days: $e');
+      return null;
     }
   }
 
@@ -667,22 +741,22 @@ class PostControllerX extends GetxController {
           .collection('comments')
           .doc(commentId)
           .update({'isReported': true});
-         ToastService.success("Your report has been received.");
+      ToastService.success("Your report has been received.");
 
       print('Comment $commentId reported successfully for post $postId');
     } catch (e) {
       print('Failed to report comment $commentId: $e');
     }
   }
+
   // Report a Post
   Future<void> reportPost(String postId) async {
     try {
-      await db
-          .collection(communityCollection)
-          .doc(postId)
-          .update({'isReported': true});
+      await db.collection(communityCollection).doc(postId).update({
+        'isReported': true,
+      });
 
-         ToastService.success("Your report has been received.");
+      ToastService.success("Your report has been received.");
 
       print('Comment $postId reported successfully for post $postId');
     } catch (e) {
@@ -767,64 +841,64 @@ class PostControllerX extends GetxController {
     }
   }
 
-Future<void> deletePost(String postId) async {
-  if (currentUid == null) return;
+  Future<void> deletePost(String postId) async {
+    if (currentUid == null) return;
 
-  try {
-    // Ensure post belongs to current user
-    final postDoc = await db.collection(communityCollection).doc(postId).get();
-    if (postDoc.exists && postDoc['userId'] == currentUid) {
-      await db.collection(communityCollection).doc(postId).delete();
+    try {
+      // Ensure post belongs to current user
+      final postDoc = await db
+          .collection(communityCollection)
+          .doc(postId)
+          .get();
+      if (postDoc.exists && postDoc['userId'] == currentUid) {
+        await db.collection(communityCollection).doc(postId).delete();
 
-      // Remove from reactive lists for immediate UI update
-      posts.removeWhere((p) => p.id == postId);
-      userPosts.removeWhere((p) => p.id == postId);
-      savedPosts.removeWhere((p) => p.id == postId);
-      savedPostIds.remove(postId);
+        // Remove from reactive lists for immediate UI update
+        posts.removeWhere((p) => p.id == postId);
+        userPosts.removeWhere((p) => p.id == postId);
+        savedPosts.removeWhere((p) => p.id == postId);
+        savedPostIds.remove(postId);
+      }
+    } catch (e) {
+      print('Error deleting post $postId: $e');
     }
-  } catch (e) {
-    print('Error deleting post $postId: $e');
   }
-}
 
-Future<bool> updatePost(String postId, String newContent) async {
-  try {
-    isLoading.value = true; // optional: show loading in UI
+  Future<bool> updatePost(String postId, String newContent) async {
+    try {
+      isLoading.value = true; // optional: show loading in UI
 
-    // Update the post in your backend (example: Firestore)
-    await FirebaseFirestore.instance
-        .collection(communityCollection)
-        .doc(postId)
-        .update({
-      'content': newContent,
-      //'updatedAt': Timestamp.now(),
-      'isEdited': true,
-    });
-    isLoading.value = false;
-    refreshUserPostsListener();
-    return true; // success
-  } catch (e) {
-    isLoading.value = false;
-    print("Error updating post: $e");
-    return false; // failed
+      // Update the post in your backend (example: Firestore)
+      await FirebaseFirestore.instance
+          .collection(communityCollection)
+          .doc(postId)
+          .update({
+            'content': newContent,
+            //'updatedAt': Timestamp.now(),
+            'isEdited': true,
+          });
+      isLoading.value = false;
+      refreshUserPostsListener();
+      return true; // success
+    } catch (e) {
+      isLoading.value = false;
+      print("Error updating post: $e");
+      return false; // failed
+    }
   }
-  
-}
 
-Future<void> deleteComment(String postId, String commentId) async {
-  try {
-
-     await FirebaseFirestore.instance
-        .collection(communityCollection)
-        .doc(postId)
-        .collection("comments")
-        .doc(commentId)
-        .delete();
-
-  } catch (e) {
-    print("Error deleting comment: $e");
+  Future<void> deleteComment(String postId, String commentId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection(communityCollection)
+          .doc(postId)
+          .collection("comments")
+          .doc(commentId)
+          .delete();
+    } catch (e) {
+      print("Error deleting comment: $e");
+    }
   }
-}
 
   void _clearLikesSubscriptions() {
     for (final sub in _likesSubscriptions.values) {

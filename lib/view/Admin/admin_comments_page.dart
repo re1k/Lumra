@@ -5,11 +5,14 @@ import 'package:lumra_project/theme/base_themes/sizes.dart';
 import 'package:lumra_project/theme/custom_themes/text_theme.dart';
 import 'package:lumra_project/theme/custom_themes/appbar_theme.dart';
 import 'package:lumra_project/view/Admin/dialog_helper.dart';
+import 'package:lumra_project/utils/customWidgets/toastservice.dart';
+import 'package:lumra_project/controller/Admin/admin_posts_controller.dart';
+import 'package:get/get.dart';
 
 class AdminCommentsPage extends StatefulWidget {
   final String postId;
   final String postUserName;
-  final String collectionName; // مهم جدًا للأدمن
+  final String collectionName;
 
   const AdminCommentsPage({
     super.key,
@@ -44,7 +47,6 @@ class _AdminCommentsPageState extends State<AdminCommentsPage> {
 
       body: Column(
         children: [
-          /// ✨ الهيدر (نفس تصميم ال CommentsPage)
           BAppBarTheme.createHeader(
             context: context,
             title: "Comments",
@@ -53,7 +55,6 @@ class _AdminCommentsPageState extends State<AdminCommentsPage> {
             onBackPressed: () => Navigator.pop(context),
           ),
 
-          /// 📝 الكومنتات
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: _commentsStream,
@@ -89,7 +90,8 @@ class _AdminCommentsPageState extends State<AdminCommentsPage> {
     );
   }
 
-  // 🔥 كارد الكومنت نفس كود صديقتك + الحذف للأدمن
+  final adminController = Get.find<AdminPostsController>();
+
   Widget _commentCard(DocumentSnapshot doc, Map<String, dynamic> data) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -136,33 +138,11 @@ class _AdminCommentsPageState extends State<AdminCommentsPage> {
                   ),
                 ],
               ),
-
-              // 🗑 زر الحذف
-              IconButton(
-                icon: const Icon(Icons.delete_outline, color: Colors.red),
-                onPressed: () async {
-                  final confirm = await showConfirmDialog(
-                    context: context, // <-- لازم يكون مسمى
-                    title: "Delete Comment?",
-                    message: "This action is permanent.",
-                  );
-
-                  if (confirm == true) {
-                    await _deleteComment(doc.id);
-
-                    showFeedback(
-                      title: "Deleted",
-                      message: "Comment removed successfully",
-                    );
-                  }
-                },
-              ),
             ],
           ),
 
           const SizedBox(height: 8),
 
-          // 📝 النص
           Text(
             data['content'] ?? '',
             style: BTextTheme.lightTextTheme.bodyMedium,
@@ -170,27 +150,53 @@ class _AdminCommentsPageState extends State<AdminCommentsPage> {
 
           const SizedBox(height: 6),
 
-          // 📅 التاريخ
-          Text(
-            'Commented ${data['createdAt']?.toDate().toString().split(" ")[0] ?? ''}',
-            style: BTextTheme.lightTextTheme.labelMedium?.copyWith(
-              fontStyle: FontStyle.italic,
-              color: BColors.darkGrey,
-              fontSize: 12,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Commented ${data['createdAt']?.toDate().toString().split(" ")[0] ?? ''}',
+                style: BTextTheme.lightTextTheme.labelMedium?.copyWith(
+                  fontStyle: FontStyle.italic,
+                  color: BColors.darkGrey,
+                  fontSize: 12,
+                ),
+              ),
+
+              IconButton(
+                icon: const Icon(Icons.delete_outline, color: BColors.error),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: () async {
+                  final confirm = await showConfirmDialog(
+                    context: context,
+                    title: "Delete Comment?",
+                    message: "This action is permanent.",
+                  );
+
+                  if (confirm == true) {
+                    await _deleteComment(doc.id);
+
+                    if (data['userId'] != null) {
+                      await adminController.incrementDeletedCountForUser(
+                        data['userId'],
+                      );
+                    }
+
+                    ToastService.success("Comment removed successfully");
+                  }
+                },
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  // 🔴 delete comment (Firestore)
+  //  delete comment (Firestore)
   Future<void> _deleteComment(String commentId) async {
-    await db
-        .collection(widget.collectionName)
-        .doc(widget.postId)
-        .collection('comments')
-        .doc(commentId)
-        .delete();
+    final postRef = db.collection(widget.collectionName).doc(widget.postId);
+
+    await postRef.collection('comments').doc(commentId).delete();
   }
 }

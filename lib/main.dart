@@ -7,7 +7,7 @@ import 'package:lumra_project/navigation/role_aware_root.dart';
 import 'package:lumra_project/view/Account/AccountPage.dart';
 //import "package:lumra_project/view/ChatBoot/ChatBootADHD/ChatBootADHD.dart";
 import 'package:lumra_project/view/SplashPage/splashScreen.dart';
-import 'package:lumra_project/view/welcomepage.dart';
+import 'package:lumra_project/view/auth/loginPage.dart';
 import 'package:lumra_project/theme/custom_themes/text_field_theme.dart';
 import 'package:lumra_project/view/homepage/adhdHomePage.dart';
 import 'package:lumra_project/theme/theme.dart';
@@ -18,6 +18,7 @@ import 'package:lumra_project/controller/Activity/ActivityController.dart';
 import "package:lumra_project/view/ChatBootADHD/ChatBootADHD.dart";
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:lumra_project/view/Admin/admin_home_page.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print(" Notification in background: ${message.notification?.title}");
@@ -99,9 +100,12 @@ class MyApp extends StatelessWidget {
             title: 'Lumra',
             theme: LumraAppTheme.lightTheme,
             home: SplashGifScreen(
-              nextScreen: Welcomepage(),
+              nextScreen: LoginScreen(),
             ), //splash then we start! :)
-            getPages: [GetPage(name: '/app', page: () => RoleAwareRoot())],
+            getPages: [
+              GetPage(name: '/app', page: () => RoleAwareRoot()),
+              GetPage(name: '/admin', page: () => const AdminHomePage()),
+            ],
           ),
           //const ChatBotWidget(), //  stays visible on pages but dont forget to remove it from login, splash, other pages
         ],

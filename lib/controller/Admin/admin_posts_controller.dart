@@ -7,8 +7,7 @@ class AdminPostsController extends GetxController {
   final FirebaseFirestore db = FirebaseFirestore.instance;
 
   var allPosts = <Map<String, dynamic>>[].obs; // {post, collection, raw}
-  var reportedPosts =
-      <Map<String, dynamic>>[].obs; // فقط اللي isReported = true
+  var reportedPosts = <Map<String, dynamic>>[].obs;
   var reportedComments = <Map<String, dynamic>>[].obs;
   var allReportedItems = <Map<String, dynamic>>[].obs;
   var isLoading = false.obs;
@@ -51,11 +50,10 @@ class AdminPostsController extends GetxController {
     });
   }
 
-  /// 🟢 Fetch all reported comments from all posts
+  ///  Fetch all reported comments from all posts
   Future<void> fetchReportedComments() async {
     reportedComments.clear();
 
-    // نجيب كل البوستات
     final postsSnapshot = await db.collection("CareGiverCommunityPosts").get();
     final postsSnapshot2 = await db.collection("ADHDCommunityPosts").get();
 
@@ -84,9 +82,8 @@ class AdminPostsController extends GetxController {
     mergeReportedItems();
   }
 
-  /// 🟠 Merge reported posts + reported comments
+  ///  Merge reported posts + reported comments
   void mergeReportedItems() {
-    // 🧠 خريطة تضمن كل عنصر يكون له مفتاح فريد (مافي تكرار)
     final Map<String, Map<String, dynamic>> uniqueItems = {};
 
     // -------- POSTS --------
@@ -94,7 +91,6 @@ class AdminPostsController extends GetxController {
       final post = p["post"] as Post;
       final collection = p["collection"] as String;
 
-      // مفتاح فريد للبوست (حسب id + collection)
       final key = "post_${post.id}_$collection";
 
       uniqueItems[key] = {
@@ -104,7 +100,7 @@ class AdminPostsController extends GetxController {
         "date": post.createdAt,
         "postId": post.id,
         "collection": collection,
-        "userId": post.userId, // 🔥 عشان deletePost يحتاج userId
+        "userId": post.userId,
       };
     }
 
@@ -115,7 +111,6 @@ class AdminPostsController extends GetxController {
       final docId = c["docId"] as String;
       final collection = c["collection"] as String;
 
-      // مفتاح فريد للكومنت (post + comment + collection)
       final key = "comment_${postId}_${docId}_$collection";
 
       uniqueItems[key] = {
@@ -129,7 +124,6 @@ class AdminPostsController extends GetxController {
       };
     }
 
-    // ✨ نحط القيم فقط (بدون مفاتيح) في الـ RxList
     allReportedItems.assignAll(uniqueItems.values.toList());
   }
 
@@ -189,13 +183,11 @@ class AdminPostsController extends GetxController {
     String userId,
   ) async {
     try {
-      // 🗑 حذف كل الـ subcollections قبل حذف البوست:
       await deleteSubcollection(collection, postId, "comments");
       await deleteSubcollection(collection, postId, "likes");
 
-      // 🔥 بعد ما حذفنا كل شيء — الآن نحذف البوست نفسه
       await db.collection(collection).doc(postId).delete();
-      await _incrementDeletedCountForUser(userId);
+      await incrementDeletedCountForUser(userId);
     } catch (e) {
       print('Error in deletePost: $e');
     }
@@ -207,7 +199,6 @@ class AdminPostsController extends GetxController {
     required String commentDocId,
   }) async {
     try {
-      // ⛔ اول شيء نجيب الداتا ونستخرج منها userId
       final docSnap = await db
           .collection(collection)
           .doc(postId)
@@ -217,7 +208,6 @@ class AdminPostsController extends GetxController {
 
       final data = docSnap.data() as Map<String, dynamic>?;
 
-      // 🗑 نحذف الكومنت
       await db
           .collection(collection)
           .doc(postId)
@@ -225,12 +215,10 @@ class AdminPostsController extends GetxController {
           .doc(commentDocId)
           .delete();
 
-      // 👇 نحسب حذف للمستخدم (مره مهم!)
       if (data != null && data["userId"] != null) {
-        await _incrementDeletedCountForUser(data["userId"]);
+        await incrementDeletedCountForUser(data["userId"]);
       }
 
-      // 🔥 تحديث الليست بعد الحذف
       reportedComments.removeWhere((c) => c["docId"] == commentDocId);
       mergeReportedItems();
     } catch (e) {
@@ -263,7 +251,7 @@ class AdminPostsController extends GetxController {
   }
 
   void listenReportedPostsRealtime() {
-    reportedPosts.clear(); // نظافة في البداية فقط مرة وحدة
+    reportedPosts.clear();
 
     // Caregiver posts
     db
@@ -272,7 +260,6 @@ class AdminPostsController extends GetxController {
         .snapshots()
         .listen((snapshot) {
           for (var doc in snapshot.docs) {
-            // 🛑 مهم جدًا: نحذف أي نسخة قديمة قبل ما نضيف
             reportedPosts.removeWhere(
               (item) =>
                   item["postId"] == doc.id &&
@@ -286,7 +273,7 @@ class AdminPostsController extends GetxController {
               "collection": doc.reference.parent.id,
             });
           }
-          mergeReportedItems(); // تحديث الفيو
+          mergeReportedItems();
         });
 
     // ADHD posts
@@ -308,7 +295,6 @@ class AdminPostsController extends GetxController {
                   item["collection"] == doc.reference.parent.id,
             );
 
-            // 🟢 بعدين نضيف البوست مرة وحدة فقط
             reportedPosts.add({
               "type": "post",
               "postId": doc.id,
@@ -316,7 +302,7 @@ class AdminPostsController extends GetxController {
               "collection": doc.reference.parent.id,
             });
           }
-          mergeReportedItems(); // تحديث الفيو
+          mergeReportedItems();
         });
   }
 
@@ -332,9 +318,7 @@ class AdminPostsController extends GetxController {
           .where('isReported', isEqualTo: true)
           .snapshots()
           .listen((snap) {
-            reportedComments.removeWhere(
-              (c) => c["postId"] == postDoc.id,
-            ); // 👈 مهم جدًا
+            reportedComments.removeWhere((c) => c["postId"] == postDoc.id);
             for (var c in snap.docs) {
               reportedComments.add({
                 "type": "comment",
@@ -354,7 +338,6 @@ class AdminPostsController extends GetxController {
     required String collection,
     required String commentDocId,
   }) async {
-    // ① تحديث Firestore (إلغاء التبليغ)
     await db
         .collection(collection)
         .doc(postId)
@@ -362,30 +345,25 @@ class AdminPostsController extends GetxController {
         .doc(commentDocId)
         .update({"isReported": false});
 
-    // ② تحديث الـ UI مباشرة (بدون انتظار real-time)
     reportedComments.removeWhere((c) => c["docId"] == commentDocId);
     mergeReportedItems();
   }
 
-  /// 🧠  دالة تسوي update للـ deletedPostsCount لكل مستخدم
-  Future<void> _incrementDeletedCountForUser(String userId) async {
+  Future<void> incrementDeletedCountForUser(String userId) async {
     final userRef = db.collection('users').doc(userId);
 
     await db.runTransaction((transaction) async {
       final snapshot = await transaction.get(userRef);
       final data = snapshot.data() as Map<String, dynamic>? ?? {};
 
-      // currentCount = لو ما فيه قيمة نخليه 0
       int currentCount = data['deletedPostsCount'] is int
           ? data['deletedPostsCount']
           : int.tryParse("${data['deletedPostsCount']}") ?? 0;
 
       final newCount = currentCount + 1;
 
-      // 👇 بيانات التحديث
       final updateData = <String, dynamic>{'deletedPostsCount': newCount};
 
-      // لو تعدى 6 أول مرة → نحط timestamp مرة وحده
       if (newCount >= 6 && data['reachedSixAt'] == null) {
         updateData['reachedSixAt'] = FieldValue.serverTimestamp();
       }
@@ -393,6 +371,6 @@ class AdminPostsController extends GetxController {
       transaction.set(userRef, updateData, SetOptions(merge: true));
     });
 
-    print('🔢 deletedPostsCount updated for $userId');
+    print(' deletedPostsCount updated for $userId');
   }
 }

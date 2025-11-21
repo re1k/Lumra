@@ -43,6 +43,12 @@ class AuthController extends GetxController {
 
       print("------the role is $name");
 
+      // Check if user is admin - redirect to admin page
+      if (role == 'admin') {
+        Get.offAllNamed('/admin');
+        return null;
+      }
+
       //  Create ONLY the relevant chat controller for this user
       if (role == 'adhd') {
         final adhdCtrl = Get.put(AdhdChatController());
@@ -189,7 +195,7 @@ class AuthController extends GetxController {
     if (token == null) return;
 
     await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-      'fcmToken': token, 
+      'fcmToken': token,
     }, SetOptions(merge: true));
   }
 }

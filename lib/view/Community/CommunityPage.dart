@@ -10,10 +10,10 @@ import 'package:lumra_project/theme/custom_themes/appbar_theme.dart';
 import 'package:lumra_project/view/ChatBootADHD/ChatBotWidget.dart';
 import 'package:lumra_project/view/Community/communityWidgets/addPostView.dart';
 import 'package:lumra_project/view/Community/communityWidgets/postView.dart';
+import 'package:lumra_project/utils/customWidgets/custom_dialog.dart';
 
 class CommunityPage extends StatefulWidget {
   const CommunityPage({super.key});
-
 
   @override
   State<CommunityPage> createState() => _CommunityPageState();
@@ -32,14 +32,13 @@ class _CommunityPageState extends State<CommunityPage> {
         ? Get.find<PostControllerX>()
         : Get.put(PostControllerX(FirebaseFirestore.instance), permanent: true);
     //post fetching here
-  //  postController.fetchPosts();
+    //  postController.fetchPosts();
     if (!Get.isRegistered<UserController>()) {
       _userController = Get.put(UserController(FirebaseFirestore.instance));
       _userController.init();
     } else {
       _userController = Get.find<UserController>();
     }
-
   }
 
   @override
@@ -61,23 +60,20 @@ class _CommunityPageState extends State<CommunityPage> {
                   ),
                 ),
                 Padding(
-  padding: EdgeInsets.fromLTRB(
-    BSizes.lg,
-    0,
-    BSizes.lg,
-    BSizes.lg + 80, // space for bottom nav bar
-  ),
-  child: Transform.translate(
-    offset: const Offset(0, -16), // moves content 20 pixels up
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        PostView(
-        ),
-      ],
-    ),
-  ),
-),
+                  padding: EdgeInsets.fromLTRB(
+                    BSizes.lg,
+                    0,
+                    BSizes.lg,
+                    BSizes.lg + 80, // space for bottom nav bar
+                  ),
+                  child: Transform.translate(
+                    offset: const Offset(0, -16), // moves content 20 pixels up
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [PostView()],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -105,7 +101,24 @@ class _CommunityPageState extends State<CommunityPage> {
                   color: BColors.primary,
                   size: BSizes.iconLg,
                 ),
-                onPressed: () {
+                onPressed: () async {
+                  final canPost = await postController
+                      .checkAndResetBanIfNeeded();
+                  if (!canPost) {
+                    final remainingDays = await postController
+                        .getRemainingBanDays();
+                    if (remainingDays != null) {
+                      final dayText = remainingDays == 1 ? 'day' : 'days';
+                      CustomDialog.showCloseOnly(
+                        context,
+                        title: "Posting Temporarily Disabled",
+                        message:
+                            "Posting has been disabled due to your recent posting activity.\nYou can post again in $remainingDays $dayText.",
+                      );
+                    }
+                    return;
+                  }
+
                   showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
@@ -132,10 +145,10 @@ class _CommunityPageState extends State<CommunityPage> {
             ),
           ),
 
-              if (_userController.role == 'adhd')
-      const ChatBotWidget(role: 'adhd')
-    else
-      const ChatBotWidget(role: 'caregiver'),
+          if (_userController.role == 'adhd')
+            const ChatBotWidget(role: 'adhd')
+          else
+            const ChatBotWidget(role: 'caregiver'),
         ],
       ),
     );
