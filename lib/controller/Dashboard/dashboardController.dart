@@ -41,11 +41,23 @@ class DashboardController extends GetxController {
   final RxDouble dailyScore = 0.0.obs;
   final RxList<double> weeklyScores = List<double>.filled(7, 0.0).obs;
 
+  // --- NEW: Weekly/Monthly Logic Variables ---
+  // Stores the score for each week in the current month (dynamic length: 4, 5, or 6)
+  final RxList<double> monthlyWeeksScores = <double>[].obs;
+
+  // Flag to ensure data is loaded before saving to avoid overwriting previous days
+  bool _isDataLoaded = false; 
+
   Timer? _midnightTimer;
 
   @override
   void onInit() {
     super.onInit();
+
+    // --- NEW: Initialize Monthly Array based on current month length ---
+    final totalWeeks = _getWeeksInCurrentMonth();
+    monthlyWeeksScores.assignAll(List<double>.filled(totalWeeks, 0.0));
+
     _initAll();
   }
 
@@ -59,6 +71,10 @@ class DashboardController extends GetxController {
       //from your users collection
       adhdUid = data['linkedUserId'] as String;
 
+      // --- NEW: Load existing data FIRST before starting listeners ---
+      await _loadWeeklyScores(); 
+      _isDataLoaded = true; // Data is ready, safe to save now
+
       // attach all realtime listeners that use adhdUid
       _listenToAdhdTasks();
       _listenToDailyMood();
@@ -67,28 +83,53 @@ class DashboardController extends GetxController {
       _listenToCustomActivities();
       _listenToSystemActivities();
 
-      await _loadWeeklyScores(); //load existing weeklyDashboard from Firestore
+      // await _loadWeeklyScores(); // MOVED UP (see above)
       _scheduleMidnightSave(); // schedule daily saving at midnight
     } catch (e) {
       totalTasks.value = 0;
       checkedTasks.value = 0;
       dailyMood.value = null;
       todayFocusMinutes.value = 0;
+      
+      // Allow app to function even if load fails
+      _isDataLoaded = true; 
     }
   }
 
   //NEW by Loba: load existing weeklyDashboard array (if any)
   Future<void> _loadWeeklyScores() async {
-    final doc = await db.collection('users').doc(adhdUid).get();
-    final data = doc.data();
-    if (data != null && data['weeklyDashboard'] is List) {
-      final raw = data['weeklyDashboard'] as List;
-      final arr = List<double>.filled(7, 0.0);
-      final len = raw.length < 7 ? raw.length : 7;
-      for (int i = 0; i < len; i++) {
-        arr[i] = (raw[i] as num).toDouble();
+    try {
+      final doc = await db.collection('users').doc(adhdUid).get();
+      final data = doc.data();
+      
+      // 1. Load Daily Scores (weeklyDashboard)
+      if (data != null && data['weeklyDashboard'] is List) {
+        final raw = data['weeklyDashboard'] as List;
+        final arr = List<double>.filled(7, 0.0);
+        final len = raw.length < 7 ? raw.length : 7;
+        for (int i = 0; i < len; i++) {
+          arr[i] = (raw[i] as num).toDouble();
+        }
+        weeklyScores.assignAll(arr);
       }
-      weeklyScores.assignAll(arr);
+
+      // --- NEW: Load Monthly Scores (monthlyDashboard) ---
+      if (data != null && data['monthlyDashboard'] is List) {
+        final rawMonth = data['monthlyDashboard'] as List;
+        
+        // Calculate correct size for THIS month
+        final totalWeeks = _getWeeksInCurrentMonth(); 
+        final arrMonth = List<double>.filled(totalWeeks, 0.0);
+
+        // Copy data safely
+        final len = rawMonth.length < totalWeeks ? rawMonth.length : totalWeeks;
+        for (int i = 0; i < len; i++) {
+          arrMonth[i] = (rawMonth[i] as num).toDouble();
+        }
+        monthlyWeeksScores.assignAll(arrMonth);
+      }
+    } catch (e) {
+      print("Error loading scores: $e");
     }
   }
 
@@ -382,6 +423,9 @@ class DashboardController extends GetxController {
     dailyScore.value = combined * 100.0;
 
     _updateWeeklyScoresLive(); //so line chart reflects live changes CHECK THIS WITH GIRLS
+    
+    _updateMonthlyWeeksLive(); // --- NEW: Update weekly chart immediately ---
+
     _saveDailyScoreToWeekArray();
   }
 
@@ -420,6 +464,9 @@ class DashboardController extends GetxController {
 
   // live update weeklyScores for today
   void _updateWeeklyScoresLive() {
+    // --- NEW: Prevent UI glitch before data load ---
+    if (!_isDataLoaded && weeklyScores.every((element) => element == 0)) return;
+
     final idx = _dayIndex(DateTime.now());
     if (weeklyScores.length < 7) {
       weeklyScores.assignAll(List<double>.filled(7, 0.0));
@@ -430,7 +477,10 @@ class DashboardController extends GetxController {
 
   // save today's score into Firestore weeklyDashboard array at midnight
   Future<void> _saveDailyScoreToWeekArray() async {
-    //THIS IS WHEN WE WAITED UNTIL 12
+    // --- NEW: Prevent saving zeros over existing data if load isn't finished ---
+    if (!_isDataLoaded) return;
+
+    // THIS IS WHEN WE WAITED UNTIL 12
     // final idx = _dayIndex(DateTime.now());
     // final arr = List<double>.from(weeklyScores);
     // if (arr.length < 7) {
@@ -455,9 +505,63 @@ class DashboardController extends GetxController {
 
     weeklyScores[idx] = dailyScore.value; //put today's score into today's slot
 
-    await db.collection('users').doc(adhdUid).set({
-      'weeklyDashboard': weeklyScores.toList(), // send plain List<double>
-    }, SetOptions(merge: true));
+    // --- NEW: Ensure monthly scores are up-to-date before saving ---
+    _updateMonthlyWeeksLive();
+
+    try {
+      await db.collection('users').doc(adhdUid).set({
+        'weeklyDashboard': weeklyScores.toList(), // send plain List<double>
+        'monthlyDashboard': monthlyWeeksScores.toList(), // --- NEW: Save monthly list ---
+        'lastDashboardUpdate': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      print("Error saving daily score: $e");
+    }
+  }
+
+  // --- NEW: Helper Methods for Weekly/Monthly Logic ---
+
+  // Calculates total number of weeks in the current month
+  int _getWeeksInCurrentMonth() {
+    final now = DateTime.now();
+    final firstDayOfMonth = DateTime(now.year, now.month, 1);
+    final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+    return ((daysInMonth + firstDayOfMonth.weekday - 1) / 7).ceil();
+  }
+
+  // Calculates the current week index (0 to 4/5) based on today's date
+  int _currentWeekIndex() {
+    final now = DateTime.now();
+    final firstDayOfMonth = DateTime(now.year, now.month, 1);
+    return ((now.day + firstDayOfMonth.weekday - 1) / 7).floor();
+  }
+
+  // Updates the current week's score in real-time based on daily average
+  void _updateMonthlyWeeksLive() {
+    // 1. Calculate sum of days
+    double sum = 0;
+    for (var score in weeklyScores) {
+       sum += score;
+    }
+
+    // 2. Calculate Fair Average: Divide by days passed in the week (Sun-Today)
+    final todayIndex = _dayIndex(DateTime.now()); 
+    double divisor = (todayIndex + 1).toDouble(); 
+    double average = divisor > 0 ? sum / divisor : 0.0;
+
+    // 3. Update the specific week index
+    final weekIdx = _currentWeekIndex();
+    final totalWeeks = _getWeeksInCurrentMonth();
+    
+    // Safety check for list size
+    if (monthlyWeeksScores.length != totalWeeks) {
+       monthlyWeeksScores.assignAll(List<double>.filled(totalWeeks, 0.0));
+    }
+
+    if (weekIdx < monthlyWeeksScores.length) {
+      monthlyWeeksScores[weekIdx] = average;
+      monthlyWeeksScores.refresh(); 
+    }
   }
 
   // schedule midnight save (and reschedule for next day) NO NEED BASED ON MY NEW CHANGES, TAKE APPROVAL

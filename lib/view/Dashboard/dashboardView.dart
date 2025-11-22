@@ -62,16 +62,8 @@ class _DashboardPageState extends State<DashboardPage> {
     final textTheme = Theme.of(context).textTheme;
     final DateTime now = DateTime.now();
     final String currentMonth = DateFormat('MMMM').format(now);
-    final int daysInMonth = DateTime(now.year, now.month + 1, 0).day;
-    final int totalWeeks =
-        ((daysInMonth + DateTime(now.year, now.month, 1).weekday - 1) / 7)
-            .ceil();
+    // Removed the dummy weeklyData map logic here as we now use the Controller's data
     final int currentWeek = weekOfMonth(now);
-    // Dummy weekly data dynamically based on number of weeks
-    final Map<String, double> weeklyData = {
-      for (int i = 0; i < totalWeeks; i++)
-        'Week ${i + 1}': (10 + i * 10).toDouble(),
-    };
 
     // Dummy data – some can be 0
     //get actual data later, then still use the method down to remove the ones with no activities
@@ -208,8 +200,10 @@ class _DashboardPageState extends State<DashboardPage> {
                                 child: Padding(
                                   padding: const EdgeInsets.only(right: 6.0),
                                   child: Obx(() {
-                                    final weeklyScores =
-                                        dashController.weeklyScores;
+                                    // Get data from controller
+                                    final weeklyScores = dashController.weeklyScores;
+                                    final monthlyScores = dashController.monthlyWeeksScores;
+
                                     const List<String> dailyKeys = [
                                       'Sun',
                                       'Mon',
@@ -219,9 +213,13 @@ class _DashboardPageState extends State<DashboardPage> {
                                       'Fri',
                                       'Sat',
                                     ];
-                                    final List<String> weeklyKeys = weeklyData
-                                        .keys
-                                        .toList();
+                                    
+                                    // Generate weekly keys dynamically (Week 1, Week 2...)
+                                    final List<String> weeklyKeys = List.generate(
+                                      monthlyScores.length, 
+                                      (index) => 'Week ${index + 1}'
+                                    );
+
                                     return LineChart(
                                       LineChartData(
                                         minY: 0,
@@ -263,16 +261,21 @@ class _DashboardPageState extends State<DashboardPage> {
                                               getTitlesWidget: (value, meta) {
                                                 int i = value.toInt();
                                                 late final List<String> keys;
+                                                
+                                                // Choose keys based on Daily/Weekly toggle
                                                 if (showDaily) {
                                                   keys = dailyKeys;
                                                 } else {
                                                   keys = weeklyKeys;
                                                 }
+                                                
                                                 if (i < 0 || i >= keys.length)
                                                   return const SizedBox.shrink();
+                                                
                                                 final isCurrentWeek =
                                                     !showDaily &&
                                                     (i + 1) == currentWeek;
+                                                
                                                 final isToday =
                                                     showDaily &&
                                                     i ==
@@ -319,19 +322,25 @@ class _DashboardPageState extends State<DashboardPage> {
                                         lineBarsData: [
                                           LineChartBarData(
                                             spots: List.generate(
-                                              //we will replace later with actual data
+                                              // Dynamically set length (7 for daily, or 4/5/6 for weekly)
                                               showDaily
                                                   ? dailyKeys.length
-                                                  : weeklyData.length,
-                                              (i) => FlSpot(
-                                                i.toDouble(),
-                                                showDaily
-                                                    ? (i < weeklyScores.length
-                                                          ? weeklyScores[i] //daily combined score
-                                                          : 0.0)
-                                                    : weeklyData.values
-                                                          .elementAt(i),
-                                              ), //we will replace later with actual data
+                                                  : monthlyScores.length,
+                                              (i) {
+                                                double yValue = 0.0;
+                                                
+                                                // Fetch the correct score based on view
+                                                if (showDaily) {
+                                                  yValue = (i < weeklyScores.length) ? weeklyScores[i] : 0.0;
+                                                } else {
+                                                  yValue = (i < monthlyScores.length) ? monthlyScores[i] : 0.0;
+                                                }
+
+                                                return FlSpot(
+                                                  i.toDouble(),
+                                                  yValue,
+                                                );
+                                              }, 
                                             ),
                                             isCurved: true,
                                             barWidth: 3.1,
