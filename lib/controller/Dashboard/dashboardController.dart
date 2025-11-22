@@ -92,7 +92,18 @@ class DashboardController extends GetxController {
     }
   }
 
-  // Realtime listener on /users/{adhdUid}/tasks
+  // FILTERING FOR DASHBOARD:
+  // We only count tasks that belong to "today"
+  // The dashboard uses dateKey to know which day the task was created
+  // This ensures that daily progress reflects only today's tasks
+  // even if the task is still visible from previous days
+  //
+  // Example:
+  // - Task created on Thursday with dateKey="2025-11-20"
+  // - User checks it on Friday
+  // → It will NOT count for Friday's task progress
+  // → It counted only on Thursday
+
   void _listenToAdhdTasks() {
     _tasksSub?.cancel();
 
@@ -103,18 +114,40 @@ class DashboardController extends GetxController {
         .snapshots()
         .listen(
           (snap) {
-            final docs = snap.docs;
+            final now = DateTime.now();
 
-            final int total = docs.length; //total number of tasks
-            final int checked =
-                docs //checked tasks
-                    .where((d) => d.data()['isChecked'] == true)
-                    .length;
+            final todayKey =
+                '${now.year.toString().padLeft(4, '0')}-'
+                '${now.month.toString().padLeft(2, '0')}-'
+                '${now.day.toString().padLeft(2, '0')}';
+
+            final todayDocs = snap.docs.where((d) {
+              final data = d.data();
+
+              final dk = data['dateKey'];
+              if (dk is String) {
+                return dk == todayKey;
+              }
+
+              final createdAt = data['createdAt'];
+              if (createdAt is Timestamp) {
+                final dt = createdAt.toDate();
+                return dt.year == now.year &&
+                    dt.month == now.month &&
+                    dt.day == now.day;
+              }
+
+              return true;
+            }).toList();
+
+            final int total = todayDocs.length;
+            final int checked = todayDocs
+                .where((d) => d.data()['isChecked'] == true)
+                .length;
 
             totalTasks.value = total;
             checkedTasks.value = checked;
 
-            //NEW: update task progress for scoring
             updateTaskProgress(checked, total);
           },
           onError: (e) {
