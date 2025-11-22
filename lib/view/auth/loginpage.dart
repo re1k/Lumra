@@ -77,6 +77,22 @@ class _LoginScreenState extends State<LoginScreen> {
           }
         }
       };
+
+    emailController.addListener(() {
+      if (emailError != null) {
+        setState(() {
+          emailError = null;
+        });
+      }
+    });
+
+    passwordController.addListener(() {
+      if (passwordError != null) {
+        setState(() {
+          passwordError = null;
+        });
+      }
+    });
   }
 
   @override
@@ -84,12 +100,6 @@ class _LoginScreenState extends State<LoginScreen> {
     _resendTimer?.cancel();
     _tapRecognizer.dispose();
     super.dispose();
-  }
-
-  void resetFields() {
-    emailController.clear();
-    passwordController.clear();
-    FocusScope.of(context).unfocus(); // يغلق الكيبورد
   }
 
   @override
@@ -415,7 +425,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                       "The email address is not valid.";
                                                   passwordError = null;
                                                 });
-                                                resetFields();
+
                                                 return;
                                               }
 
@@ -441,9 +451,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                                     passwordError = result;
                                                   }
                                                 });
-                                                resetFields();
-                                              } else {
-                                                resetFields();
                                               }
                                             }
                                           },
