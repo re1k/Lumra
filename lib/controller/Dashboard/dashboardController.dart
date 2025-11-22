@@ -96,26 +96,36 @@ class DashboardController extends GetxController {
   void _listenToAdhdTasks() {
     _tasksSub?.cancel();
 
+    final now = DateTime.now();
+    final startOfDay = DateTime(now.year, now.month, now.day);
+    final endOfDay = startOfDay.add(const Duration(days: 1));
+
     _tasksSub = db
         .collection('users')
         .doc(adhdUid)
         .collection('tasks')
+        // Only tasks created today
+        .where(
+          'createdAt',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay),
+        )
+        .where('createdAt', isLessThan: Timestamp.fromDate(endOfDay))
         .snapshots()
         .listen(
           (snap) {
             final docs = snap.docs;
 
-            final int total = docs.length; //total number of tasks
-            final int checked =
-                docs //checked tasks
-                    .where((d) => d.data()['isChecked'] == true)
-                    .length;
+            final int total = docs.length; // tasks for today only
+            final int checked = docs
+                .where((d) => d.data()['isChecked'] == true)
+                .length;
 
             totalTasks.value = total;
             checkedTasks.value = checked;
 
-            //NEW: update task progress for scoring
+            // scoring uses today's tasks only
             updateTaskProgress(checked, total);
+            // scoring uses today's tasks only
           },
           onError: (e) {
             totalTasks.value = 0;
@@ -229,11 +239,21 @@ class DashboardController extends GetxController {
   /// Stream 1: User Defined Activities (Directly has category + isChecked)
   void _listenToCustomActivities() {
     _customActivitySub?.cancel();
+
+    final now = DateTime.now();
+    final startOfDay = DateTime(now.year, now.month, now.day);
+    final endOfDay = startOfDay.add(const Duration(days: 1));
+
     _customActivitySub = db
         .collection('users')
         .doc(adhdUid)
-        .collection('activities') // chat bot  activities
+        .collection('activities') // chatbot activities
         .where('isChecked', isEqualTo: true)
+        .where(
+          'checkedAt',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay),
+        )
+        .where('checkedAt', isLessThan: Timestamp.fromDate(endOfDay))
         .snapshots()
         .listen((snap) {
           final Map<String, double> tempCounts = {};
@@ -259,11 +279,20 @@ class DashboardController extends GetxController {
   void _listenToSystemActivities() {
     _systemActivitySub?.cancel();
 
+    final now = DateTime.now();
+    final startOfDay = DateTime(now.year, now.month, now.day);
+    final endOfDay = startOfDay.add(const Duration(days: 1));
+
     _systemActivitySub = db
         .collection('users')
         .doc(adhdUid)
         .collection('activityStatus')
         .where('isChecked', isEqualTo: true)
+        .where(
+          'checkedAt',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay),
+        )
+        .where('checkedAt', isLessThan: Timestamp.fromDate(endOfDay))
         .snapshots()
         .listen((snap) {
           final Map<String, double> tempCounts = {};
@@ -353,6 +382,7 @@ class DashboardController extends GetxController {
     dailyScore.value = combined * 100.0;
 
     _updateWeeklyScoresLive(); //so line chart reflects live changes CHECK THIS WITH GIRLS
+    _saveDailyScoreToWeekArray();
   }
 
   // called whenever tasks change
@@ -400,24 +430,37 @@ class DashboardController extends GetxController {
 
   // save today's score into Firestore weeklyDashboard array at midnight
   Future<void> _saveDailyScoreToWeekArray() async {
-    final idx = _dayIndex(DateTime.now());
-    final arr = List<double>.from(weeklyScores);
-    if (arr.length < 7) {
-      final fill = List<double>.filled(7, 0.0);
-      final len = arr.length < 7 ? arr.length : 7;
-      for (int i = 0; i < len; i++) {
-        fill[i] = arr[i];
-      }
-      weeklyScores.assignAll(fill);
+    //THIS IS WHEN WE WAITED UNTIL 12
+    // final idx = _dayIndex(DateTime.now());
+    // final arr = List<double>.from(weeklyScores);
+    // if (arr.length < 7) {
+    //   final fill = List<double>.filled(7, 0.0);
+    //   final len = arr.length < 7 ? arr.length : 7;
+    //   for (int i = 0; i < len; i++) {
+    //     fill[i] = arr[i];
+    //   }
+    //   weeklyScores.assignAll(fill);
+    // }
+
+    // weeklyScores[idx] = dailyScore.value; // update today's slot
+    // await db.collection('users').doc(adhdUid).set({
+    //   'weeklyDashboard': weeklyScores.toList(),
+    // }, SetOptions(merge: true));
+    final idx = _dayIndex(DateTime.now()); // which day (Sun=0..Sat=6)
+
+    // make sure the local list has exactly 7 values
+    if (weeklyScores.length < 7) {
+      weeklyScores.assignAll(List<double>.filled(7, 0.0)); // ensure length 7
     }
 
-    weeklyScores[idx] = dailyScore.value; // update today's slot
+    weeklyScores[idx] = dailyScore.value; //put today's score into today's slot
+
     await db.collection('users').doc(adhdUid).set({
-      'weeklyDashboard': weeklyScores,
+      'weeklyDashboard': weeklyScores.toList(), // send plain List<double>
     }, SetOptions(merge: true));
   }
 
-  // schedule midnight save (and reschedule for next day)
+  // schedule midnight save (and reschedule for next day) NO NEED BASED ON MY NEW CHANGES, TAKE APPROVAL
   void _scheduleMidnightSave() {
     _midnightTimer?.cancel();
 
