@@ -243,6 +243,24 @@ export const sendTaskReminder = onSchedule("every 1 minutes", async (event) => {
       continue;
     }
 
+    // Check stats completed field - skip if completed > 0
+    const statsDoc = await db
+      .collection("users")
+      .doc(userId)
+      .collection("stats")
+      .doc("days")
+      .collection("days")
+      .doc(todayDateString)
+      .get();
+    
+    if (statsDoc.exists) {
+      const statsData = statsDoc.data();
+      const completed = (statsData?.completed ?? 0);
+      if (completed > 0) {
+        continue;
+      }
+    }
+
     let hasCompletedTask = false;
     for (const taskDoc of tasksSnap.docs) {
       const taskData = taskDoc.data();
