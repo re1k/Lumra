@@ -111,7 +111,7 @@ class _AddCommentViewState extends State<AddCommentView> {
                     postController.updateFormValidity();
                   },
                   decoration: InputDecoration(
-                    hintText: "What's your opinon?",
+                    hintText: "What's your opinion?",
                     errorText: errorText,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(

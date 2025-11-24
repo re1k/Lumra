@@ -187,7 +187,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
       child: Row(
         children: [
           _tab(
-            "Reported Contents",
+            "Reported Posts",
             0,
             BorderRadius.only(
               topLeft: Radius.circular(BSizes.cardRadiusMd),
@@ -554,7 +554,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 onPressed: () async {
                   final confirm = await showConfirmDialog(
                     context: context,
-                    title: "Delete Content?",
+                    title: "Delete Comment?",
                     message: "This action is permanent.",
                   );
 
@@ -572,9 +572,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                         commentDocId: item["docId"],
                       );
                     }
-                    ToastService.success(
-                      "Content has been deleted successfully!",
-                    );
+                    ToastService.success("Removed successfully!");
                   } else {
                     Navigator.of(context).maybePop();
                   }

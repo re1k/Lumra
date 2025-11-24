@@ -251,6 +251,7 @@ class PostControllerX extends GetxController {
     contentError.value = null;
     hasRestrictedContent.value = false;
     isFormValid.value = false;
+    originalContent = null;
   }
 
   void updateFormValidity({bool markInteracted = true}) {
@@ -260,7 +261,7 @@ class PostControllerX extends GetxController {
     // Regex: checks if the string contains only special characters or spaces
     final onlySpecialChars = RegExp(r'^[^a-zA-Z0-9]+$');
 
-    if (text.isEmpty) {
+    if (text.isEmpty || isContentNotChanged() ) {
       hasInteracted.value = false;
       contentError.value = null;
       hasRestrictedContent.value = false;
@@ -279,6 +280,18 @@ class PostControllerX extends GetxController {
       }
     }
   }
+
+    bool isContentNotChanged() {
+    return originalContent == contentController.text.trim();
+  }
+
+    void setOriginalContent(String content) {
+    originalContent = content;
+    contentController.text = content;
+    currentLength.value = content.length;
+    updateFormValidity();
+  }
+
 
   void _checkRestrictedContent(String text) {
     if (!_bannedWordsLoaded.value) {
@@ -818,11 +831,9 @@ class PostControllerX extends GetxController {
       print(
         'Adding Comment to post subcollection: $communityCollection/$postId/comments',
       );
-
-      // --- Adding to firebase ----
       final docRef = await db
           .collection(communityCollection)
-          .doc(postId) // target the post
+          .doc(postId) 
           .collection("comments")
           .add(comment.toFirestore());
 
@@ -864,26 +875,26 @@ class PostControllerX extends GetxController {
     }
   }
 
+
+  String? originalContent; // store original content for edit
   Future<bool> updatePost(String postId, String newContent) async {
     try {
-      isLoading.value = true; // optional: show loading in UI
-
-      // Update the post in your backend (example: Firestore)
+     isLoading.value = true;
+     newContent = newContent.trim().replaceAll(RegExp(r'\s+'), ' ');
       await FirebaseFirestore.instance
           .collection(communityCollection)
           .doc(postId)
           .update({
             'content': newContent,
-            //'updatedAt': Timestamp.now(),
             'isEdited': true,
           });
       isLoading.value = false;
       refreshUserPostsListener();
-      return true; // success
+      return true; 
     } catch (e) {
       isLoading.value = false;
       print("Error updating post: $e");
-      return false; // failed
+      return false; 
     }
   }
 

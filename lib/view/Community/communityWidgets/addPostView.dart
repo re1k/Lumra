@@ -40,7 +40,7 @@ class _AddPostViewState extends State<AddPostView> {
     if (widget.isEdit && widget.postToEdit != null) {
       postController.contentController.text = widget.postToEdit!.content;
       postController.currentLength.value = widget.postToEdit!.content.length;
-      postController.updateFormValidity();
+      postController.setOriginalContent(widget.postToEdit!.content);
     }
   }
 
