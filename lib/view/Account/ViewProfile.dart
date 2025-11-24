@@ -30,7 +30,6 @@ class ViewProfile extends StatelessWidget {
       userController.gender.value = currentUser.gender;
     }
     
-    
     isEditing.value = false;
   }
 
@@ -41,7 +40,7 @@ class ViewProfile extends StatelessWidget {
   final firstNameError = ''.obs;
   final lastNameError = ''.obs;
 
- 
+  
   final _formKey = GlobalKey<FormState>();
   final RxBool _triggerRebuild = false.obs;
 
@@ -78,7 +77,7 @@ class ViewProfile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final user = userController.user.value;
-     
+      
       final refresh = _triggerRebuild.value; 
 
       if (user == null) return const Center(child: CircularProgressIndicator());
@@ -87,48 +86,54 @@ class ViewProfile extends StatelessWidget {
         backgroundColor: BColors.lightGrey,
         body: Column(
           children: [
+           
             BAppBarTheme.createHeader(
               context: context,
               title: 'Profile',
               showBackButton: true,
-              onBackPressed: () {
-                
-                 isEditing.value = false;
-                 Navigator.pop(context);
+              onBackPressed: () async {
+                if (await _onWillPop(context)) {
+                  Navigator.pop(context);
+                }
               },
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
+              actions: [
                 Padding(
                   padding: const EdgeInsets.only(right: 16.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: BColors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: IconButton(
-                      tooltip: 'edit profile',
-                      icon: const Icon(
-                        Icons.edit,
-                        color: BColors.primary,
-                        size: BSizes.iconLg,
+                  child: Center( // 1. وضعنا Center لكي لا يمتط الزر
+                    child: Container(
+                      width: 45, // 2. ثبتنا العرض
+                      height: 50, // 3. ثبتنا الطول ليكون نفس حجم القديم
+                      decoration: BoxDecoration(
+                        color: BColors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      onPressed: () {
-                        isEditing.value = true;
-                      },
+                      child: IconButton(
+                        tooltip: 'edit profile',
+                        padding: EdgeInsets.zero, // إزالة الحواف الداخلية للأيقونة
+                        icon: const Icon(
+                          Icons.edit,
+                          color: BColors.primary,
+                          size: BSizes.iconLg,
+                        ),
+                        onPressed: () {
+                          isEditing.value = true;
+                        },
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
+            
+            // قمنا بحذف الـ Row المنفصلة التي كانت هنا سابقاً
+            
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
@@ -153,7 +158,7 @@ class ViewProfile extends StatelessWidget {
                         errorText: lastNameError,
                         onChanged: (_) => _triggerRebuild.toggle(), //  
                       ),
-                      if (!isEditing.value)
+                      
                         _buildEmailField(
                           label: "Email",
                           controller: userController.emailController,
@@ -175,12 +180,12 @@ class ViewProfile extends StatelessWidget {
                             userController.gender.value != user.gender ||
                             userController.dob.value != user.dob;
 
-                       
+                        
                         bool isValidInput = 
                             userController.firstNameController.text.trim().isNotEmpty &&
                             userController.lastNameController.text.trim().isNotEmpty;
 
-                       
+                        
                         bool canSave = hasChanges && isValidInput;
 
                         return Center(
@@ -188,7 +193,7 @@ class ViewProfile extends StatelessWidget {
                             width: 200,
                             child: ElevatedButton.icon(
                               onPressed: canSave ? () {
-                               
+                                
                                 userController.updateUserFromControllers();
                                 _showConfiramtinMessage(context);
                                 isEditing.value = false;
@@ -222,6 +227,78 @@ class ViewProfile extends StatelessWidget {
         ),
       );
     });
+  }
+
+ Future<bool> _onWillPop(BuildContext context) async {
+
+    if (!isEditing.value) {
+      return true; //
+    }
+
+    final user = userController.user.value;
+    bool hasChanges = 
+        userController.firstNameController.text != user?.firstName ||
+        userController.lastNameController.text != user?.lastName ||
+        userController.gender.value != user?.gender ||
+        userController.dob.value != user?.dob;
+
+    if (hasChanges) {
+      final shouldDiscard = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Discard Changes"),
+          content: const Text("You have unsaved changes. Are you sure you want to leave?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false), // 
+              child: const Text(
+                "Cancel",
+                style: TextStyle(fontFamily: 'K2D', color: Colors.black87),
+              ),
+            ),
+
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: BColors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                minimumSize: const Size(90, 40),
+              ),
+              onPressed: () {
+             
+                Navigator.of(context).pop(true); 
+              },
+              child: const Text("Discard", style: TextStyle(fontFamily: 'K2D',
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,)),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldDiscard == true) {
+         if(user != null){
+             userController.firstNameController.text = user.firstName;
+             userController.lastNameController.text = user.lastName;
+             userController.gender.value = user.gender;
+             userController.dob.value = user.dob;
+         }
+         isEditing.value = false;
+         return true;
+      } else {
+        return false;
+      }
+      
+    } else {
+     
+      isEditing.value = false;
+      return true; 
+    }
   }
 
   void _showConfiramtinMessage(BuildContext context) {
@@ -309,7 +386,7 @@ class ViewProfile extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-           
+            
             Row(
               children: [
                 Text(label, style: BTextTheme.lightTextTheme.titleSmall),
@@ -352,6 +429,7 @@ class ViewProfile extends StatelessWidget {
     );
   }
 
+  // 2. التعديل الثاني: تغيير لون الخلفية للإيميل
   Widget _buildEmailField({
     required String label,
     required TextEditingController controller,
@@ -362,15 +440,39 @@ class ViewProfile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: BTextTheme.lightTextTheme.titleSmall),
-          const SizedBox(height: 8),
+          // وضعنا العنوان والنص في Row ليكونوا بجانب بعضهم
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end, // لمحاذاة النص على نفس السطر من الأسفل
+            children: [
+              Text(label, style: BTextTheme.lightTextTheme.titleSmall),
+              
+              if (isEditing.value)
+                Padding(
+                  padding: const EdgeInsets.only(left: 6.0, bottom: 2.0), // مسافة صغيرة عن العنوان
+                  child: Text(
+                    "Not editable",
+                    style: TextStyle(
+                      color: Colors.grey.shade600, // لون رمادي كما في الصورة
+                      fontSize: 11, // خط صغير
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          
+          const SizedBox(height: 8), // مسافة بين العنوان والحقل
+
           Obx(
             () => TextField(
               controller: controller,
-              readOnly: !isenable.value,
+              readOnly: true,
               decoration: InputDecoration(
                 filled: true,
-                fillColor: BColors.softGrey,
+                // تغميق اللون عند التعديل
+                fillColor: isEditing.value 
+                    ? Colors.grey.shade300 
+                    : BColors.softGrey,
                 border: const OutlineInputBorder(),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               ),
@@ -403,7 +505,7 @@ class ViewProfile extends StatelessWidget {
               decoration: InputDecoration(
                 filled: true,
                 fillColor: BColors.softGrey,
-               
+                
                 suffixIcon: icon != null ? Icon(icon) : null, 
                 hintText: 'YYYY-MM-DD',
                 border: const OutlineInputBorder(),
@@ -442,7 +544,7 @@ class ViewProfile extends StatelessWidget {
                     ),
                     backgroundColor: gender == 'male'
                         ? BColors.primary
-                        : Colors.grey[300],
+                        : BColors.softGrey,
                     foregroundColor: gender == 'male'
                         ? Colors.white
                         : Colors.black,
@@ -465,7 +567,7 @@ class ViewProfile extends StatelessWidget {
                     ),
                     backgroundColor: gender == 'female'
                         ? BColors.primary
-                        : Colors.grey[300],
+                        : BColors.softGrey,
                     foregroundColor: gender == 'female'
                         ? Colors.white
                         : Colors.black,
