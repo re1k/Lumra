@@ -40,6 +40,7 @@ class DashboardController extends GetxController {
   //composite daily score (0–100) and weekly array (Sun=0..Sat=6)
   final RxDouble dailyScore = 0.0.obs;
   final RxList<double> weeklyScores = List<double>.filled(7, 0.0).obs;
+  final RxList<double> weeklyHistory = <double>[].obs;
 
   Timer? _midnightTimer;
 
@@ -68,6 +69,8 @@ class DashboardController extends GetxController {
       _listenToSystemActivities();
 
       await _loadWeeklyScores(); //load existing weeklyDashboard from Firestore
+      await _loadWeeklyHistory();
+
       _scheduleMidnightSave(); // schedule daily saving at midnight
     } catch (e) {
       totalTasks.value = 0;
@@ -75,6 +78,22 @@ class DashboardController extends GetxController {
       dailyMood.value = null;
       todayFocusMinutes.value = 0;
     }
+  }
+
+  // NEW: append a weekly score, keep only last 8 weeks
+  Future<void> _appendWeekToHistory(double weekScore) async {
+    final list = List<double>.from(weeklyHistory);
+    list.add(weekScore);
+
+    if (list.length > 8) {
+      list.removeAt(0); // remove oldest week
+    }
+
+    weeklyHistory.assignAll(list);
+
+    await db.collection('users').doc(adhdUid).set({
+      'weeklyHistory': list,
+    }, SetOptions(merge: true));
   }
 
   //NEW by Loba: load existing weeklyDashboard array (if any)
@@ -92,7 +111,87 @@ class DashboardController extends GetxController {
     }
   }
 
-<<<<<<< HEAD
+  // NEW: load last 8 weeks history from Firestore
+  Future<void> _loadWeeklyHistory() async {
+    final doc = await db.collection('users').doc(adhdUid).get();
+    final data = doc.data();
+    if (data != null && data['weeklyHistory'] is List) {
+      final raw = data['weeklyHistory'] as List;
+      final list = raw.map((e) => (e as num).toDouble()).toList();
+
+      // keep only last 8 items
+      if (list.length > 8) {
+        weeklyHistory.assignAll(list.sublist(list.length - 8));
+      } else {
+        weeklyHistory.assignAll(list);
+      }
+    }
+  }
+
+  void _listenToAdhdTasks() {
+    _tasksSub?.cancel();
+
+    _tasksSub = db
+        .collection('users')
+        .doc(adhdUid)
+        .collection('tasks')
+        .snapshots()
+        .listen(
+          (snap) {
+            final now = DateTime.now();
+
+            // dateKey represents the "day this task belongs to"
+            // e.g. "2025-11-22"
+            final todayKey =
+                '${now.year.toString().padLeft(4, '0')}-'
+                '${now.month.toString().padLeft(2, '0')}-'
+                '${now.day.toString().padLeft(2, '0')}';
+
+            // DASHBOARD FILTER:
+            // Only include tasks that belong to today.
+            // If a task has dateKey, we compare it directly.
+            // If it doesn't (older data), we fall back to createdAt.
+            final todayDocs = snap.docs.where((d) {
+              final data = d.data();
+
+              // 1) Prefer dateKey if present
+              final dk = data['dateKey'];
+              if (dk is String) {
+                return dk == todayKey;
+              }
+
+              // 2) Fallback: use createdAt date
+              final createdAt = data['createdAt'];
+              if (createdAt is Timestamp) {
+                final dt = createdAt.toDate();
+                return dt.year == now.year &&
+                    dt.month == now.month &&
+                    dt.day == now.day;
+              }
+
+              // 3) As a last resort, keep the task (so old tasks don't disappear suddenly)
+              return true;
+            }).toList();
+
+            final int total = todayDocs.length; // tasks for today only
+            final int checked = todayDocs
+                .where((d) => d.data()['isChecked'] == true)
+                .length;
+
+            totalTasks.value = total;
+            checkedTasks.value = checked;
+
+            // Scoring uses today's tasks only
+            updateTaskProgress(checked, total);
+          },
+          onError: (e) {
+            totalTasks.value = 0;
+            checkedTasks.value = 0;
+            updateTaskProgress(0, 0);
+          },
+        );
+  }
+
   // FILTERING FOR DASHBOARD:
   // We only count tasks that belong to "today"
   // The dashboard uses dateKey to know which day the task was created
@@ -104,136 +203,6 @@ class DashboardController extends GetxController {
   // - User checks it on Friday
   // → It will NOT count for Friday's task progress
   // → It counted only on Thursday
-
-=======
->>>>>>> e5e4318bcef101edd2f73a426821c31a85bede51
-  void _listenToAdhdTasks() {
-  _tasksSub?.cancel();
-
-<<<<<<< HEAD
-    _tasksSub = db
-        .collection('users')
-        .doc(adhdUid)
-        .collection('tasks')
-        .snapshots()
-        .listen(
-          (snap) {
-            final now = DateTime.now();
-
-            final todayKey =
-                '${now.year.toString().padLeft(4, '0')}-'
-                '${now.month.toString().padLeft(2, '0')}-'
-                '${now.day.toString().padLeft(2, '0')}';
-
-            final todayDocs = snap.docs.where((d) {
-              final data = d.data();
-
-              final dk = data['dateKey'];
-              if (dk is String) {
-                return dk == todayKey;
-              }
-
-              final createdAt = data['createdAt'];
-              if (createdAt is Timestamp) {
-                final dt = createdAt.toDate();
-                return dt.year == now.year &&
-                    dt.month == now.month &&
-                    dt.day == now.day;
-              }
-
-              return true;
-            }).toList();
-
-            final int total = todayDocs.length;
-            final int checked = todayDocs
-                .where((d) => d.data()['isChecked'] == true)
-                .length;
-=======
-  _tasksSub = db
-      .collection('users')
-      .doc(adhdUid)
-      .collection('tasks')
-      .snapshots()
-      .listen(
-        (snap) {
-          final now = DateTime.now();
-
-          // dateKey represents the "day this task belongs to"
-          // e.g. "2025-11-22"
-          final todayKey =
-              '${now.year.toString().padLeft(4, '0')}-'
-              '${now.month.toString().padLeft(2, '0')}-'
-              '${now.day.toString().padLeft(2, '0')}';
-
-          // DASHBOARD FILTER:
-          // Only include tasks that belong to today.
-          // If a task has dateKey, we compare it directly.
-          // If it doesn't (older data), we fall back to createdAt.
-          final todayDocs = snap.docs.where((d) {
-            final data = d.data();
->>>>>>> e5e4318bcef101edd2f73a426821c31a85bede51
-
-            // 1) Prefer dateKey if present
-            final dk = data['dateKey'];
-            if (dk is String) {
-              return dk == todayKey;
-            }
-
-<<<<<<< HEAD
-            updateTaskProgress(checked, total);
-          },
-          onError: (e) {
-            totalTasks.value = 0;
-            checkedTasks.value = 0;
-            updateTaskProgress(0, 0);
-          },
-        );
-  }
-=======
-            // 2) Fallback: use createdAt date
-            final createdAt = data['createdAt'];
-            if (createdAt is Timestamp) {
-              final dt = createdAt.toDate();
-              return dt.year == now.year &&
-                  dt.month == now.month &&
-                  dt.day == now.day;
-            }
-
-            // 3) As a last resort, keep the task (so old tasks don't disappear suddenly)
-            return true;
-          }).toList();
-
-          final int total = todayDocs.length; // tasks for today only
-          final int checked = todayDocs
-              .where((d) => d.data()['isChecked'] == true)
-              .length;
-
-          totalTasks.value = total;
-          checkedTasks.value = checked;
-
-          // Scoring uses today's tasks only
-          updateTaskProgress(checked, total);
-        },
-        onError: (e) {
-          totalTasks.value = 0;
-          checkedTasks.value = 0;
-          updateTaskProgress(0, 0);
-        },
-      );
-}
-
-// FILTERING FOR DASHBOARD:
-  // We only count tasks that belong to "today"
-  // The dashboard uses dateKey to know which day the task was created
-  // This ensures that daily progress reflects only today's tasks
-  // even if the task is still visible from previous days
-  //
-  // Example:
-  // - Task created on Thursday with dateKey="2025-11-20"
-  // - User checks it on Friday
-  // → It will NOT count for Friday's task progress
-  // → It counted only on Thursday
->>>>>>> e5e4318bcef101edd2f73a426821c31a85bede51
 
   void _listenToDailyMood() {
     _moodSub?.cancel();
@@ -465,6 +434,18 @@ class DashboardController extends GetxController {
     _updateWeeklyScoresLive(); //so line chart reflects live changes CHECK THIS WITH GIRLS
   }
 
+  // LIVE: average score for the current week so far (0–100)
+  double get currentWeekAverage {
+    if (weeklyScores.isEmpty) return 0.0;
+
+    // consider only days that have some score > 0
+    final nonZero = weeklyScores.where((v) => v > 0).toList();
+    if (nonZero.isEmpty) return 0.0;
+
+    final sum = nonZero.fold<double>(0.0, (p, e) => p + e);
+    return sum / nonZero.length;
+  }
+
   // called whenever tasks change
   void updateTaskProgress(int completed, int total) {
     if (total <= 0) {
@@ -509,22 +490,36 @@ class DashboardController extends GetxController {
   }
 
   // save today's score into Firestore weeklyDashboard array at midnight
+  // save daily and compute weekly score at end of week
   Future<void> _saveDailyScoreToWeekArray() async {
-    final idx = _dayIndex(DateTime.now());
-    final arr = List<double>.from(weeklyScores);
-    if (arr.length < 7) {
+    final now = DateTime.now();
+    final yesterday = now.subtract(const Duration(days: 1));
+    final dayIdx = _dayIndex(yesterday); // 0=Sun .. 6=Sat
+
+    // keep weeklyScores at size 7
+    if (weeklyScores.length < 7) {
       final fill = List<double>.filled(7, 0.0);
-      final len = arr.length < 7 ? arr.length : 7;
-      for (int i = 0; i < len; i++) {
-        fill[i] = arr[i];
+      for (int i = 0; i < weeklyScores.length && i < 7; i++) {
+        fill[i] = weeklyScores[i];
       }
       weeklyScores.assignAll(fill);
     }
 
-    weeklyScores[idx] = dailyScore.value; // update today's slot
+    // write yesterday’s score into its slot
+    weeklyScores[dayIdx] = dailyScore.value;
+
+    // save daily array (Sun-Sat)
     await db.collection('users').doc(adhdUid).set({
       'weeklyDashboard': weeklyScores,
     }, SetOptions(merge: true));
+
+    // if yesterday was Saturday → the WEEK is finished
+    if (dayIdx == 6) {
+      double sum = weeklyScores.fold(0.0, (p, e) => p + e);
+      double avgWeek = sum / weeklyScores.length;
+
+      await _appendWeekToHistory(avgWeek);
+    }
   }
 
   // schedule midnight save (and reschedule for next day)

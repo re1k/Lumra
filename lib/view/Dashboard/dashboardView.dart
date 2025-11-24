@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:lumra_project/controller/Dashboard/dashboardController.dart';
 import 'package:lumra_project/theme/base_themes/colors.dart';
 import 'package:lumra_project/theme/base_themes/sizes.dart';
@@ -20,12 +19,26 @@ class _DashboardPageState extends State<DashboardPage> {
   String? _selectedCategory;
   double? _selectedCount;
 
-  // ADDED: toggle state to switch between daily and weekly view
+  // toggle state between daily and weekly
   bool showDaily = true;
 
   final DashboardController dashController = Get.put(
     DashboardController(FirebaseFirestore.instance),
   );
+  // NEW: for weekly paging (4 weeks per page)
+  late final PageController _weeklyPageController;
+  int _weeklyPage = 0;
+  @override
+  void initState() {
+    super.initState();
+    _weeklyPageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _weeklyPageController.dispose();
+    super.dispose();
+  }
 
   // Helper: compute week of month for a given date
   int weekOfMonth(DateTime date) {
@@ -62,62 +75,7 @@ class _DashboardPageState extends State<DashboardPage> {
     final textTheme = Theme.of(context).textTheme;
     final DateTime now = DateTime.now();
     final String currentMonth = DateFormat('MMMM').format(now);
-    final int daysInMonth = DateTime(now.year, now.month + 1, 0).day;
-    final int totalWeeks =
-        ((daysInMonth + DateTime(now.year, now.month, 1).weekday - 1) / 7)
-            .ceil();
     final int currentWeek = weekOfMonth(now);
-    // Dummy weekly data dynamically based on number of weeks
-    final Map<String, double> weeklyData = {
-      for (int i = 0; i < totalWeeks; i++)
-        'Week ${i + 1}': (10 + i * 10).toDouble(),
-    };
-
-    // Dummy data – some can be 0
-    //get actual data later, then still use the method down to remove the ones with no activities
-    final Map<String, double> categoryCounts = {
-      'mindfulness': 4,
-      'creative': 2,
-      'sport': 5,
-      'learning': 3,
-      'relaxation': 1,
-      'social': 2,
-      'motivation': 3,
-    };
-
-    // (dummy) generate daily data for the first week
-    final Map<String, double> dailyData = {
-      'Sun': 10,
-      'Mon': 30,
-      'Tue': 90,
-      'Wed': 80,
-      'Thu': 40,
-      'Fri': 10,
-      'Sat': 9,
-    };
-    // Keep only categories with value > 0
-    final entries = categoryCounts.entries.where((e) => e.value > 0).toList();
-
-    // Build bar groups from filtered entries
-    final List<BarChartGroupData> barGroups = List.generate(entries.length, (
-      i,
-    ) {
-      final key = entries[i].key;
-      final value = entries[i].value;
-      final style = CategoryStyles.byKey(key);
-
-      return BarChartGroupData(
-        x: i,
-        barRods: [
-          BarChartRodData(
-            toY: value,
-            width: 22,
-            color: style.iconColor.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(0),
-          ),
-        ],
-      );
-    });
 
     return Scaffold(
       backgroundColor: BColors.lightGrey,
@@ -165,13 +123,12 @@ class _DashboardPageState extends State<DashboardPage> {
                             ),
                           ],
                         ),
-                        // interactive Daily/Weekly container inside same class
                         child: Padding(
                           padding: const EdgeInsets.all(12),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Title + button
+                              // Title + toggle button
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -179,8 +136,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                   Text(
                                     showDaily
                                         ? "Daily Progress - Week $currentWeek"
-                                        : "$currentMonth Weekly Progress",
-
+                                        : "Weekly Progress",
                                     style: textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: BColors.textprimary,
@@ -208,8 +164,13 @@ class _DashboardPageState extends State<DashboardPage> {
                                 child: Padding(
                                   padding: const EdgeInsets.only(right: 6.0),
                                   child: Obx(() {
-                                    final weeklyScores =
-                                        dashController.weeklyScores;
+                                    final weeklyScores = dashController
+                                        .weeklyScores; // 7 days (Sun..Sat)
+                                    final weeklyHistory = dashController
+                                        .weeklyHistory; // past full weeks
+                                    final currentWeekAvg =
+                                        dashController.currentWeekAverage;
+
                                     const List<String> dailyKeys = [
                                       'Sun',
                                       'Mon',
@@ -219,143 +180,281 @@ class _DashboardPageState extends State<DashboardPage> {
                                       'Fri',
                                       'Sat',
                                     ];
-                                    final List<String> weeklyKeys = weeklyData
-                                        .keys
-                                        .toList();
-                                    return LineChart(
-                                      LineChartData(
-                                        minY: 0,
-                                        maxY: 100,
-                                        gridData: FlGridData(show: false),
-                                        borderData: FlBorderData(show: false),
-                                        titlesData: FlTitlesData(
-                                          topTitles: AxisTitles(
-                                            sideTitles: SideTitles(
-                                              showTitles: false,
+
+                                    // Build weekly data: [past weeks..., this week live]
+                                    List<double> weeklyData = [
+                                      ...weeklyHistory,
+                                      currentWeekAvg,
+                                    ];
+
+                                    // keep only last 8 points max
+                                    if (weeklyData.length > 8) {
+                                      weeklyData = weeklyData.sublist(
+                                        weeklyData.length - 8,
+                                      );
+                                    }
+
+                                    // Labels: W1..Wn for past weeks, "This week" for last point
+                                    final List<String> weeklyLabels =
+                                        List.generate(weeklyData.length, (i) {
+                                          final isLast =
+                                              i == weeklyData.length - 1;
+                                          return isLast
+                                              ? 'This week'
+                                              : 'W${i + 1}';
+                                        });
+
+                                    // ---- DAILY MODE: one chart for 7 days ----
+                                    if (showDaily) {
+                                      return LineChart(
+                                        LineChartData(
+                                          minY: 0,
+                                          maxY: 100,
+                                          gridData: FlGridData(show: false),
+                                          borderData: FlBorderData(show: false),
+                                          titlesData: FlTitlesData(
+                                            show: true,
+                                            topTitles: AxisTitles(
+                                              sideTitles: SideTitles(
+                                                showTitles: false,
+                                              ),
                                             ),
-                                          ),
-                                          rightTitles: AxisTitles(
-                                            sideTitles: SideTitles(
-                                              showTitles: false,
+                                            rightTitles: AxisTitles(
+                                              sideTitles: SideTitles(
+                                                showTitles: false,
+                                              ),
                                             ),
-                                          ),
-                                          leftTitles: AxisTitles(
-                                            sideTitles: SideTitles(
-                                              showTitles: true,
-                                              reservedSize: 30,
-                                              interval: 20,
-                                              getTitlesWidget: (value, meta) =>
-                                                  Text(
+                                            leftTitles: AxisTitles(
+                                              sideTitles: SideTitles(
+                                                showTitles: true,
+                                                reservedSize: 32,
+                                                interval: 20,
+                                                getTitlesWidget: (value, meta) {
+                                                  return Text(
                                                     value.toInt().toString(),
                                                     style: const TextStyle(
                                                       fontFamily: 'K2D',
                                                       fontSize: 11,
                                                       color: Colors.grey,
                                                     ),
-                                                  ),
+                                                  );
+                                                },
+                                              ),
                                             ),
-                                          ),
-                                          bottomTitles: AxisTitles(
-                                            sideTitles: SideTitles(
-                                              showTitles: true,
-                                              interval: 1,
-                                              reservedSize: 26,
-                                              getTitlesWidget: (value, meta) {
-                                                int i = value.toInt();
-                                                late final List<String> keys;
-                                                if (showDaily) {
-                                                  keys = dailyKeys;
-                                                } else {
-                                                  keys = weeklyKeys;
-                                                }
-                                                if (i < 0 || i >= keys.length)
-                                                  return const SizedBox.shrink();
-                                                final isCurrentWeek =
-                                                    !showDaily &&
-                                                    (i + 1) == currentWeek;
-                                                final isToday =
-                                                    showDaily &&
-                                                    i ==
-                                                        (DateTime.now()
-                                                                .weekday %
-                                                            7);
-
-                                                return Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                        top: 6,
+                                            bottomTitles: AxisTitles(
+                                              sideTitles: SideTitles(
+                                                showTitles: true,
+                                                interval: 1,
+                                                reservedSize: 26,
+                                                getTitlesWidget: (value, meta) {
+                                                  int i = value.toInt();
+                                                  if (i < 0 ||
+                                                      i >= dailyKeys.length) {
+                                                    return const SizedBox.shrink();
+                                                  }
+                                                  return Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                          top: 6,
+                                                        ),
+                                                    child: Text(
+                                                      dailyKeys[i],
+                                                      style: const TextStyle(
+                                                        fontFamily: 'K2D',
+                                                        fontSize: 11,
+                                                        color: Colors.grey,
                                                       ),
-                                                  child: Text(
-                                                    keys[i],
-                                                    style: TextStyle(
-                                                      fontFamily: 'K2D',
-                                                      fontSize: 11,
-                                                      color:
-                                                          isToday ||
-                                                              isCurrentWeek
-                                                          ? const Color.fromARGB(
-                                                              255,
-                                                              25,
-                                                              27,
-                                                              26,
-                                                            )
-                                                          : Colors.grey,
-                                                      fontWeight:
-                                                          isToday ||
-                                                              isCurrentWeek
-                                                          ? FontWeight.bold
-                                                          : FontWeight.normal,
                                                     ),
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                        ),
-                                        lineTouchData: LineTouchData(
-                                          enabled: true,
-                                        ),
-
-                                        lineBarsData: [
-                                          LineChartBarData(
-                                            spots: List.generate(
-                                              //we will replace later with actual data
-                                              showDaily
-                                                  ? dailyKeys.length
-                                                  : weeklyData.length,
-                                              (i) => FlSpot(
-                                                i.toDouble(),
-                                                showDaily
-                                                    ? (i < weeklyScores.length
-                                                          ? weeklyScores[i] //daily combined score
-                                                          : 0.0)
-                                                    : weeklyData.values
-                                                          .elementAt(i),
-                                              ), //we will replace later with actual data
-                                            ),
-                                            isCurved: true,
-                                            barWidth: 3.1,
-                                            color: BColors.primary,
-                                            dotData: FlDotData(show: true),
-
-                                            belowBarData: BarAreaData(
-                                              show: true,
-                                              gradient: LinearGradient(
-                                                begin: Alignment.topCenter,
-                                                end: Alignment.bottomCenter,
-                                                colors: [
-                                                  BColors.primary.withOpacity(
-                                                    0.4,
-                                                  ),
-                                                  BColors.primary.withOpacity(
-                                                    0.05,
-                                                  ),
-                                                ],
+                                                  );
+                                                },
                                               ),
                                             ),
                                           ),
-                                        ],
-                                      ),
+                                          lineTouchData: LineTouchData(
+                                            enabled: true,
+                                          ),
+                                          lineBarsData: [
+                                            LineChartBarData(
+                                              spots: List.generate(
+                                                dailyKeys.length,
+                                                (i) => FlSpot(
+                                                  i.toDouble(),
+                                                  i < weeklyScores.length
+                                                      ? weeklyScores[i]
+                                                      : 0.0,
+                                                ),
+                                              ),
+                                              isCurved: true,
+                                              barWidth: 3,
+                                              color: BColors.primary,
+                                              dotData: FlDotData(show: true),
+                                              belowBarData: BarAreaData(
+                                                show: true,
+                                                gradient: LinearGradient(
+                                                  begin: Alignment.topCenter,
+                                                  end: Alignment.bottomCenter,
+                                                  colors: [
+                                                    BColors.primary.withOpacity(
+                                                      0.4,
+                                                    ),
+                                                    BColors.primary.withOpacity(
+                                                      0.05,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }
+
+                                    // ---- WEEKLY MODE: 4 weeks per page with swipe ----
+
+                                    // If all weekly data is 0, show message
+                                    if (weeklyData.isEmpty ||
+                                        weeklyData.every((v) => v == 0.0)) {
+                                      return const Center(
+                                        child: Text(
+                                          "No weekly data yet",
+                                          style: TextStyle(
+                                            fontFamily: 'K2D',
+                                            fontSize: 12,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      );
+                                    }
+
+                                    final int totalPoints = weeklyData.length;
+                                    final int pageCount = (totalPoints / 4)
+                                        .ceil(); // 4 per page
+
+                                    return PageView.builder(
+                                      controller: _weeklyPageController,
+                                      itemCount: pageCount,
+                                      onPageChanged: (idx) {
+                                        setState(() => _weeklyPage = idx);
+                                      },
+                                      itemBuilder: (context, pageIndex) {
+                                        final start = pageIndex * 4;
+                                        final end = (start + 4 > totalPoints)
+                                            ? totalPoints
+                                            : start + 4;
+
+                                        final segmentValues = weeklyData
+                                            .sublist(start, end);
+                                        final segmentLabels = weeklyLabels
+                                            .sublist(start, end);
+
+                                        return LineChart(
+                                          LineChartData(
+                                            minY: 0,
+                                            maxY: 100,
+                                            gridData: FlGridData(show: false),
+                                            borderData: FlBorderData(
+                                              show: false,
+                                            ),
+                                            titlesData: FlTitlesData(
+                                              show: true,
+                                              topTitles: AxisTitles(
+                                                sideTitles: SideTitles(
+                                                  showTitles: false,
+                                                ),
+                                              ),
+                                              rightTitles: AxisTitles(
+                                                sideTitles: SideTitles(
+                                                  showTitles: false,
+                                                ),
+                                              ),
+                                              leftTitles: AxisTitles(
+                                                sideTitles: SideTitles(
+                                                  showTitles: true,
+                                                  reservedSize: 32,
+                                                  interval: 20,
+                                                  getTitlesWidget:
+                                                      (value, meta) {
+                                                        return Text(
+                                                          value
+                                                              .toInt()
+                                                              .toString(),
+                                                          style:
+                                                              const TextStyle(
+                                                                fontFamily:
+                                                                    'K2D',
+                                                                fontSize: 11,
+                                                                color:
+                                                                    Colors.grey,
+                                                              ),
+                                                        );
+                                                      },
+                                                ),
+                                              ),
+                                              bottomTitles: AxisTitles(
+                                                sideTitles: SideTitles(
+                                                  showTitles: true,
+                                                  interval: 1,
+                                                  reservedSize: 26,
+                                                  getTitlesWidget: (value, meta) {
+                                                    int i = value.toInt();
+                                                    if (i < 0 ||
+                                                        i >=
+                                                            segmentLabels
+                                                                .length) {
+                                                      return const SizedBox.shrink();
+                                                    }
+                                                    return Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            top: 6,
+                                                          ),
+                                                      child: Text(
+                                                        segmentLabels[i],
+                                                        style: const TextStyle(
+                                                          fontFamily: 'K2D',
+                                                          fontSize: 11,
+                                                          color: Colors.grey,
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                            lineTouchData: LineTouchData(
+                                              enabled: true,
+                                            ),
+                                            lineBarsData: [
+                                              LineChartBarData(
+                                                spots: List.generate(
+                                                  segmentValues.length,
+                                                  (i) => FlSpot(
+                                                    i.toDouble(),
+                                                    segmentValues[i],
+                                                  ),
+                                                ),
+                                                isCurved: true,
+                                                barWidth: 3,
+                                                color: BColors.primary,
+                                                dotData: FlDotData(show: true),
+                                                belowBarData: BarAreaData(
+                                                  show: true,
+                                                  gradient: LinearGradient(
+                                                    begin: Alignment.topCenter,
+                                                    end: Alignment.bottomCenter,
+                                                    colors: [
+                                                      BColors.primary
+                                                          .withOpacity(0.4),
+                                                      BColors.primary
+                                                          .withOpacity(0.05),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
                                     );
                                   }),
                                 ),
@@ -390,7 +489,6 @@ class _DashboardPageState extends State<DashboardPage> {
                                     ),
                                   ],
                                 ),
-
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -901,7 +999,6 @@ class _DashboardPageState extends State<DashboardPage> {
                                                 );
                                               },
                                         ),
-
                                         touchCallback:
                                             (
                                               FlTouchEvent event,
@@ -959,8 +1056,9 @@ class _DashboardPageState extends State<DashboardPage> {
                                             interval: 1,
                                             reservedSize: 32,
                                             getTitlesWidget: (value, meta) {
-                                              if (value % 1 != 0)
+                                              if (value % 1 != 0) {
                                                 return const SizedBox.shrink();
+                                              }
                                               return Text(
                                                 value.toInt().toString(),
                                                 style: const TextStyle(
