@@ -8,6 +8,7 @@ import 'package:lumra_project/theme/base_themes/sizes.dart';
 import 'package:lumra_project/view/Activity/ActivityWidgets/categoryStyle.dart';
 import 'package:lumra_project/theme/custom_themes/appbar_theme.dart';
 import 'package:intl/intl.dart';
+import 'dart:ui' as ui; 
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -27,7 +28,6 @@ class _DashboardPageState extends State<DashboardPage> {
   
   // Track scrolling state for arrows
   bool _isAtStart = true;
-  // bool _isAtEnd = false; // Removed as we deleted the right arrow
   bool _hasScrolledInitial = false;
 
   final DashboardController dashController = Get.put(
@@ -51,12 +51,10 @@ class _DashboardPageState extends State<DashboardPage> {
     if (!_weeklyScrollController.hasClients) return;
     
     final offset = _weeklyScrollController.offset;
-    // final maxScroll = _weeklyScrollController.position.maxScrollExtent;
     
     // Check if at start with a small tolerance
     setState(() {
       _isAtStart = offset <= 5; 
-      // _isAtEnd = offset >= maxScroll - 5; // Not needed anymore
     });
   }
 
@@ -200,32 +198,19 @@ class _DashboardPageState extends State<DashboardPage> {
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Title + Arrows + toggle button
+                                // ---------------- HEADER ROW (Title + Toggles) ----------------
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // Left side: Title and Arrows
-                                    Row(
+                                    // Left side: Title + Arrow (below)
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        // Left Arrow (Go to W1)
-                                        // Visible if NOT showing daily AND NOT at start (W1)
-                                        if (!showDaily && !_isAtStart)
-                                          IconButton(
-                                            padding: EdgeInsets.zero,
-                                            constraints: const BoxConstraints(),
-                                            icon: const Icon(Icons.chevron_left, color: BColors.primary),
-                                            onPressed: () {
-                                              _weeklyScrollController.animateTo(
-                                                0, 
-                                                duration: const Duration(milliseconds: 500), 
-                                                curve: Curves.easeInOut
-                                              );
-                                            },
-                                          ),
-
+                                        // Title
                                         Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                                          padding: const EdgeInsets.only(left: 4, bottom: 0),
                                           child: Text(
                                             showDaily
                                                 ? "Daily Progress - Week $currentWeek"
@@ -236,10 +221,44 @@ class _DashboardPageState extends State<DashboardPage> {
                                             ),
                                           ),
                                         ),
+
+                                        // Arrow (Below Title) - Only if Weekly Mode
+                                        if (!showDaily)
+                                          Directionality(
+                                            textDirection: ui.TextDirection.ltr,
+                                            child: IconButton(
+                                              padding: EdgeInsets.zero,
+                                              constraints: const BoxConstraints(),
+                                              // If at Start -> Show Right Arrow (Go to End)
+                                              // If NOT at Start -> Show Left Arrow (Go to Start)
+                                              icon: Icon(
+                                                _isAtStart ? Icons.chevron_right : Icons.chevron_left, 
+                                                color: BColors.primary,
+                                                size: 24, // Optional: Adjust size
+                                              ),
+                                              onPressed: () {
+                                                if (_isAtStart) {
+                                                  // Go to This Week (End)
+                                                  _weeklyScrollController.animateTo(
+                                                    _weeklyScrollController.position.maxScrollExtent,
+                                                    duration: const Duration(milliseconds: 500), 
+                                                    curve: Curves.easeInOut
+                                                  );
+                                                } else {
+                                                  // Go to W1 (Start)
+                                                  _weeklyScrollController.animateTo(
+                                                    0, 
+                                                    duration: const Duration(milliseconds: 500), 
+                                                    curve: Curves.easeInOut
+                                                  );
+                                                }
+                                              },
+                                            ),
+                                          ),
                                       ],
                                     ),
 
-                                    // Toggles
+                                    // Right side: Toggles
                                     Container(
                                       decoration: BoxDecoration(
                                         color: BColors.lightGrey.withOpacity(0.4),
@@ -255,7 +274,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 14),
+                                const SizedBox(height: 10),
 
                                 //  LINE CHART AREA
                                 Expanded(
