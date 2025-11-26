@@ -486,6 +486,18 @@ class DashboardController extends GetxController {
     return d.weekday % 7;
   }
 
+  //جديده
+  Future<void> _updateLastWeekHistory(double avg) async {
+    final updated = List<double>.from(weeklyHistory);
+    updated[updated.length - 1] = avg;
+    weeklyHistory.assignAll(updated);
+
+    // save trimmed to Firestore
+    await db.collection('users').doc(adhdUid).set({
+      'weeklyHistory': _trimTo8(updated),
+    }, SetOptions(merge: true));
+  }
+
   // live update weeklyScores for today
   void _updateWeeklyScoresLive() {
     final idx = _dayIndex(DateTime.now());
@@ -496,7 +508,7 @@ class DashboardController extends GetxController {
     weeklyScores.refresh();
   }
 
-  void _updateWeeklyHistoryRealtime() {
+  Future<void> _updateWeeklyHistoryRealtime() async {
     final nonZero = weeklyScores.where((v) => v > 0).toList();
     final avg = nonZero.isEmpty
         ? 0.0
@@ -504,16 +516,21 @@ class DashboardController extends GetxController {
 
     final todayIdx = _dayIndex(DateTime.now());
 
-    // if today is Sunday and last week exists, start a new entry
-    if (todayIdx == 0 && weeklyHistory.isNotEmpty) {
-      weeklyHistory.add(avg);
-    } else if (weeklyHistory.isEmpty) {
-      weeklyHistory.add(avg);
+    //عدلت هنا
+    if (todayIdx == 0 || weeklyHistory.isEmpty) {
+      await _appendWeekToHistory(avg); //جديد
     } else {
-      weeklyHistory[weeklyHistory.length - 1] = avg;
+      await _updateLastWeekHistory(avg);
     }
   }
 
+  // جديد: ensure lists never exceed 8 items
+  List<double> _trimTo8(List<double> list) {
+    if (list.length <= 8) return list;
+    return list.sublist(list.length - 8);
+  }
+
+  //عدلت هنا
   Future<void> _saveRealtimeScores() async {
     if (!_isInitialized) return;
 
@@ -528,16 +545,18 @@ class DashboardController extends GetxController {
         : nonZeroDays.fold(0.0, (sum, v) => sum + v) / nonZeroDays.length;
 
     final updatedWeeklyHistory = List<double>.from(weeklyHistory);
-    if (updatedWeeklyHistory.isEmpty || todayIdx == 0) {
-      updatedWeeklyHistory.add(currentWeekAvg);
-    } else {
-      updatedWeeklyHistory[updatedWeeklyHistory.length - 1] = currentWeekAvg;
-    }
-
+    //هنا التعديل
+    // Save weeklyDashboard first
     await db.collection('users').doc(adhdUid).set({
       'weeklyDashboard': updatedWeeklyScores,
-      'weeklyHistory': updatedWeeklyHistory,
     }, SetOptions(merge: true));
+
+    // Update last week safely
+    if (updatedWeeklyHistory.isEmpty || todayIdx == 0) {
+      await _appendWeekToHistory(currentWeekAvg);
+    } else {
+      await _updateLastWeekHistory(currentWeekAvg);
+    }
   }
 
   // save today's score into Firestore weeklyDashboard array at midnight
