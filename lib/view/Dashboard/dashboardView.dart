@@ -184,7 +184,7 @@ class _DashboardPageState extends State<DashboardPage> {
                             // Continuous Data
                             List<double> weeklyData = [
                               ...weeklyHistory,
-                              currentWeekAvg,
+                              //currentWeekAvg,
                             ];
 
                             // Labels
@@ -193,6 +193,7 @@ class _DashboardPageState extends State<DashboardPage> {
                               final isLast = i == weeklyData.length - 1;
                               return isLast ? 'This week' : 'W${i + 1}';
                             });
+                            
 
                             // Dynamic Width
                             double chartWidth = weeklyData.length * 60.0;
