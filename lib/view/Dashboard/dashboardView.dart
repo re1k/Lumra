@@ -8,7 +8,7 @@ import 'package:lumra_project/theme/base_themes/sizes.dart';
 import 'package:lumra_project/view/Activity/ActivityWidgets/categoryStyle.dart';
 import 'package:lumra_project/theme/custom_themes/appbar_theme.dart';
 import 'package:intl/intl.dart';
-import 'dart:ui' as ui; 
+import 'dart:ui' as ui;
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -26,9 +26,8 @@ class _DashboardPageState extends State<DashboardPage> {
   // NEW: Scroll controller for the continuous weekly chart
   final ScrollController _weeklyScrollController = ScrollController();
   
-  // Track scrolling state for arrows
+  // Track scrolling state for arrows (True means we are at W1/Start)
   bool _isAtStart = true;
-  bool _hasScrolledInitial = false;
 
   final DashboardController dashController = Get.put(
     DashboardController(FirebaseFirestore.instance),
@@ -43,7 +42,7 @@ class _DashboardPageState extends State<DashboardPage> {
     super.initState();
     _weeklyPageController = PageController();
     
-    // Listen to scroll changes to update arrows
+    // Listen to scroll changes to update arrows visibility
     _weeklyScrollController.addListener(_scrollListener);
   }
 
@@ -51,11 +50,14 @@ class _DashboardPageState extends State<DashboardPage> {
     if (!_weeklyScrollController.hasClients) return;
     
     final offset = _weeklyScrollController.offset;
+    // Check if at start with a small tolerance (e.g. 5 pixels)
+    bool atStart = offset <= 5;
     
-    // Check if at start with a small tolerance
-    setState(() {
-      _isAtStart = offset <= 5; 
-    });
+    if (_isAtStart != atStart) {
+      setState(() {
+        _isAtStart = atStart;
+      });
+    }
   }
 
   @override
@@ -76,7 +78,24 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _toggleButton(String label, bool isDailyButton) {
     bool isActive = showDaily == isDailyButton;
     return GestureDetector(
-      onTap: () => setState(() => showDaily = isDailyButton),
+      onTap: () {
+        setState(() => showDaily = isDailyButton);
+        
+        // FIX: When switching to Weekly, force jump to end and update arrow state
+        if (!isDailyButton) { 
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_weeklyScrollController.hasClients) {
+              _weeklyScrollController.jumpTo(
+                _weeklyScrollController.position.maxScrollExtent
+              );
+              // We jumped to end, so we are NOT at start. Update state to show Left Arrow.
+              setState(() {
+                _isAtStart = false; 
+              });
+            }
+          });
+        }
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
@@ -181,30 +200,28 @@ class _DashboardPageState extends State<DashboardPage> {
                               chartWidth = MediaQuery.of(context).size.width - 100;
                             }
 
-                            // Auto-scroll to end (once)
-                            if (!_hasScrolledInitial && !showDaily && weeklyData.isNotEmpty) {
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                if (_weeklyScrollController.hasClients) {
-                                  _weeklyScrollController.jumpTo(
-                                    _weeklyScrollController.position.maxScrollExtent
-                                  );
-                                  _hasScrolledInitial = true;
-                                  // Force update arrows state
-                                  _scrollListener();
-                                }
-                              });
+                            // Initial check if we load directly into Weekly
+                            if (showDaily == false && _weeklyScrollController.hasClients && _weeklyScrollController.offset == 0 && weeklyData.isNotEmpty) {
+                                 WidgetsBinding.instance.addPostFrameCallback((_) {
+                                   _weeklyScrollController.jumpTo(
+                                      _weeklyScrollController.position.maxScrollExtent
+                                   );
+                                   setState(() {
+                                      _isAtStart = false;
+                                   });
+                                 });
                             }
 
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // ---------------- HEADER ROW (Title + Toggles) ----------------
+                                // ---------------- HEADER ROW ----------------
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // Left side: Title + Arrow (below)
+                                    // LEFT COLUMN: Title + Left Arrow (<)
                                     Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
@@ -222,55 +239,83 @@ class _DashboardPageState extends State<DashboardPage> {
                                           ),
                                         ),
 
-                                        // Arrow (Below Title) - Only if Weekly Mode
-                                        if (!showDaily)
-                                          Directionality(
-                                            textDirection: ui.TextDirection.ltr,
-                                            child: IconButton(
-                                              padding: EdgeInsets.zero,
-                                              constraints: const BoxConstraints(),
-                                              // If at Start -> Show Right Arrow (Go to End)
-                                              // If NOT at Start -> Show Left Arrow (Go to Start)
-                                              icon: Icon(
-                                                _isAtStart ? Icons.chevron_right : Icons.chevron_left, 
-                                                color: BColors.primary,
-                                                size: 24, // Optional: Adjust size
-                                              ),
-                                              onPressed: () {
-                                                if (_isAtStart) {
-                                                  // Go to This Week (End)
-                                                  _weeklyScrollController.animateTo(
-                                                    _weeklyScrollController.position.maxScrollExtent,
-                                                    duration: const Duration(milliseconds: 500), 
-                                                    curve: Curves.easeInOut
-                                                  );
-                                                } else {
-                                                  // Go to W1 (Start)
-                                                  _weeklyScrollController.animateTo(
-                                                    0, 
-                                                    duration: const Duration(milliseconds: 500), 
-                                                    curve: Curves.easeInOut
-                                                  );
-                                                }
-                                              },
-                                            ),
-                                          ),
+                                        // LEFT ARROW: Goes to W1.
+                                        // Only show if NOT Daily AND NOT at start (we are at This Week or middle)
+                                        SizedBox(
+                                          height: 24,
+                                          child: (!showDaily && !_isAtStart)
+                                            ? Directionality(
+                                                textDirection: ui.TextDirection.ltr,
+                                                child: IconButton(
+                                                  padding: EdgeInsets.zero,
+                                                  constraints: const BoxConstraints(),
+                                                  icon: const Icon(
+                                                    Icons.chevron_left, 
+                                                    color: BColors.primary,
+                                                    size: 24,
+                                                  ),
+                                                  onPressed: () {
+                                                    // Go to Start (W1)
+                                                    _weeklyScrollController.animateTo(
+                                                      0, 
+                                                      duration: const Duration(milliseconds: 500), 
+                                                      curve: Curves.easeInOut
+                                                    );
+                                                  },
+                                                ),
+                                              )
+                                            : null,
+                                        ),
                                       ],
                                     ),
 
-                                    // Right side: Toggles
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: BColors.lightGrey.withOpacity(0.4),
-                                        borderRadius: BorderRadius.circular(24),
-                                      ),
-                                      padding: const EdgeInsets.all(4),
-                                      child: Row(
-                                        children: [
-                                          _toggleButton("Daily", true),
-                                          _toggleButton("Weekly", false),
-                                        ],
-                                      ),
+                                    // RIGHT COLUMN: Toggles + Right Arrow (>)
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        // Toggles
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            color: BColors.lightGrey.withOpacity(0.4),
+                                            borderRadius: BorderRadius.circular(24),
+                                          ),
+                                          padding: const EdgeInsets.all(4),
+                                          child: Row(
+                                            children: [
+                                              _toggleButton("Daily", true),
+                                              _toggleButton("Weekly", false),
+                                            ],
+                                          ),
+                                        ),
+
+                                        // RIGHT ARROW: Goes to This Week.
+                                        // Only show if NOT Daily AND AT Start (we are at W1)
+                                        SizedBox(
+                                          height: 24,
+                                          child: (!showDaily && _isAtStart)
+                                            ? Directionality(
+                                                textDirection: ui.TextDirection.ltr,
+                                                child: IconButton(
+                                                  padding: EdgeInsets.zero,
+                                                  constraints: const BoxConstraints(),
+                                                  icon: const Icon(
+                                                    Icons.chevron_right, 
+                                                    color: BColors.primary,
+                                                    size: 24,
+                                                  ),
+                                                  onPressed: () {
+                                                    // Go to End (This Week)
+                                                    _weeklyScrollController.animateTo(
+                                                      _weeklyScrollController.position.maxScrollExtent,
+                                                      duration: const Duration(milliseconds: 500), 
+                                                      curve: Curves.easeInOut
+                                                    );
+                                                  },
+                                                ),
+                                              )
+                                            : null,
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -383,7 +428,6 @@ class _DashboardPageState extends State<DashboardPage> {
                                             return SingleChildScrollView(
                                               controller: _weeklyScrollController,
                                               scrollDirection: Axis.horizontal,
-                                              // Padding left ensures W1 is visible, right ensures "This week" fits
                                               padding: const EdgeInsets.only(left: 10, right: 40),
                                               child: SizedBox(
                                                 width: chartWidth,
@@ -486,13 +530,403 @@ class _DashboardPageState extends State<DashboardPage> {
 
                       const SizedBox(height: 20),
                       // ---------------- TASK (LEFT) + FOCUS ROOM + MOOD (RIGHT) ----------------
+                      // ---------------- TASK (LEFT) + FOCUS ROOM + MOOD (RIGHT) ----------------
                       SizedBox(
-                        height: 230, 
+                        height: 230,
                         child: Row(
                           children: [
-                            Expanded(child: Container(padding: EdgeInsets.all(BSizes.md), decoration: BoxDecoration(color: BColors.white, borderRadius: BorderRadius.circular(BSizes.cardRadiusLg), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.07), blurRadius: 8, offset: const Offset(0, 3))]), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text("Task", style: textTheme.titleMedium?.copyWith(fontFamily: 'K2D', fontWeight: FontWeight.w700, color: BColors.textprimary)), const SizedBox(height: 8), Expanded(child: Obx(() { final total = dashController.totalTasks.value; final completed = dashController.checkedTasks.value; final incomplete = (total - completed).clamp(0, total); return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Expanded(child: Center(child: total == 0 ? const Text("No tasks yet", style: TextStyle(fontFamily: 'K2D', fontSize: 12, color: Colors.grey)) : PieChart(PieChartData(startDegreeOffset: -90, centerSpaceRadius: 25, sectionsSpace: 2, sections: [PieChartSectionData(value: completed.toDouble(), title: completed.toString(), color: BColors.primary, radius: 24, titleStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)), PieChartSectionData(value: incomplete.toDouble(), title: incomplete.toString(), color: BColors.secondry, radius: 20, titleStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white))])))), const SizedBox(height: 10), Row(children: [Container(width: 10, height: 10, color: BColors.primary), const SizedBox(width: 6), const Text("Completed", style: TextStyle(fontFamily: 'K2D', fontSize: 10, color: Colors.grey))]), const SizedBox(height: 4), Row(children: [Container(width: 10, height: 10, color: BColors.secondry), const SizedBox(width: 6), const Text("Incomplete", style: TextStyle(fontFamily: 'K2D', fontSize: 10, color: Colors.grey))])]); }))]))),
+                            // ======================================================
+                            // LEFT SIDE — TASK BOX
+                            // ======================================================
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(BSizes.md),
+                                decoration: BoxDecoration(
+                                  color: BColors.white,
+                                  borderRadius: BorderRadius.circular(
+                                    BSizes.cardRadiusLg,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.07),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Task",
+                                      style: textTheme.titleMedium?.copyWith(
+                                        fontFamily: 'K2D',
+                                        fontWeight: FontWeight.w700,
+                                        color: BColors.textprimary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+
+                                    Expanded(
+                                      child: Obx(() {
+                                        final total =
+                                            dashController.totalTasks.value;
+                                        final completed =
+                                            dashController.checkedTasks.value;
+                                        final incomplete = (total - completed)
+                                            .clamp(0, total);
+
+                                        return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Expanded(
+                                              child: Center(
+                                                child: total == 0
+                                                    ? const Text(
+                                                        "No tasks yet",
+                                                        style: TextStyle(
+                                                          fontFamily: 'K2D',
+                                                          fontSize: 12,
+                                                          color: Colors.grey,
+                                                        ),
+                                                      )
+                                                    : PieChart(
+                                                        PieChartData(
+                                                          startDegreeOffset:
+                                                              -90,
+                                                          centerSpaceRadius: 25,
+                                                          sectionsSpace: 2,
+                                                          sections: [
+                                                            PieChartSectionData(
+                                                              value: completed
+                                                                  .toDouble(),
+                                                              title: completed
+                                                                  .toString(),
+                                                              color: BColors
+                                                                  .primary,
+                                                              radius: 24,
+                                                              titleStyle:
+                                                                  const TextStyle(
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
+                                                            ),
+                                                            PieChartSectionData(
+                                                              value: incomplete
+                                                                  .toDouble(),
+                                                              title: incomplete
+                                                                  .toString(),
+                                                              color: BColors
+                                                                  .secondry,
+                                                              radius: 20,
+                                                              titleStyle:
+                                                                  const TextStyle(
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 10),
+                                            Row(
+                                              children: [
+                                                Container(
+                                                  width: 10,
+                                                  height: 10,
+                                                  color: BColors.primary,
+                                                ),
+                                                const SizedBox(width: 6),
+                                                const Text(
+                                                  "Completed",
+                                                  style: TextStyle(
+                                                    fontFamily: 'K2D',
+                                                    fontSize: 10,
+                                                    color: Colors.grey,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Row(
+                                              children: [
+                                                Container(
+                                                  width: 10,
+                                                  height: 10,
+                                                  color: BColors.secondry,
+                                                ),
+                                                const SizedBox(width: 6),
+                                                const Text(
+                                                  "Incomplete",
+                                                  style: TextStyle(
+                                                    fontFamily: 'K2D',
+                                                    fontSize: 10,
+                                                    color: Colors.grey,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        );
+                                      }),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
                             const SizedBox(width: 14),
-                            Expanded(child: Column(children: [Expanded(child: Container(padding: EdgeInsets.all(BSizes.md), decoration: BoxDecoration(color: BColors.white, borderRadius: BorderRadius.circular(BSizes.cardRadiusLg), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.07), blurRadius: 8, offset: const Offset(0, 3))]), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text("Focus Room", style: textTheme.titleMedium?.copyWith(fontFamily: 'K2D', fontWeight: FontWeight.w700, color: BColors.textprimary)), const SizedBox(height: 8), Expanded(child: Obx(() { final minutes = dashController.todayFocusMinutes.value; return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Text("$minutes min", style: textTheme.headlineSmall?.copyWith(fontFamily: 'K2D', fontWeight: FontWeight.bold, color: BColors.primary.withOpacity(0.7))), const SizedBox(height: 4), Text(minutes == 0 ? "No focus session today" : "Today's total focus time", style: const TextStyle(fontFamily: 'K2D', fontSize: 11, color: Colors.grey))])); }))]))), const SizedBox(height: 10), Expanded(child: Container(padding: EdgeInsets.all(BSizes.md), decoration: BoxDecoration(color: BColors.white, borderRadius: BorderRadius.circular(BSizes.cardRadiusLg), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.07), blurRadius: 8, offset: const Offset(0, 3))]), child: Obx(() { final int? mood = dashController.dailyMood.value; if (mood == null) { return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text("Mood", style: textTheme.titleMedium?.copyWith(fontFamily: 'K2D', fontWeight: FontWeight.w700, color: BColors.textprimary)), const SizedBox(height: 8), const Expanded(child: Center(child: Text("No mood yet", style: TextStyle(fontFamily: 'K2D', fontSize: 13, fontWeight: FontWeight.w500, color: Colors.grey))))]); } IconData icon; Color color; String label; switch (mood) { case 1: icon = Icons.sentiment_very_dissatisfied; color = const Color(0xFFE57373); label = "Very sad"; break; case 2: icon = Icons.sentiment_dissatisfied; color = const Color(0xFFFFB74D); label = "Sad"; break; case 3: icon = Icons.sentiment_neutral; color = const Color.fromARGB(255, 246, 236, 145); label = "Neutral"; break; case 4: icon = Icons.sentiment_satisfied; color = const Color(0xFF81C784); label = "Happy"; break; case 5: default: icon = Icons.sentiment_very_satisfied; color = const Color(0xFF4CAF50); label = "Very happy"; break; } return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text("Mood", style: textTheme.titleMedium?.copyWith(fontFamily: 'K2D', fontWeight: FontWeight.w700, color: BColors.textprimary)), const SizedBox(height: 8), Expanded(child: Center(child: Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7), decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(24), border: Border.all(color: color.withOpacity(0.8), width: 1)), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, color: color, size: 28), const SizedBox(width: 10), Text(label, style: TextStyle(fontFamily: 'K2D', fontSize: 12, fontWeight: FontWeight.w600, color: color))]))))]); })))])),
+
+                            // ======================================================
+                            // RIGHT SIDE — FOCUS ROOM + MOOD
+                            // ======================================================
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  // ----------------- FOCUS ROOM (TOP) -----------------
+                                  Expanded(
+                                    child: Container(
+                                      padding: const EdgeInsets.all(BSizes.md),
+                                      decoration: BoxDecoration(
+                                        color: BColors.white,
+                                        borderRadius: BorderRadius.circular(
+                                          BSizes.cardRadiusLg,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.07),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "Focus Room",
+                                            style:
+                                                textTheme.titleMedium?.copyWith(
+                                              fontFamily: 'K2D',
+                                              fontWeight: FontWeight.w700,
+                                              color: BColors.textprimary,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Expanded(
+                                            child: Obx(() {
+                                              final minutes = dashController
+                                                  .todayFocusMinutes.value;
+                                              return Center(
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      "$minutes min",
+                                                      style: textTheme
+                                                          .headlineSmall
+                                                          ?.copyWith(
+                                                        fontFamily: 'K2D',
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: BColors.primary
+                                                            .withOpacity(0.7),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      minutes == 0
+                                                          ? "No focus session today"
+                                                          : "Today's total focus time",
+                                                      style: const TextStyle(
+                                                        fontFamily: 'K2D',
+                                                        fontSize: 11,
+                                                        color: Colors.grey,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            }),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+
+                                  // ----------------- MOOD (BOTTOM) -----------------
+                                  Expanded(
+                                    child: Container(
+                                      padding: const EdgeInsets.all(BSizes.md),
+                                      decoration: BoxDecoration(
+                                        color: BColors.white,
+                                        borderRadius: BorderRadius.circular(
+                                          BSizes.cardRadiusLg,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.07),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Obx(() {
+                                        final int? mood =
+                                            dashController.dailyMood.value;
+
+                                        if (mood == null) {
+                                          return Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "Mood",
+                                                style: textTheme.titleMedium
+                                                    ?.copyWith(
+                                                  fontFamily: 'K2D',
+                                                  fontWeight: FontWeight.w700,
+                                                  color: BColors.textprimary,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8),
+                                              const Expanded(
+                                                child: Center(
+                                                  child: Text(
+                                                    "No mood yet",
+                                                    style: TextStyle(
+                                                      fontFamily: 'K2D',
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        }
+
+                                        IconData icon;
+                                        Color color;
+                                        String label;
+
+                                        switch (mood) {
+                                          case 1:
+                                            icon = Icons
+                                                .sentiment_very_dissatisfied;
+                                            color = const Color(0xFFE57373);
+                                            label = "Very sad";
+                                            break;
+                                          case 2:
+                                            icon = Icons.sentiment_dissatisfied;
+                                            color = const Color(0xFFFFB74D);
+                                            label = "Sad";
+                                            break;
+                                          case 3:
+                                            icon = Icons.sentiment_neutral;
+                                            color = const Color.fromARGB(
+                                                255, 246, 236, 145);
+                                            label = "Neutral";
+                                            break;
+                                          case 4:
+                                            icon = Icons.sentiment_satisfied;
+                                            color = const Color(0xFF81C784);
+                                            label = "Happy";
+                                            break;
+                                          case 5:
+                                          default:
+                                            icon =
+                                                Icons.sentiment_very_satisfied;
+                                            color = const Color(0xFF4CAF50);
+                                            label = "Very happy";
+                                            break;
+                                        }
+
+                                        return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              "Mood",
+                                              style: textTheme.titleMedium
+                                                  ?.copyWith(
+                                                fontFamily: 'K2D',
+                                                fontWeight: FontWeight.w700,
+                                                color: BColors.textprimary,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Expanded(
+                                              child: Center(
+                                                child: Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                    horizontal: 16,
+                                                    vertical: 7,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: color
+                                                        .withOpacity(0.12),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            24),
+                                                    border: Border.all(
+                                                      color: color
+                                                          .withOpacity(0.8),
+                                                      width: 1,
+                                                    ),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      Icon(
+                                                        icon,
+                                                        color: color,
+                                                        size: 28,
+                                                      ),
+                                                      const SizedBox(width: 10),
+                                                      Text(
+                                                        label,
+                                                        style: TextStyle(
+                                                          fontFamily: 'K2D',
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color: color,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      }),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),
