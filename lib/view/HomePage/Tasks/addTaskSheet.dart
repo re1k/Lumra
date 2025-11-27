@@ -113,10 +113,26 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Text(
-                          "Title",
-                          style: BTextTheme.lightTextTheme.titleMedium,
+                        RichText(
+                          text: TextSpan(
+                            text: 'Title',
+                            style: BTextTheme.lightTextTheme.titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black,
+                                ),
+                            children: const [
+                              TextSpan(
+                                text: ' *',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+
                         const SizedBox(height: 8),
                         TextFormField(
                           focusNode: _titleFocus,
@@ -143,10 +159,26 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
                         ),
                         const SizedBox(height: 20),
 
-                        Text(
-                          "Priority",
-                          style: BTextTheme.lightTextTheme.titleMedium,
+                        RichText(
+                          text: TextSpan(
+                            text: 'Priority',
+                            style: BTextTheme.lightTextTheme.titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black,
+                                ),
+                            children: const [
+                              TextSpan(
+                                text: ' *',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+
                         const SizedBox(height: 8),
                         DropdownButtonFormField<String>(
                           value: _priority,
