@@ -25,14 +25,14 @@ class _DashboardPageState extends State<DashboardPage> {
 
   // NEW: Scroll controller for the continuous weekly chart
   final ScrollController _weeklyScrollController = ScrollController();
-  
+
   // Track scrolling state for arrows (True means we are at W1/Start)
   bool _isAtStart = true;
 
   final DashboardController dashController = Get.put(
     DashboardController(FirebaseFirestore.instance),
   );
-  
+
   // PageController for Daily (kept for compatibility)
   late final PageController _weeklyPageController;
   int _weeklyPage = 0;
@@ -41,18 +41,18 @@ class _DashboardPageState extends State<DashboardPage> {
   void initState() {
     super.initState();
     _weeklyPageController = PageController();
-    
+
     // Listen to scroll changes to update arrows visibility
     _weeklyScrollController.addListener(_scrollListener);
   }
 
   void _scrollListener() {
     if (!_weeklyScrollController.hasClients) return;
-    
+
     final offset = _weeklyScrollController.offset;
     // Check if at start with a small tolerance (e.g. 5 pixels)
     bool atStart = offset <= 5;
-    
+
     if (_isAtStart != atStart) {
       setState(() {
         _isAtStart = atStart;
@@ -80,17 +80,17 @@ class _DashboardPageState extends State<DashboardPage> {
     return GestureDetector(
       onTap: () {
         setState(() => showDaily = isDailyButton);
-        
+
         // FIX: When switching to Weekly, force jump to end and update arrow state
-        if (!isDailyButton) { 
+        if (!isDailyButton) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (_weeklyScrollController.hasClients) {
               _weeklyScrollController.jumpTo(
-                _weeklyScrollController.position.maxScrollExtent
+                _weeklyScrollController.position.maxScrollExtent,
               );
               // We jumped to end, so we are NOT at start. Update state to show Left Arrow.
               setState(() {
-                _isAtStart = false; 
+                _isAtStart = false;
               });
             }
           });
@@ -121,7 +121,7 @@ class _DashboardPageState extends State<DashboardPage> {
     final DateTime now = DateTime.now();
     final String currentMonth = DateFormat('MMMM').format(now);
     final int currentWeek = weekOfMonth(now);
-    final int todayIndex = now.weekday == 7 ? 0 : now.weekday; 
+    final int todayIndex = now.weekday == 7 ? 0 : now.weekday;
 
     return Scaffold(
       backgroundColor: BColors.lightGrey,
@@ -173,12 +173,19 @@ class _DashboardPageState extends State<DashboardPage> {
                           padding: const EdgeInsets.all(12),
                           child: Obx(() {
                             // 1. Prepare Data inside Obx
-                            final weeklyScores = dashController.weeklyScores; 
-                            final weeklyHistory = dashController.weeklyHistory; 
-                            final currentWeekAvg = dashController.currentWeekAverage;
+                            final weeklyScores = dashController.weeklyScores;
+                            final weeklyHistory = dashController.weeklyHistory;
+                            final currentWeekAvg =
+                                dashController.currentWeekAverage;
 
                             const List<String> dailyKeys = [
-                              'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'
+                              'Sun',
+                              'Mon',
+                              'Tue',
+                              'Wed',
+                              'Thu',
+                              'Fri',
+                              'Sat',
                             ];
 
                             // Continuous Data
@@ -188,29 +195,37 @@ class _DashboardPageState extends State<DashboardPage> {
                             ];
 
                             // Labels
-                            final List<String> weeklyLabels =
-                                List.generate(weeklyData.length, (i) {
-                              final isLast = i == weeklyData.length - 1;
-                              return isLast ? 'This week' : 'W${i + 1}';
-                            });
-                            
+                            final List<String> weeklyLabels = List.generate(
+                              weeklyData.length,
+                              (i) {
+                                final isLast = i == weeklyData.length - 1;
+                                return isLast ? 'This week' : 'W${i + 1}';
+                              },
+                            );
 
                             // Dynamic Width
                             double chartWidth = weeklyData.length * 60.0;
-                            if (chartWidth < MediaQuery.of(context).size.width - 100) {
-                              chartWidth = MediaQuery.of(context).size.width - 100;
+                            if (chartWidth <
+                                MediaQuery.of(context).size.width - 100) {
+                              chartWidth =
+                                  MediaQuery.of(context).size.width - 100;
                             }
 
                             // Initial check if we load directly into Weekly
-                            if (showDaily == false && _weeklyScrollController.hasClients && _weeklyScrollController.offset == 0 && weeklyData.isNotEmpty) {
-                                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                                   _weeklyScrollController.jumpTo(
-                                      _weeklyScrollController.position.maxScrollExtent
-                                   );
-                                   setState(() {
-                                      _isAtStart = false;
-                                   });
-                                 });
+                            if (showDaily == false &&
+                                _weeklyScrollController.hasClients &&
+                                _weeklyScrollController.offset == 0 &&
+                                weeklyData.isNotEmpty) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                _weeklyScrollController.jumpTo(
+                                  _weeklyScrollController
+                                      .position
+                                      .maxScrollExtent,
+                                );
+                                setState(() {
+                                  _isAtStart = false;
+                                });
+                              });
                             }
 
                             return Column(
@@ -224,19 +239,24 @@ class _DashboardPageState extends State<DashboardPage> {
                                   children: [
                                     // LEFT COLUMN: Title + Left Arrow (<)
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         // Title
                                         Padding(
-                                          padding: const EdgeInsets.only(left: 4, bottom: 0),
+                                          padding: const EdgeInsets.only(
+                                            left: 4,
+                                            bottom: 0,
+                                          ),
                                           child: Text(
                                             showDaily
                                                 ? "Daily Progress - Week $currentWeek"
                                                 : "Weekly Progress",
-                                            style: textTheme.titleMedium?.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                              color: BColors.textprimary,
-                                            ),
+                                            style: textTheme.titleMedium
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: BColors.textprimary,
+                                                ),
                                           ),
                                         ),
 
@@ -245,40 +265,52 @@ class _DashboardPageState extends State<DashboardPage> {
                                         SizedBox(
                                           height: 24,
                                           child: (!showDaily && !_isAtStart)
-                                            ? Directionality(
-                                                textDirection: ui.TextDirection.ltr,
-                                                child: IconButton(
-                                                  padding: EdgeInsets.zero,
-                                                  constraints: const BoxConstraints(),
-                                                  icon: const Icon(
-                                                    Icons.chevron_left, 
-                                                    color: BColors.primary,
-                                                    size: 24,
+                                              ? Directionality(
+                                                  textDirection:
+                                                      ui.TextDirection.ltr,
+                                                  child: IconButton(
+                                                    padding: EdgeInsets.zero,
+                                                    constraints:
+                                                        const BoxConstraints(),
+                                                    icon: const Icon(
+                                                      Icons.chevron_left,
+                                                      color: BColors.primary,
+                                                      size: 24,
+                                                    ),
+                                                    onPressed: () {
+                                                      // Go to Start (W1)
+                                                      _weeklyScrollController
+                                                          .animateTo(
+                                                            0,
+                                                            duration:
+                                                                const Duration(
+                                                                  milliseconds:
+                                                                      500,
+                                                                ),
+                                                            curve: Curves
+                                                                .easeInOut,
+                                                          );
+                                                    },
                                                   ),
-                                                  onPressed: () {
-                                                    // Go to Start (W1)
-                                                    _weeklyScrollController.animateTo(
-                                                      0, 
-                                                      duration: const Duration(milliseconds: 500), 
-                                                      curve: Curves.easeInOut
-                                                    );
-                                                  },
-                                                ),
-                                              )
-                                            : null,
+                                                )
+                                              : null,
                                         ),
                                       ],
                                     ),
 
                                     // RIGHT COLUMN: Toggles + Right Arrow (>)
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
                                       children: [
                                         // Toggles
                                         Container(
                                           decoration: BoxDecoration(
-                                            color: BColors.lightGrey.withOpacity(0.4),
-                                            borderRadius: BorderRadius.circular(24),
+                                            color: BColors.lightGrey
+                                                .withOpacity(0.4),
+                                            borderRadius: BorderRadius.circular(
+                                              24,
+                                            ),
                                           ),
                                           padding: const EdgeInsets.all(4),
                                           child: Row(
@@ -294,27 +326,37 @@ class _DashboardPageState extends State<DashboardPage> {
                                         SizedBox(
                                           height: 24,
                                           child: (!showDaily && _isAtStart)
-                                            ? Directionality(
-                                                textDirection: ui.TextDirection.ltr,
-                                                child: IconButton(
-                                                  padding: EdgeInsets.zero,
-                                                  constraints: const BoxConstraints(),
-                                                  icon: const Icon(
-                                                    Icons.chevron_right, 
-                                                    color: BColors.primary,
-                                                    size: 24,
+                                              ? Directionality(
+                                                  textDirection:
+                                                      ui.TextDirection.ltr,
+                                                  child: IconButton(
+                                                    padding: EdgeInsets.zero,
+                                                    constraints:
+                                                        const BoxConstraints(),
+                                                    icon: const Icon(
+                                                      Icons.chevron_right,
+                                                      color: BColors.primary,
+                                                      size: 24,
+                                                    ),
+                                                    onPressed: () {
+                                                      // Go to End (This Week)
+                                                      _weeklyScrollController
+                                                          .animateTo(
+                                                            _weeklyScrollController
+                                                                .position
+                                                                .maxScrollExtent,
+                                                            duration:
+                                                                const Duration(
+                                                                  milliseconds:
+                                                                      500,
+                                                                ),
+                                                            curve: Curves
+                                                                .easeInOut,
+                                                          );
+                                                    },
                                                   ),
-                                                  onPressed: () {
-                                                    // Go to End (This Week)
-                                                    _weeklyScrollController.animateTo(
-                                                      _weeklyScrollController.position.maxScrollExtent,
-                                                      duration: const Duration(milliseconds: 500), 
-                                                      curve: Curves.easeInOut
-                                                    );
-                                                  },
-                                                ),
-                                              )
-                                            : null,
+                                                )
+                                              : null,
                                         ),
                                       ],
                                     ),
@@ -325,163 +367,109 @@ class _DashboardPageState extends State<DashboardPage> {
                                 //  LINE CHART AREA
                                 Expanded(
                                   child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
                                     children: [
                                       // ---------------- FIXED Y-AXIS ----------------
                                       Padding(
-                                        padding: const EdgeInsets.only(bottom: 32), 
+                                        padding: const EdgeInsets.only(
+                                          bottom: 32,
+                                        ),
                                         child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [100, 80, 60, 40, 20, 0].map((e) {
-                                            return Text(
-                                              e.toString(),
-                                              style: const TextStyle(
-                                                fontFamily: 'K2D',
-                                                fontSize: 11,
-                                                color: Colors.grey,
-                                              ),
-                                            );
-                                          }).toList(),
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [100, 80, 60, 40, 20, 0]
+                                              .map((e) {
+                                                return Text(
+                                                  e.toString(),
+                                                  style: const TextStyle(
+                                                    fontFamily: 'K2D',
+                                                    fontSize: 11,
+                                                    color: Colors.grey,
+                                                  ),
+                                                );
+                                              })
+                                              .toList(),
                                         ),
                                       ),
-                                      
+
                                       const SizedBox(width: 10),
 
                                       // ---------------- CHART CONTENT ----------------
                                       Expanded(
                                         child: Padding(
-                                          padding: const EdgeInsets.only(right: 6.0),
-                                          child: Builder(builder: (context) {
-                                            
-                                            // ---- DAILY MODE ----
-                                            if (showDaily) {
-                                              return LineChart(
-                                                LineChartData(
-                                                  minY: 0, maxY: 100,
-                                                  gridData: FlGridData(show: false),
-                                                  borderData: FlBorderData(show: false),
-                                                  titlesData: FlTitlesData(
-                                                    show: true,
-                                                    topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                                    rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                                    leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                                    bottomTitles: AxisTitles(
-                                                      sideTitles: SideTitles(
-                                                        showTitles: true,
-                                                        interval: 1,
-                                                        reservedSize: 26,
-                                                        getTitlesWidget: (value, meta) {
-                                                          int i = value.toInt();
-                                                          if (i < 0 || i >= dailyKeys.length) return const SizedBox.shrink();
-                                                          bool isToday = (i == todayIndex);
-                                                          return Padding(
-                                                            padding: const EdgeInsets.only(top: 6),
-                                                            child: Text(
-                                                              dailyKeys[i],
-                                                              style: TextStyle(
-                                                                fontFamily: 'K2D',
-                                                                fontSize: 11,
-                                                                fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                                                                color: isToday ? BColors.textprimary : Colors.grey,
-                                                              ),
-                                                            ),
-                                                          );
-                                                        },
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  lineTouchData: LineTouchData(enabled: true),
-                                                  lineBarsData: [
-                                                    LineChartBarData(
-                                                      spots: List.generate(
-                                                        dailyKeys.length,
-                                                        (i) => FlSpot(i.toDouble(), i < weeklyScores.length ? weeklyScores[i] : 0.0),
-                                                      ),
-                                                      isCurved: true,
-                                                      barWidth: 3,
-                                                      color: BColors.primary,
-                                                      dotData: FlDotData(show: true),
-                                                      belowBarData: BarAreaData(
-                                                        show: true,
-                                                        gradient: LinearGradient(
-                                                          begin: Alignment.topCenter,
-                                                          end: Alignment.bottomCenter,
-                                                          colors: [
-                                                            BColors.primary.withOpacity(0.4),
-                                                            BColors.primary.withOpacity(0.05),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              );
-                                            }
-
-                                            // ---- WEEKLY MODE: Continuous Series ----
-
-                                            if (weeklyData.isEmpty || weeklyData.every((v) => v == 0.0)) {
-                                              return const Center(
-                                                child: Text("No weekly data yet", style: TextStyle(fontFamily: 'K2D', fontSize: 12, color: Colors.grey)),
-                                              );
-                                            }
-
-                                            return SingleChildScrollView(
-                                              controller: _weeklyScrollController,
-                                              scrollDirection: Axis.horizontal,
-                                              padding: const EdgeInsets.only(left: 10, right: 40),
-                                              child: SizedBox(
-                                                width: chartWidth,
-                                                child: LineChart(
+                                          padding: const EdgeInsets.only(
+                                            right: 6.0,
+                                          ),
+                                          child: Builder(
+                                            builder: (context) {
+                                              // ---- DAILY MODE ----
+                                              if (showDaily) {
+                                                return LineChart(
                                                   LineChartData(
-                                                    minY: 0, maxY: 100,
-                                                    minX: 0, maxX: (weeklyData.length - 1).toDouble(),
-                                                    gridData: FlGridData(show: false),
-                                                    borderData: FlBorderData(show: false),
+                                                    minY: 0,
+                                                    maxY: 100,
+                                                    gridData: FlGridData(
+                                                      show: false,
+                                                    ),
+                                                    borderData: FlBorderData(
+                                                      show: false,
+                                                    ),
                                                     titlesData: FlTitlesData(
                                                       show: true,
-                                                      topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                                      rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                                      leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                                      topTitles: AxisTitles(
+                                                        sideTitles: SideTitles(
+                                                          showTitles: false,
+                                                        ),
+                                                      ),
+                                                      rightTitles: AxisTitles(
+                                                        sideTitles: SideTitles(
+                                                          showTitles: false,
+                                                        ),
+                                                      ),
+                                                      leftTitles: AxisTitles(
+                                                        sideTitles: SideTitles(
+                                                          showTitles: false,
+                                                        ),
+                                                      ),
                                                       bottomTitles: AxisTitles(
                                                         sideTitles: SideTitles(
                                                           showTitles: true,
                                                           interval: 1,
-                                                          reservedSize: 36, // Space for 2 lines text
+                                                          reservedSize: 26,
                                                           getTitlesWidget: (value, meta) {
-                                                            int i = value.toInt();
-                                                            if (i < 0 || i >= weeklyLabels.length) {
+                                                            int i = value
+                                                                .toInt();
+                                                            if (i < 0 ||
+                                                                i >=
+                                                                    dailyKeys
+                                                                        .length)
                                                               return const SizedBox.shrink();
-                                                            }
-                                                            
-                                                            String label = weeklyLabels[i];
-                                                            bool isCurrentWeek = label == 'This week';
-
-                                                            if (isCurrentWeek) {
-                                                              return Padding(
-                                                                padding: const EdgeInsets.only(top: 10),
-                                                                child: Text(
-                                                                  "This\nweek",
-                                                                  textAlign: TextAlign.center,
-                                                                  style: TextStyle(
-                                                                    fontFamily: 'K2D',
-                                                                    fontSize: 10,
-                                                                    height: 1.1, 
-                                                                    fontWeight: FontWeight.bold,
-                                                                    color: BColors.textprimary,
-                                                                  ),
-                                                                ),
-                                                              );
-                                                            }
-
+                                                            bool isToday =
+                                                                (i ==
+                                                                todayIndex);
                                                             return Padding(
-                                                              padding: const EdgeInsets.only(top: 10), 
+                                                              padding:
+                                                                  const EdgeInsets.only(
+                                                                    top: 6,
+                                                                  ),
                                                               child: Text(
-                                                                label,
-                                                                style: const TextStyle(
-                                                                  fontFamily: 'K2D',
+                                                                dailyKeys[i],
+                                                                style: TextStyle(
+                                                                  fontFamily:
+                                                                      'K2D',
                                                                   fontSize: 11,
-                                                                  color: Colors.grey,
+                                                                  fontWeight:
+                                                                      isToday
+                                                                      ? FontWeight
+                                                                            .bold
+                                                                      : FontWeight
+                                                                            .normal,
+                                                                  color: isToday
+                                                                      ? BColors
+                                                                            .textprimary
+                                                                      : Colors
+                                                                            .grey,
                                                                 ),
                                                               ),
                                                             );
@@ -489,35 +477,240 @@ class _DashboardPageState extends State<DashboardPage> {
                                                         ),
                                                       ),
                                                     ),
-                                                    lineTouchData: LineTouchData(enabled: true),
+                                                    lineTouchData:
+                                                        LineTouchData(
+                                                          enabled: true,
+                                                        ),
                                                     lineBarsData: [
                                                       LineChartBarData(
                                                         spots: List.generate(
-                                                          weeklyData.length,
-                                                          (i) => FlSpot(i.toDouble(), weeklyData[i]),
+                                                          dailyKeys.length,
+                                                          (i) => FlSpot(
+                                                            i.toDouble(),
+                                                            i <
+                                                                    weeklyScores
+                                                                        .length
+                                                                ? weeklyScores[i]
+                                                                : 0.0,
+                                                          ),
                                                         ),
                                                         isCurved: true,
                                                         barWidth: 3,
                                                         color: BColors.primary,
-                                                        dotData: FlDotData(show: true),
+                                                        dotData: FlDotData(
+                                                          show: true,
+                                                        ),
                                                         belowBarData: BarAreaData(
                                                           show: true,
                                                           gradient: LinearGradient(
-                                                            begin: Alignment.topCenter,
-                                                            end: Alignment.bottomCenter,
+                                                            begin: Alignment
+                                                                .topCenter,
+                                                            end: Alignment
+                                                                .bottomCenter,
                                                             colors: [
-                                                              BColors.primary.withOpacity(0.4),
-                                                              BColors.primary.withOpacity(0.05),
+                                                              BColors.primary
+                                                                  .withOpacity(
+                                                                    0.4,
+                                                                  ),
+                                                              BColors.primary
+                                                                  .withOpacity(
+                                                                    0.05,
+                                                                  ),
                                                             ],
                                                           ),
                                                         ),
                                                       ),
                                                     ],
                                                   ),
+                                                );
+                                              }
+
+                                              // ---- WEEKLY MODE: Continuous Series ----
+
+                                              if (weeklyData.isEmpty ||
+                                                  weeklyData.every(
+                                                    (v) => v == 0.0,
+                                                  )) {
+                                                return const Center(
+                                                  child: Text(
+                                                    "No weekly data yet",
+                                                    style: TextStyle(
+                                                      fontFamily: 'K2D',
+                                                      fontSize: 12,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                );
+                                              }
+
+                                              return SingleChildScrollView(
+                                                controller:
+                                                    _weeklyScrollController,
+                                                scrollDirection:
+                                                    Axis.horizontal,
+                                                padding: const EdgeInsets.only(
+                                                  left: 10,
+                                                  right: 40,
                                                 ),
-                                              ),
-                                            );
-                                          }),
+                                                child: SizedBox(
+                                                  width: chartWidth,
+                                                  child: LineChart(
+                                                    LineChartData(
+                                                      minY: 0,
+                                                      maxY: 100,
+                                                      minX: 0,
+                                                      maxX:
+                                                          (weeklyData.length -
+                                                                  1)
+                                                              .toDouble(),
+                                                      gridData: FlGridData(
+                                                        show: false,
+                                                      ),
+                                                      borderData: FlBorderData(
+                                                        show: false,
+                                                      ),
+                                                      titlesData: FlTitlesData(
+                                                        show: true,
+                                                        topTitles: AxisTitles(
+                                                          sideTitles:
+                                                              SideTitles(
+                                                                showTitles:
+                                                                    false,
+                                                              ),
+                                                        ),
+                                                        rightTitles: AxisTitles(
+                                                          sideTitles:
+                                                              SideTitles(
+                                                                showTitles:
+                                                                    false,
+                                                              ),
+                                                        ),
+                                                        leftTitles: AxisTitles(
+                                                          sideTitles:
+                                                              SideTitles(
+                                                                showTitles:
+                                                                    false,
+                                                              ),
+                                                        ),
+                                                        bottomTitles: AxisTitles(
+                                                          sideTitles: SideTitles(
+                                                            showTitles: true,
+                                                            interval: 1,
+                                                            reservedSize:
+                                                                36, // Space for 2 lines text
+                                                            getTitlesWidget: (value, meta) {
+                                                              int i = value
+                                                                  .toInt();
+                                                              if (i < 0 ||
+                                                                  i >=
+                                                                      weeklyLabels
+                                                                          .length) {
+                                                                return const SizedBox.shrink();
+                                                              }
+
+                                                              String label =
+                                                                  weeklyLabels[i];
+                                                              bool
+                                                              isCurrentWeek =
+                                                                  label ==
+                                                                  'This week';
+
+                                                              if (isCurrentWeek) {
+                                                                return Padding(
+                                                                  padding:
+                                                                      const EdgeInsets.only(
+                                                                        top: 10,
+                                                                      ),
+                                                                  child: Text(
+                                                                    "This\nweek",
+                                                                    textAlign:
+                                                                        TextAlign
+                                                                            .center,
+                                                                    style: TextStyle(
+                                                                      fontFamily:
+                                                                          'K2D',
+                                                                      fontSize:
+                                                                          10,
+                                                                      height:
+                                                                          1.1,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                      color: BColors
+                                                                          .textprimary,
+                                                                    ),
+                                                                  ),
+                                                                );
+                                                              }
+
+                                                              return Padding(
+                                                                padding:
+                                                                    const EdgeInsets.only(
+                                                                      top: 10,
+                                                                    ),
+                                                                child: Text(
+                                                                  label,
+                                                                  style: const TextStyle(
+                                                                    fontFamily:
+                                                                        'K2D',
+                                                                    fontSize:
+                                                                        11,
+                                                                    color: Colors
+                                                                        .grey,
+                                                                  ),
+                                                                ),
+                                                              );
+                                                            },
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      lineTouchData:
+                                                          LineTouchData(
+                                                            enabled: true,
+                                                          ),
+                                                      lineBarsData: [
+                                                        LineChartBarData(
+                                                          spots: List.generate(
+                                                            weeklyData.length,
+                                                            (i) => FlSpot(
+                                                              i.toDouble(),
+                                                              weeklyData[i],
+                                                            ),
+                                                          ),
+                                                          isCurved: true,
+                                                          barWidth: 3,
+                                                          color:
+                                                              BColors.primary,
+                                                          dotData: FlDotData(
+                                                            show: true,
+                                                          ),
+                                                          belowBarData: BarAreaData(
+                                                            show: true,
+                                                            gradient: LinearGradient(
+                                                              begin: Alignment
+                                                                  .topCenter,
+                                                              end: Alignment
+                                                                  .bottomCenter,
+                                                              colors: [
+                                                                BColors.primary
+                                                                    .withOpacity(
+                                                                      0.4,
+                                                                    ),
+                                                                BColors.primary
+                                                                    .withOpacity(
+                                                                      0.05,
+                                                                    ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -530,7 +723,17 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
 
                       const SizedBox(height: 20),
-                      // ---------------- TASK (LEFT) + FOCUS ROOM + MOOD (RIGHT) ----------------
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4, bottom: 4),
+                        child: Text(
+                          "Today's Progress",
+                          style: textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: BColors.textprimary,
+                          ),
+                        ),
+                      ),
+
                       // ---------------- TASK (LEFT) + FOCUS ROOM + MOOD (RIGHT) ----------------
                       SizedBox(
                         height: 230,
@@ -609,13 +812,14 @@ class _DashboardPageState extends State<DashboardPage> {
                                                               radius: 24,
                                                               titleStyle:
                                                                   const TextStyle(
-                                                                fontSize: 14,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                color: Colors
-                                                                    .white,
-                                                              ),
+                                                                    fontSize:
+                                                                        14,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color: Colors
+                                                                        .white,
+                                                                  ),
                                                             ),
                                                             PieChartSectionData(
                                                               value: incomplete
@@ -627,13 +831,14 @@ class _DashboardPageState extends State<DashboardPage> {
                                                               radius: 20,
                                                               titleStyle:
                                                                   const TextStyle(
-                                                                fontSize: 14,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                color: Colors
-                                                                    .white,
-                                                              ),
+                                                                    fontSize:
+                                                                        14,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color: Colors
+                                                                        .white,
+                                                                  ),
                                                             ),
                                                           ],
                                                         ),
@@ -706,8 +911,9 @@ class _DashboardPageState extends State<DashboardPage> {
                                         ),
                                         boxShadow: [
                                           BoxShadow(
-                                            color:
-                                                Colors.black.withOpacity(0.07),
+                                            color: Colors.black.withOpacity(
+                                              0.07,
+                                            ),
                                             blurRadius: 8,
                                             offset: const Offset(0, 3),
                                           ),
@@ -719,18 +925,19 @@ class _DashboardPageState extends State<DashboardPage> {
                                         children: [
                                           Text(
                                             "Focus Room",
-                                            style:
-                                                textTheme.titleMedium?.copyWith(
-                                              fontFamily: 'K2D',
-                                              fontWeight: FontWeight.w700,
-                                              color: BColors.textprimary,
-                                            ),
+                                            style: textTheme.titleMedium
+                                                ?.copyWith(
+                                                  fontFamily: 'K2D',
+                                                  fontWeight: FontWeight.w700,
+                                                  color: BColors.textprimary,
+                                                ),
                                           ),
                                           const SizedBox(height: 8),
                                           Expanded(
                                             child: Obx(() {
                                               final minutes = dashController
-                                                  .todayFocusMinutes.value;
+                                                  .todayFocusMinutes
+                                                  .value;
                                               return Center(
                                                 child: Column(
                                                   mainAxisAlignment:
@@ -741,12 +948,15 @@ class _DashboardPageState extends State<DashboardPage> {
                                                       style: textTheme
                                                           .headlineSmall
                                                           ?.copyWith(
-                                                        fontFamily: 'K2D',
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: BColors.primary
-                                                            .withOpacity(0.7),
-                                                      ),
+                                                            fontFamily: 'K2D',
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: BColors
+                                                                .primary
+                                                                .withOpacity(
+                                                                  0.7,
+                                                                ),
+                                                          ),
                                                     ),
                                                     const SizedBox(height: 4),
                                                     Text(
@@ -781,8 +991,9 @@ class _DashboardPageState extends State<DashboardPage> {
                                         ),
                                         boxShadow: [
                                           BoxShadow(
-                                            color:
-                                                Colors.black.withOpacity(0.07),
+                                            color: Colors.black.withOpacity(
+                                              0.07,
+                                            ),
                                             blurRadius: 8,
                                             offset: const Offset(0, 3),
                                           ),
@@ -801,10 +1012,12 @@ class _DashboardPageState extends State<DashboardPage> {
                                                 "Mood",
                                                 style: textTheme.titleMedium
                                                     ?.copyWith(
-                                                  fontFamily: 'K2D',
-                                                  fontWeight: FontWeight.w700,
-                                                  color: BColors.textprimary,
-                                                ),
+                                                      fontFamily: 'K2D',
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      color:
+                                                          BColors.textprimary,
+                                                    ),
                                               ),
                                               const SizedBox(height: 8),
                                               const Expanded(
@@ -844,7 +1057,11 @@ class _DashboardPageState extends State<DashboardPage> {
                                           case 3:
                                             icon = Icons.sentiment_neutral;
                                             color = const Color.fromARGB(
-                                                255, 246, 236, 145);
+                                              255,
+                                              246,
+                                              236,
+                                              145,
+                                            );
                                             label = "Neutral";
                                             break;
                                           case 4:
@@ -869,10 +1086,10 @@ class _DashboardPageState extends State<DashboardPage> {
                                               "Mood",
                                               style: textTheme.titleMedium
                                                   ?.copyWith(
-                                                fontFamily: 'K2D',
-                                                fontWeight: FontWeight.w700,
-                                                color: BColors.textprimary,
-                                              ),
+                                                    fontFamily: 'K2D',
+                                                    fontWeight: FontWeight.w700,
+                                                    color: BColors.textprimary,
+                                                  ),
                                             ),
                                             const SizedBox(height: 8),
                                             Expanded(
@@ -880,18 +1097,21 @@ class _DashboardPageState extends State<DashboardPage> {
                                                 child: Container(
                                                   padding:
                                                       const EdgeInsets.symmetric(
-                                                    horizontal: 16,
-                                                    vertical: 7,
-                                                  ),
+                                                        horizontal: 16,
+                                                        vertical: 7,
+                                                      ),
                                                   decoration: BoxDecoration(
-                                                    color: color
-                                                        .withOpacity(0.12),
+                                                    color: color.withOpacity(
+                                                      0.12,
+                                                    ),
                                                     borderRadius:
                                                         BorderRadius.circular(
-                                                            24),
+                                                          24,
+                                                        ),
                                                     border: Border.all(
-                                                      color: color
-                                                          .withOpacity(0.8),
+                                                      color: color.withOpacity(
+                                                        0.8,
+                                                      ),
                                                       width: 1,
                                                     ),
                                                   ),
