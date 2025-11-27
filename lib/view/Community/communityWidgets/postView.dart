@@ -259,7 +259,7 @@ class PostView extends StatelessWidget {
               valueListenable: reportNotifier,
               builder: (context, isReporting, child) {
                 return AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 245),
+                  duration: const Duration(milliseconds: 260),
                   transitionBuilder: (child, anim) =>
                       ScaleTransition(scale: anim, child: child),
                   child: isReporting
