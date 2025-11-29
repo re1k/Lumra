@@ -863,28 +863,58 @@ Future<int> getCommentCount(String postId) async {
     }
   }
 
-  Future<void> deletePost(String postId) async {
-    if (currentUid == null) return;
+Future<void> deletePost(String postId) async {
+  try {
+    // Check ownership first
+    final postDoc = await db
+        .collection(communityCollection)
+        .doc(postId)
+        .get();
 
-    try {
-      // Ensure post belongs to current user
-      final postDoc = await db
-          .collection(communityCollection)
-          .doc(postId)
-          .get();
-      if (postDoc.exists && postDoc['userId'] == currentUid) {
-        await db.collection(communityCollection).doc(postId).delete();
+    if (!postDoc.exists) return;
 
-        // Remove from reactive lists for immediate UI update
-        posts.removeWhere((p) => p.id == postId);
-        userPosts.removeWhere((p) => p.id == postId);
-        savedPosts.removeWhere((p) => p.id == postId);
-        savedPostIds.remove(postId);
-      }
-    } catch (e) {
-      print('Error deleting post $postId: $e');
+    if (postDoc['userId'] != currentUid) {
+      print("Not allowed to delete this post");
+      return;
     }
+
+    // 1Delete subcollections FIRST
+    await deleteSubcollection(communityCollection, postId, "comments");
+    await deleteSubcollection(communityCollection, postId, "likes");
+    await deleteSubcollection(communityCollection, postId, "saves");
+
+    // If you have others, add them here:
+    // await deleteSubcollection(...)
+
+    // 2Delete the main post document
+    await db.collection(communityCollection).doc(postId).delete();
+
+    // Update UI lists
+    posts.removeWhere((p) => p.id == postId);
+    userPosts.removeWhere((p) => p.id == postId);
+    savedPosts.removeWhere((p) => p.id == postId);
+    savedPostIds.remove(postId);
+
+    print("Post $postId deleted successfully");
+  } catch (e) {
+    print('Error deleting post $postId: $e');
   }
+}
+
+
+Future<void> deleteSubcollection(
+  String collection,
+  String postId,
+  String sub,
+) async {
+  final ref = db.collection(collection).doc(postId).collection(sub);
+
+  final snapshots = await ref.get();
+
+  for (var doc in snapshots.docs) {
+    await ref.doc(doc.id).delete();
+  }
+}
 
 
   String? originalContent; // store original content for edit
