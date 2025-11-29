@@ -146,7 +146,7 @@ class PostView extends StatelessWidget {
 
         // RIGHT: Actions
         if (post.userId == controller.currentUid)
-          // My Post: Only Edit/Delete Menu 
+          // My Post: Only Edit/Delete Menu
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: BColors.primary),
             color: BColors.white,
@@ -253,7 +253,7 @@ class PostView extends StatelessWidget {
             ],
           )
         else
-          // Someone Else's Post: Report Icon 
+          // Someone Else's Post: Report Icon
           IconButton(
             icon: ValueListenableBuilder<bool>(
               valueListenable: reportNotifier,
@@ -411,20 +411,52 @@ class PostView extends StatelessWidget {
           );
         }),
         SizedBox(width: BSizes.sm),
-        IconButton(
-          icon: const Icon(Icons.comment_outlined, size: BSizes.iconMd - 1.5, color: BColors.primary,),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) =>
-                    CommentsPage(postId: post.id, postUserName: post.userName),
+        Row(
+          children: [
+            // comment
+            IconButton(
+              icon: const Icon(
+                Icons.comment_outlined,
+                size: BSizes.iconMd - 1.5,
+                color: BColors.primary,
               ),
-            );
-          },
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CommentsPage(
+                      postId: post.id,
+                      postUserName: post.userName,
+                    ),
+                  ),
+                );
+              },
+              color: BColors.darkGrey,
+              tooltip: 'Comment',
+            ),
 
-          color: BColors.darkGrey,
-          tooltip: 'Comment',
+            //comment count
+            FutureBuilder<int>(
+              future: controller.getCommentCount(post.id),
+              builder: (context, snapshot) {
+                //spacing between icon + count
+                final count = snapshot.data ?? 0;
+
+                //zero show nothing
+                if (count == 0) {
+                  return const SizedBox(); // empty widget
+                }
+
+                return Transform.translate(
+                  offset: const Offset(-9, -1.5),
+                  child: Text(
+                    "$count",
+                    style: const TextStyle(color: BColors.primary),
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ],
     );

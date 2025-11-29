@@ -623,6 +623,7 @@ class PostControllerX extends GetxController {
   bool isPostLiked(String postId) => likedPostIds.contains(postId);
   int getLikeCount(String postId) => likeCounts[postId] ?? 0;
 
+
   Future<void> toggleLike(String postId) async {
     if (currentUid == null) {
       ToastService.error("You must be logged in to like posts");
@@ -776,6 +777,16 @@ class PostControllerX extends GetxController {
       print('Failed to report comment $postId: $e');
     }
   }
+
+Future<int> getCommentCount(String postId) async {
+  final snapshot = await db
+      .collection(communityCollection)
+      .doc(postId)
+      .collection('comments')
+      .get();
+
+  return snapshot.size;
+}
 
   Future<bool> addComment(BuildContext context, String postId) async {
     hasInteracted.value = true;
