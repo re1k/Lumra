@@ -878,15 +878,11 @@ Future<void> deletePost(String postId) async {
       return;
     }
 
-    // 1Delete subcollections FIRST
+    // Delete subcollections FIRST
     await deleteSubcollection(communityCollection, postId, "comments");
     await deleteSubcollection(communityCollection, postId, "likes");
-    await deleteSubcollection(communityCollection, postId, "saves");
 
-    // If you have others, add them here:
-    // await deleteSubcollection(...)
-
-    // 2Delete the main post document
+    // Delete the main post document
     await db.collection(communityCollection).doc(postId).delete();
 
     // Update UI lists
