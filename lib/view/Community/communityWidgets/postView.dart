@@ -410,14 +410,14 @@ class PostView extends StatelessWidget {
             ),
           );
         }),
-        SizedBox(width: BSizes.sm),
+       SizedBox(width: BSizes.xs),
         Row(
           children: [
             // comment
             IconButton(
               icon: const Icon(
                 Icons.comment_outlined,
-                size: BSizes.iconMd - 1.5,
+                size: BSizes.iconMd - 1.8,
                 color: BColors.primary,
               ),
               onPressed: () {
@@ -436,26 +436,19 @@ class PostView extends StatelessWidget {
             ),
 
             //comment count
-            FutureBuilder<int>(
-              future: controller.getCommentCount(post.id),
-              builder: (context, snapshot) {
-                //spacing between icon + count
-                final count = snapshot.data ?? 0;
+            Obx(() {
+              final count = controller.getCommentCountReactive(post.id);
 
-                //zero show nothing
-                if (count == 0) {
-                  return const SizedBox(); // empty widget
-                }
+              if (count == 0) return const SizedBox();
 
-                return Transform.translate(
-                  offset: const Offset(-9, -1.5),
-                  child: Text(
-                    "$count",
-                    style: const TextStyle(color: BColors.primary),
-                  ),
-                );
-              },
-            ),
+              return Transform.translate(
+                offset: const Offset(-9, -1),
+                child: Text(
+                  "$count",
+                  style: const TextStyle(color: BColors.primary),
+                ),
+              );
+            }),
           ],
         ),
       ],
