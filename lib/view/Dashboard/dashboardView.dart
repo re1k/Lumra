@@ -1141,48 +1141,51 @@ class _DashboardPageState extends State<DashboardPage> {
                                             const SizedBox(height: 8),
                                             Expanded(
                                               child: Center(
-                                                child: Container(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 16,
-                                                        vertical: 7,
-                                                      ),
-                                                  decoration: BoxDecoration(
-                                                    color: color.withOpacity(
-                                                      0.12,
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          24,
+                                                child: FittedBox(
+                                                  fit: BoxFit.scaleDown,
+                                                  child: Container(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 16,
+                                                          vertical: 7,
                                                         ),
-                                                    border: Border.all(
+                                                    decoration: BoxDecoration(
                                                       color: color.withOpacity(
-                                                        0.8,
+                                                        0.12,
                                                       ),
-                                                      width: 1,
-                                                    ),
-                                                  ),
-                                                  child: Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: [
-                                                      Icon(
-                                                        icon,
-                                                        color: color,
-                                                        size: 28,
-                                                      ),
-                                                      const SizedBox(width: 10),
-                                                      Text(
-                                                        label,
-                                                        style: TextStyle(
-                                                          fontFamily: 'K2D',
-                                                          fontSize: 12,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          color: color,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            24,
+                                                          ),
+                                                      border: Border.all(
+                                                        color: color.withOpacity(
+                                                          0.8,
                                                         ),
+                                                        width: 1,
                                                       ),
-                                                    ],
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        Icon(
+                                                          icon,
+                                                          color: color,
+                                                          size: 28,
+                                                        ),
+                                                        const SizedBox(width: 10),
+                                                        Text(
+                                                          label,
+                                                          style: TextStyle(
+                                                            fontFamily: 'K2D',
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: color,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
                                               ),
