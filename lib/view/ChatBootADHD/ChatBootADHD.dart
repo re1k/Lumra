@@ -157,77 +157,55 @@ class _ChatViewState extends State<ChatView>
   // SEND FLOW
   bool _showDots = false;
   Future<void> _handleSend(types.PartialText message) async {
-    if (message.text.trim().isEmpty) return; // block empty sends
+  final text = message.text.trim();
+  if (text.isEmpty) return;
 
-    // 1) user message -> UI + history
-    final userMsg = types.TextMessage(
-      id: Random().nextInt(999999).toString(),
-      author: _user,
-      text: message.text,
-      createdAt: DateTime.now().millisecondsSinceEpoch,
-    );
-    setState(() => _messages.insert(0, userMsg));
+  _addMessage(
+    text: text,
+    author: _user,
+    showTyping: true,
+  );
+
+  final replyText = await controller.sendMessage(text);
+
+  if (!mounted) return;
+
+  _addMessage(
+    text: replyText,
+    author: _bot,
+    showTyping: false,
+  );
+
+  await _autoSaveSuggestions();
+}
+
+void _addMessage({
+  required String text,
+  required types.User author,
+  bool showTyping = false,
+}) {
+  final msg = types.TextMessage(
+    id: Random().nextInt(999999).toString(),
+    author: author,
+    text: text,
+    createdAt: DateTime.now().millisecondsSinceEpoch,
+  );
+
+  final role = author.id == _user.id ? 'user' : 'bot';
+
+  setState(() {
+    _messages.insert(0, msg);
+
     controller.chatHistory.insert(0, {
-      'id': userMsg.id,
-      'author': 'user',
-      'text': userMsg.text,
-      'createdAt': userMsg.createdAt,
+      'id': msg.id,
+      'author': role,
+      'text': msg.text,
+      'createdAt': msg.createdAt,
     });
-    setState(() => _showDots = true); // show dots immediately
 
-    // 2️⃣ Wait for Gemini reply (logic unchanged)
-    final replyText = await controller.sendMessage(message.text);
-
-    // 3️⃣ Hide dots after getting reply
-    if (!mounted) return;
-    setState(() => _showDots = false);
-
-    // 2) typing
-    // final typingMsg = types.TextMessage(
-    //   id: 'typing',
-    //   author: _bot,
-    //   text: '...',
-    //   createdAt: DateTime.now().millisecondsSinceEpoch,
-    // );
-    // setState(() => _messages.insert(0, typingMsg));
-
-    // // 3) Gemini reply
-    // final replyText = await controller.sendMessage(message.text);
-
-    // // 4) remove typing
-    // setState(() => _messages.removeWhere((m) => m.id == 'typing'));
-
-    // 5) bot message -> UI + history
-    // 4️⃣ Bot message → UI + history
-    final botMsg = types.TextMessage(
-      id: Random().nextInt(999999).toString(),
-      author: _bot,
-      text: replyText,
-      createdAt: DateTime.now().millisecondsSinceEpoch,
-    );
-    setState(
-      () => controller.chatHistory.insert(0, {
-        'id': botMsg.id,
-        'author': 'bot',
-        'text': botMsg.text,
-        'createdAt': botMsg.createdAt,
-      }),
-    );
-
-    // 6) STORE (no retrieval here)
-    await _autoSaveSuggestions();
-    // final savedCount = await _autoSaveSuggestions(); //we can delete it
-    // if (!mounted) return;
-    /* if (savedCount > 0) {  no need 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Added $savedCount activit${savedCount == 1 ? "y" : "ies"}',
-          ),
-        ),
-      );
-    } */
-  }
+    _showDots = showTyping;
+  });
+}
 
   // UI
 
